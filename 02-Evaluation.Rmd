@@ -1,0 +1,1069 @@
+# Evaluación de modelos
+
+
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results="hide"}
+if (!require(knitr)) install.packages('knitr', repos = c('https://xran.yihui.name', 'https://cran.rstudio.org'))
+#devtools::install_github("yihui/knitr", build_vignettes = TRUE)
+library(knitr)    # For knitting document and include_graphics function
+if (!require(png)) install.packages('png')
+library(png)      # For grabbing the dimensions of png files
+imgs_path = "C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/"
+```
+
+
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"modellingcycle.png",sep="")
+include_graphics(img_path) 
+```
+
+El ciclo de vida de un modelo empieza con su propia definición, pasando por la extracción y tratamiento de los datos y la evaluación, tanto antes de ponerlo en producción, como en la monitorización de su calidad predictiva.
+
+
+<!-- El ciclo de vida de un modelo en el entorno empresarial trae un concepto fundamental: **Gobernanza**. -->
+
+<!-- Gobernanza es el conjunto de procedimientos y herramientas que minimizan errores y facilitan el -->
+<!-- control de cada fase del ciclo, y la coexistencia pacífica de diferentes modelos en el ecosistema. -->
+
+La diagnosis o evaluación es la clave para lograr un ecosistema de modelos que impacte en la organización. Hay muchas métricas para evaluar como de bien o de mal funciona un modelo o algoritmo. Para determinar cuáles usar en un problema particular, necesitamos formas sistemáticas de evaluar cómo funcionan los diferentes métodos y comparar uno con otro. La evaluación no es tan simple como podría parecer a primera vista.
+
+
+<div class="rmdcomment">
+La diagnosis de los modelos puede  realizarse desde dos perspectivas: 
+
+  - **Negocio** y 
+  - **Estadística**. 
+
+Ambas pueden ser utilizadas para monitorizar la calidad de los modelos en producción. La frecuencia de análisis depende del tipo de modelo.
+</div>
+
+
+ * **Diagnosis de Negocio**: Se refiere a la utilización de métricas que indican si se cumplen las hipótesis sobre las cuales se ha construido el modelo, además de evaluar su calidad predictiva. Ejemplo de estas métricas son: R2, MAPE, AUC, LIFT, etc
+ 
+ * **Diagnosis Estadística**: Se refiere a la discusión del significado de los resultados, teniendo en cuenta el sentido del negocio. Elementos susceptibles de esta interpretación son: parámetros, análisis decom, due-to, etc.
+
+
+
+## Diagnosis de Negocio
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"evaluanegocio.png",sep="")
+include_graphics(img_path) 
+```
+
+ * Los **parámetros** de los modelos estadisticos sirven para cuantificar el efecto de las palancas. Su interpretación depende de la propia especificación del modelo. Los principales tipos de parámetros son:  elasticidad, semi-elasticidad, _piecewise_, _yes/no_. Si el output es 0-1, la interpretación de los parámetros depende de la función enlace utilizada (_logit_ o _probit_).
+
+ 
+ * Análisis de **Descomposición**. Mide el efecto de cada _input_ o _driver_ sobre el _output_ de un periodo
+
+ * Análisis de **due-to**. Compara el efecto de los _inputs_ o _drivers_ en  el _output_ entre dos periodos
+
+
+
+## Evaluación en Respuesta Binaria
+
+
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"evaluabinario.png",sep="")
+include_graphics(img_path) 
+```
+
+
+No todos los problemas son iguales, con lo que no todos los problemas pueden usar las mismas métricas de evaluación. En esta sección veremos las métricas más usuales para los tipos de problemas que nos podemos encontrar. Si nos centramos en modelos supervisados, nos encontramos básicamente dos problemas distintos: clasificación y regresión.
+
+
+
+### Clasificación
+
+En los problemas de clasificación tenemos la variable objetivo que son las clases o etiquetas que debemos predecir y una serie de variables que son los predictores. Es decir, usando los predictores obtenemos una etiqueta. Nos podemos encontrar con problemas de clasificación binaria (dos clases) o múltiple (más de dos clases).
+
+Para simplificar nos centraremos en la clasificación binaria, pero lo podemos trasladar a los problemas de clasificación múltiple. 
+
+
+#### Confusion matrix
+
+La confusion matrix o matriz de confusión muestra el número de predicciones correctas e incorrectas hechas por el modelo de clasificación en comparación con los resultados reales en los datos. La matriz de confusión es una matriz $n \times n$, dónde $n$ es el número de clases. La siguiente tabla muestra una matriz de confusión de $2x2$ para dos clases (positiva y negativa).
+
+
+```{r  out.width = "80%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"confusionmatrix.png",sep="")
+include_graphics(img_path) 
+```
+
+* **Accuracy**: la proporción del número total de predicciones correctas.
+
+$$ACC = \frac{TP+TN}{TP+TN+FP+FN}$$
+
+* **Positive Predictive Value or Precision**: la proporción de casos positivos que fueron identificados correctamente.
+
+$$PPV = \frac{TP}{TP+FP}$$
+
+* **Negative Predictive Value**: la proporción de casos negativos que fueron identificados correctamente.
+
+$$ 
+NPV = \frac{TN}{TN+FN}
+$$ 
+
+
+* **Sensitivity or Recall**: la proporción de casos positivos reales que están correctamente identificados.
+
+$$TPR = \frac{TP}{TP+FN}$$
+
+* **Specificity**: la proporción de casos negativos reales que están correctamente identificados.
+
+$$TNR = \frac{TN}{TN+FP}$$
+
+
+#### Log-Loss
+
+La log-loss o pérdida logarítmica entra en los detalles más finos de un clasificador. En particular, si la salida bruta del clasificador es una probabilidad numérica en lugar de una etiqueta de clase de $0$ o $1$, se puede usar la log-loss. La probabilidad se puede entender como un indicador de confianza. Si la etiqueta es $0$ pero el clasificador cree que pertenece a la clase $1$ con probabilidad de $0,51$. Aunque el clasificador estaría cometiendo un error de clasificación, el error se comente por poco, ya que la probabilidad está muy cerca del punto de corte de $0.5$. La log-loss es una medición de precisión que incorpora esta idea de confianza probabilística.
+
+La log-loss para un clasificador binario es
+
+$$LogLoss = - \frac{1}{n} \sum_{i=1}^{n} y_i \log p_i + (1-y_i) \log (1-p_i)$$
+
+donde $n$ es el número de registros, $y_i$ es la etiqueta de la muestra $i$, y $p_i$ es la probabilidad del obtenida en el modelo.
+
+
+#### Curvas ROC
+
+Para los modelos de clasificación obtenidos a partir de una probabilidad se suelen usar las curvas ROC. Una curva ROC (acrónimo de Receiver Operating Characteristic, o Característica Operativa del Receptor) es una representación gráfica de la sensitivity (TPR) frente a la specificity (TNR) para un sistema clasificador binario según se varía el umbral de discriminación. 
+
+La curva ROC se puede usar para generar estadísticos que resumen el rendimiento (o la efectividad, en su más amplio sentido) del clasificador. A continuación se proporcionan algunos:
+
+ * El punto de inserción de la curva ROC con la línea convexa a la línea de discriminación.
+ * El área entre la curva ROC y la línea de convexo-paralela discriminación.
+ * El área bajo la curva ROC, llamada comúnmente AUC (area under curve).
+
+El indicador más utilizado en muchos contextos es el área bajo la curva ROC o AUC. Este índice se puede interpretar como la probabilidad de que un clasificador ordenará o puntuará una instancia positiva elegida aleatoriamente más alta que una negativa.
+
+En la figura abajo se muestran tres ejemplos de curvas ROC. La gráfica de la izquierda es la curva de un modelo perfecto, la del medio es la de un caso real con una $AUC = 0.8$ y la de la derecha es la gráfico de un modelo no informativo.
+
+
+```{r  out.width = "80%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"curvasroc.png",sep="")
+include_graphics(img_path) 
+```
+
+#### Gráficos de ganancia y elevación (Gain and Lift Charts)
+
+La ganancia o la elevación es una medida de la efectividad de un modelo de clasificación calculado como la relación entre los resultados obtenidos con y sin el modelo. Los gráficos de ganancia y elevación son ayudas visuales para evaluar el rendimiento de los modelos de clasificación. Sin embargo, en contraste con la matriz de confusión que evalúa los modelos en toda la población, los gráficos de ganancia o elevación evalúan el modelo en una porción de la población.
+
+Para crear estos gráficos es necesario crear un ranking basado en la creabilidad de la predicción hecha por el modelo.
+
+En la figura  tenemos un ejemplo de como obtener los puntos de las curvas de ganancia y elevación, y sus correspondientes gráficos. 
+
+```{r  out.width = "80%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"gainlift.png",sep="")
+include_graphics(img_path) 
+```
+
+Igual que las curvas ROC, se busca el mayor AUC en las curvas de ganancia. Mientras que para los gráficos de elevación el modelo perfecto es el que la diferencia entre la línea azul y roja es nula. En otras palabras queremos una AUC mínima del gráfico de elevación.
+
+
+### Medidas de desigualdad
+
+
+#### El coeficiente de Gini
+
+El coeficiente de Gini es una medida de la desigualdad ideada por el estadístico italiano Corrado Gini. El coeficiente de Gini es un número entre $0$ y $1$, en donde $0$ se corresponde con la perfecta igualdad y donde el valor $1$ se corresponde con la perfecta desigualdad.
+
+El coeficiente de Gini se calcula como una proporción de las áreas en el diagrama de la curva de Lorenz. De forma resumida, la Curva de Lorenz es una gráfica de concentración acumulada de la distribución superpuesta a la curva de la distribución de frecuencias de los individuos, y su expresión en porcentajes es el índice de Gini. El coeficiente de Gini puede obtener mediante la siguiente fórmula:
+
+$$G = \left| 1-\sum_{k=1}^{n-1} (X_{k+1}-X_k)(Y_{k+1}+Y_k) \right|$$
+
+donde $X$ es la proporción acumulada de la variable población, $Y$ es la proporción acumulada de la variable a estudiar la desigualdad y $n$ es el número de la población.
+
+
+#### Índice de entropía
+
+El índice de entropía generalizado se ha propuesto como una medida de la desigualdad en una población. Se deriva de la teoría de la información como una medida de redundancia en los datos. En la teoría de la información, una medida de redundancia puede interpretarse como no aleatoriedad o compresión de datos; por lo tanto, esta interpretación también se aplica a este índice.
+
+La fórmula de la entropía general para un valor real $\alpha$ es:
+
+$$GE(\alpha) = \begin{cases}
+       \frac{1}{n\alpha (\alpha -1)} \sum_{i=1}^{n} \left(\left( \frac{y_i}{\bar{y}} \right) ^{\alpha} -1\right), &\quad \alpha\neq0,1 ,\\
+       \frac{1}{n} \sum_{i=1}^{n} \frac{y_i}{\bar{y}} \ln \frac{y_i}{\bar{y}} &\quad \alpha = 1 ,\\
+       -\frac{1}{n} \sum_{i=1}^{n} \ln \frac{y_i}{\bar{y}} &\quad \alpha = 0 .\\
+     \end{cases}$$
+
+donde $n$ el número de muestras y $y$ es la medida de desigualdad.
+
+
+## Evaluación en Respuesta Continúa
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"evaluacontinuo.png",sep="")
+include_graphics(img_path) 
+```
+
+
+### Modelos de Regresión
+
+En los problemas de regresión siempre tenemos una variable numérica dependiente que es la que queremos predecir y el resto son los predictores. Para evaluar los modelos de regresión tenemos varias métricas para evaluar el error cometido en al predicción:
+
+
+
+
+* **RMSE** (root mean squared error) o error cuadrado medio: RMSE es la métrica más popular para medir la tasa de error de un modelo de regresión.
+
+$$RMSE = \sqrt {\frac{\sum_{i=1}^{n} (\hat{y}_i - y_i)^2}{n}}$$
+
+donde $n$ es el número de muestras, $\hat{y}_i$ el valor predicho de la variable objetivo y $y_i$ el valor real de la variable objetivo. 
+
+* **MAE** (mean abosulte error) o error absoluto medio: 
+
+$$MAE = \frac{\sum_{i=1}^{n} | \hat{y}_i - y_i |}{n}$$
+
+donde $n$ es el número de muestras, $\hat{y}_i$ el valor predicho de la variable objetivo y $y_i$ el valor real de la variable objetivo.
+
+* **RSE** (relative squared error) o error relativo cuadrado: 
+
+$$RSE = \sqrt \frac{\sum_{i=1}^{n} (\hat{y}_i - y_i)^2}{\sum_{i=1}^{n} (\bar{y} - y_i)^2}$$
+
+donde $n$ es el número de muestras, $\bar{y}$ es la media de la variable objetivo, $\hat{y}_i$ el valor predicho de la variable objetivo y $y_i$ el valor real de la variable objetivo.
+
+* **RAE** (relative absolute error) o error relativo absoluto: 
+
+$$RAE = \frac{\sum_{i=1}^{n} |\hat{y}_i - y_i|}{\sum_{i=1}^{n} |\bar{y} - y_i|}$$
+
+donde $n$ es el número de muestras, $\bar{y}$ es la media de la variable objetivo, $\hat{y}_i$ el valor predicho de la variable objetivo y $y_i$ el valor real de la variable objetivo.
+
+* **Coeficiente $R^2$**: $R^2$ resume el poder explicativo del modelo de regresión y se calcula a partir de los términos de las sumas de cuadrados. El coeficiente $R^2$ toma valores entre $0$ y $1$, si $R^2=1$ la regresión es perfecta.
+
+$$R^2 = \frac {SSR}{SST} = 1 - \frac{SSE}{SST}, $$
+
+donde $$SST = \sum_{i=1}^{n} (y - \bar{y})^2 ,$$
+
+$$SSR = \sum_{i=1}^{n} (\hat{y} - \bar{\hat{y}})^2 ,$$ 
+
+$$SSE = \sum_{i=1}^{n} (y-\hat{y})^2 .$$
+
+
+### Modelos de Series temporales
+
+Las series temporales son básicamente un problema de regresión. La diferencia es que hay una variable temporal y el objetivo es predecir el futuro dado un histórico. Por lo tanto, las métricas utilizadas son las mismas que las usadas para los problemas de regresión vistas en la sección anterior.
+
+Otras métricas usadas frecuentemente para la evaluación de series temporales son:
+
+<div class = info>
+**MAPE**
+</div>
+
+_MAPE_ viene de _Mean Absolute Percentage Error_. Los errores porcentuales tienen la ventaja de ser independientes de la escala y, por lo tanto, se utilizan con frecuencia para comparar el rendimiento del pronóstico entre diferentes conjuntos de datos. MAPE es el más usual.
+
+$$MAPE = \frac{1}{n} \sum_{i=1}^{n} \frac{100·|\hat{y_i}-y_i|}{y_i}$$
+
+<div class = info>
+**AIC**
+</div>
+
+_AIC_ viene de _Akaike information criterion_. Se define como 
+
+$$AIC = 2k-2\ln (\hat{L})$$
+
+Dado un conjunto de modelos candidatos para los datos, el modelo preferido es el que tiene el valor mínimo en el AIC. Por lo tanto AIC no sólo recompensa la bondad de ajuste, sino también incluye una penalidad, que es una función creciente del número de parámetros estimados.
+
+
+<div class = info>
+**BIC**
+</div>
+
+_BIC_**_ viene de _Bayesian Information Criterion_)_. Se define como
+
+$$BIC = \ln (n) k - 2 \ln (\hat{L})$$
+
+donde $\hat{L}$ es máximo de la función de verosimilitud, $n$ es el número de muestras, $k$ es el número de parámetros estimados por el modelo.
+
+La fórmula del BIC es similar a la fórmula del AIC, pero con una penalización distinta que varia según el número de muestras de los datos.
+
+
+## Evaluación en _Clustering_
+
+
+El _Clustering_ es una forma de tratar los datos para los que no se conocen o no están definidos los grupos. Por tanto, tenemos que **conceptualizar** los grupos. Este hecho dificultad evaluar la calidad de los clasificación obtenida.
+
+
+### Silueta
+
+El coeficiente silueta proporciona una representación gráfica del grado de integración de un objeto en su cluster. El coeficiente silueta de un objeto $i$  se define como:
+
+$$s_i=\dfrac{b_i -a_i}{max(b_i -a_i)}$$
+
+donde $a_i$ denota la distancia media entre el objeto $i$  y todos los otros objetos de su cluster y $b_i$ denota la distancia media mínima entre $i$  y los objetos de otros clusters.
+Los objetos con un coeficiente de silueta $s_i$ alto están bien integrados en su cluster; aquéllos con un si bajo tienden a estar entre clusters.
+
+
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"silueta.jpg",sep="")
+include_graphics(img_path) 
+```
+
+## Métodos de re-muestreo 
+
+```{r  out.width = "80%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"traintess.png",sep="")
+include_graphics(img_path) 
+```
+
+
+### Training & testing
+
+Lo primero que debemos hacer para conseguir una buena evaluación es dividir los datos en dos subconjuntos. Uno para entrenar el modelo (training) y otro para evaluar el modelo (testing). El partición entre estos dos subconjuntos suele hacerse de forma aleatoria, aunque según el problema podemos usar otros criterios. Por ejemplo, si los datos que tenemos son una serie temporal, entonces podemos dividirlos a partir de un cierto tiempo. Es decir, coger como test los datos más recientes.
+
+La razón de hacer esta división es usar los datos del subconjunto training para entrenar el modelo y luego evaluar los datos del testing. De esta manera simulamos correctamente una evaluación, ya que no podemos evaluar unos datos si hemos entrenado con ellos. Por lo tanto, los datos de testing no deben ser observados por el algoritmo.
+
+
+### Cross validation
+
+El procedimiento que se suele usar para evaluar un modelo es cross validation o validación cruzada. La idea básica de cross validation consiste en dividir los datos en $k$ subconjuntos. Cada subconjunto se predice mediante un modelo entrenado con el resto. De esta manera podemos hacer una evaluación sobre todos los datos y evitamos el problema de obtener una muestra sesgada si sólo lo hiciéramos una vez.  
+
+
+
+<!-- ============================================ -->
+
+
+## Práctica en R
+
+
+<div class="info">
+Evaluaremos la calidad predictiva de dos modelos:
+
+ * Cuando la variable respuesta es binaria.
+ * Cuando la variable respuesta es contínua.
+
+</div>
+
+
+### Preparación de los datos
+
+
+ > Definimos el Entorno de Trabajo 
+
+
+El primer paso es crear una carpeta con nuestros modelos y resultados dentro de nuestro espacio de trabajo (proyecto).
+
+ - Obtenemos la ruta completa del directorio de trabajo^[Si queremos cambiar la ruta, podemos hacer 'myWd <- setwd("Ruta y Nombre de la carpeta")'.].
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+myWD <- getwd() 
+```
+
+ - Elegimos un nombre para nuestra carpeta con resultados
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+myWorkingFolderName <- 'ModelResults' 
+```
+
+ - Creamos la carpeta donde guardaremos nuestros resultados y ficheros
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+dir.create( paste0(getwd(),"/",myWorkingFolderName))
+```
+
+ 
+ > Accedemos a los datos originales
+ 
+ - Cargamos la librería `insuranceData` que contiene los datos que utilizaremos^[https://CRAN.R-project.org/package=insuranceData]
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+if (!require(insuranceData)) install.packages('insuranceData')
+library(insuranceData)
+```
+
+ - Para ver los contenidos de la librería `insuranceData` ejecutamos:
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+data(package='insuranceData')
+```
+
+ - Vemos que hay 10 datasets. Trabajaremos con el primero: `AutoBi` (_Automobile Bodily Injury Claims_^[https://www.rdocumentation.org/packages/insuranceData/versions/1.0/topics/AutoBi]).
+ 
+ - Cargamos el conjunto de datos seleccionado: **pérdidas en accidentes de coches**
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+data("AutoBi")
+```
+
+- Descripción de las 8 variables del conjunto de datos (_tabla_) 'AutoBi': 
+  
+  1. `Casenum`. Identificador de la reclamación (esta variable no se utiliza en los modelos)
+  1. `Attorney`.  Indica si el reclamante está representado por un **abogado** (1= Sí, 2 = No)
+  1. `Clmsex`.  **Sexo** del reclamante (1 = Hombre, 2 = Mujer)
+  1. `Marital`.  **Estado Civil** del reclamante (1 = Casado, 2 = Soltero, 3 = Viudo, 4 = divorciado/separado)
+  1. `Clminsur`.  Indica si el conductor del vehículo del reclamante estaba o no **asegurado** (1 = Si, 2 = No, 3 = No aplica)
+  1. `Seatbelt`.  Si el reclamante llevaba o no un **cinturón** de seguridad en el asiento infantil (1 = Si, 2 = No, 3 = No Aplica)
+  1. `Clmage`.  **Edad** del reclamante.
+  1. `Loss (*)`.  La **pérdida económica** total del reclamante (en miles). Esta es la variable objetivo o dependiente del conjunto de datos.
+  
+ - Revisamos el contenido de la tabla y el tipo de datos que contiene
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+str(AutoBi)
+```
+
+ - Exploramos el contenido con estadísticos descriptivos básicos
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+summary(AutoBi)
+```
+
+ - Para llamar directamente a las variables por sus nombres en la tabla AutoBi utilizamos el comando `attach`
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+attach(AutoBi)
+```
+
+ > Exploramos la variable objetivo
+
+
+<div class="info">
+ LOSS es la **variable objetivo** una variable altamente asimétrica (con posibles outliers a la derecha o pérdida muy severa)^[A loss is the injury or damage sustained by the insured in consequence of the happening of one or more of the accidents or misfortunes against which the insurer, in consideration of the premium, has undertaken to indemnify the insured.]. 
+</div>
+
+ - Analizamos la variable target
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+summary(LOSS)
+```
+
+ - Analizamos la distribución de la variable target
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+hist(LOSS, breaks=300 , probability = T)
+lines(density(LOSS), col="red",main="Loss distribution")
+```
+
+ - Utilizamos una medida _robusta_ (depende de la mediana y del IQR^[The interquartile range of an observation variable is the difference of its upper and lower quartiles. It is a measure of how far apart the middle portion of data spreads in value]) para segmentar los datos en dos clases: 
+  * `1` si las pérdidas son atípicamente altas o 
+  * `0` si no lo son.
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+lsup <- median(LOSS) + 1.5*IQR(LOSS) # Criterio basado en estadisticos robustos
+sum(LOSS>=lsup) # 153 datos de perdidas atipicamente altas
+```  
+
+ - (Opcional) Guardamos el gráfico del histograma de las **pérdidas no severas**
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  Path_to_graphics <- paste0(getwd(),"/","Graphics")
+  dir.create(Path_to_graphics)
+  png(paste0(Path_to_graphics,"/histograma.png"))
+  hist(LOSS[LOSS<lsup], breaks = 100, probability = T, xlab="loss (pérdida en miles US $)", main="Pérdida no severa")
+  lines(density(LOSS[LOSS<lsup]),col="red")
+  dev.off()
+```
+
+
+ > Creamos el _dataset_ de trabajo.
+
+ - Creamos un dataset o tabla de trabajo eliminando la variable CASENUM (id) y filtrando por la variable LOSS y el valor lsup= 72.22587 (miles).
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+df_autobi <- AutoBi[ , -match("CASENUM", colnames(AutoBi)) ] 
+```                                                               
+
+ - Fijamos los predictores categóricos como factores:
+
+   * Representado por un abogado: '1' = representado por letrado y '2' = no representado
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  df_autobi$ATTORNEY <- ordered(df_autobi$ATTORNEY, levels = 1:2) 
+```
+
+   * Sexo: '1' = hombre y '2' = mujer
+```{r TRUE, echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  df_autobi$CLMSEX   <- ordered(df_autobi$CLMSEX  , levels = 1:2)
+```
+
+   * Estado civil: '1' = casado, '2' = soltero, '3' = viudo y '4' = divorciado / separado
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  df_autobi$MARITAL  <- ordered(df_autobi$MARITAL , levels = 1:4)
+```
+
+   * Vehículo asegurado:  '1' = vehículo estaba asegurado y '2'= no lo estaba
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  df_autobi$CLMINSUR <- ordered(df_autobi$CLMINSUR, levels = 1:2) 
+```
+
+   * Cinturón de seguridad: '1' = llevaba cinturón abrochado y '2' = no lo llevaba
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  df_autobi$SEATBELT <- ordered(df_autobi$SEATBELT, levels = 1:2)
+``` 
+
+   * Pérdida: '1'= pérdida severa y '2'= pérdida no severa
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+df_autobi$Y        <- ifelse(df_autobi$LOSS>= lsup,1,0)
+```
+
+ - Exploramos el _dataset_ que acabamos de crear y verificamos la proporción de casos con pérdida severa (11.42%)
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+summary(df_autobi)
+``` 
+
+ - Exploramos la relación de la pérdida con los factores.
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+agg_loss_attorney <- aggregate(LOSS, by = list(ATTORNEY) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_attorney)[[1]] <- c("REPRESENTED","NOT REPRESENTED") ; dimnames(agg_loss_attorney)[[2]] <- c("ATTORNEY","LOSS")
+  
+  agg_loss_clmsex   <- aggregate(LOSS, by = list(CLMSEX)  , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_clmsex)[[1]]   <- c("MALE","FEMALE")  ; dimnames(agg_loss_clmsex)[[2]] <- c("CLMSEX","LOSS")
+  
+  agg_loss_marital  <- aggregate(LOSS, by = list(MARITAL) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_marital)[[1]]  <- c("MARRIED","SINGLE","WIDOW","DIVORCED") ; dimnames(agg_loss_marital)[[2]] <- c("MARITAL","LOSS")
+  
+  agg_loss_clminsur <- aggregate(LOSS, by = list(CLMINSUR) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_clminsur)[[1]] <- c("INSURED","NOT INSURED") ; dimnames(agg_loss_clminsur)[[2]] <- c("CLMINSUR","LOSS")
+  
+  agg_loss_seatbelt <- aggregate(LOSS, by = list(SEATBELT) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_seatbelt)[[1]] <- c("SEATBELT","NOT SEATBELT") ; dimnames(agg_loss_seatbelt)[[2]] <- c("SEATBELT","LOSS")
+``` 
+
+
+ > Creamos los sets _train_ y _test_
+
+ - Aleatorizamos los datos y separamos el set de datos en _train_ y _test_:
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+N=nrow(df_autobi)
+```
+
+- Es recomendable fijar una semilla (seed) para los algoritmos de aleatorización internos de R
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+if (!require(caret)) install.packages('caret')
+library(caret)  
+set.seed(123456)
+inTrain  <- createDataPartition(df_autobi$Y, times = 1, p = 0.7, list = TRUE)
+dt_train <- df_autobi[inTrain[[1]],]  # 938 casos
+dt_test  <- df_autobi[-inTrain[[1]],] # 402 casos
+  
+nrow(dt_train)
+summary(dt_train)
+  
+nrow(dt_test)
+summary(dt_test)
+```
+
+Comprobamos si se que los conjuntos train y test se han formado correctamente
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'} 
+  length(intersect(inTrain, setdiff(1:N,inTrain)))
+```
+
+
+### Clasificación
+ 
+
+<div class="info">
+Vamos a construir un modelo para identificar los casos con pérdidas severas.
+</div>
+ 
+ - El primer ejemplo lo hacemos con _Random Forest_
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+if (!require(randomForest)) install.packages('randomForest')
+library(randomForest)
+```
+
+ - Creamos un objeto de clase 'formula' y se lo pasamos como argumento a la función `randomForest`^[https://www.rdocumentation.org/packages/randomForest/versions/4.6-12/topics/randomForest]
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+set.seed(123456)
+fmla.rf1 <- as.formula(paste0("Y"," ~",paste0(colnames(df_autobi[,-c(7,8)]),collapse = "+"),collapse = ""))
+rf1 <- randomForest( fmla.rf1,
+                       data =dt_train,
+                       ntree = 5000, # se ejecuta muy rapido, podemos utilizar ntree > = 2500
+                       replace =TRUE,
+                       mtry=4,
+                       maxnodes =50,
+                       importance = TRUE,
+                       proximity =   TRUE,
+                       keep.forest = TRUE,
+                       na.action=na.omit)
+
+```
+
+ -  Exploramos el objeto con los resutados
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+rf1
+summary(rf1)
+str(rf1)
+```
+
+
+ > Gráfico de la importancia relativa de los predictores
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  varImpPlot(rf1,sort = T,main = "Variable Importance")
+```
+
+ > Gráfico del Error vs número de árboles
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  plot(rf1, main="Error de clasificación vs núero de  árboles") 
+```
+
+  > Gráfico de la probabilidad condicional: $P(Y=1|X_1 = ATTORNEY,\ldots,X_6=SEATBELT)$
+
+
+```{r}
+  rf1.prediction <- as.data.frame(predict(rf1, newdata = dt_train))
+  summary(rf1.prediction)
+  dt_train$pred_rf1 <- rf1.prediction$`predict(rf1, newdata = dt_train)` 
+  head(dt_train,3)
+  tail(dt_train,3)
+  summary(dt_train)
+
+  plot(density(dt_train$pred_rf1[!is.na(dt_train$pred_rf1)]), col="red" , xlab="Probabilidad" , main="Función de densidad estimada")
+```
+
+ - Vemos que hay (claramente) dos concentraciones (clases) de probabilidades de pérdida, una concentración en torno a la probabilidad de pérdida no severa ($Y=0$) y otra para la pérdida severa ($Y=1$).
+
+ - Esto no lleva a la elección del **punto de corte óptimo** para obtener una regla de clasificación, es decir, un criterio para $Y_{predicted}=1$ (pérdida severa), o bien, para $Y_{predicted}=0$ (pérdida no severa). Una alternativa es el criterio de la **Distancia de Kolmogorov-Smirnov** (KS).
+
+
+
+
+ > Métricas de evaluación del poder de clasificación
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+if (!require(ModelMetrics)) install.packages('ModelMetrics')
+library(ModelMetrics)
+if (!require(ROCR)) install.packages('ROCR')
+library(ROCR)
+if (!require(binaryLogic)) install.packages('binaryLogic')
+library(binaryLogic)
+
+```
+
+ - Con el train creamos un objeto de tipo 'prediction'^[https://www.r-bloggers.com/a-small-introduction-to-the-rocr-package/]
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  rf1.pred <- prediction(as.numeric(rf1$predicted),as.numeric(rf1$y)) 
+```
+
+ - Calculamos la Curva de ROC con la función 'performance' sobre el objeto 'rf1'
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+  rf1.perf <- performance(rf1.pred,"tpr","fpr") 
+ ## "fpr" = False positive rate. P(Yhat = + | Y = -). Estimated as: FP/N.
+ ## "tpr" = True positive rate. P(Yhat = + | Y = +). Estimated as: TP/P.
+ plot(rf1.perf)
+```
+
+
+ > Elección del punto de corte: Criterio de la distancia de KS
+
+ - La distancia KS se calcula como: KS = abs(rf1.perf@y.values[[1]]-rf1.perf@x.values[[1]])
+
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+rf1.perf@alpha.values[[1]][rf1.perf@alpha.values[[1]]==Inf] <- round(max(rf1.perf@alpha.values[[1]][rf1.perf@alpha.values[[1]]!=Inf]),2)
+KS.matrix= cbind(abs(rf1.perf@y.values[[1]]-rf1.perf@x.values[[1]]), rf1.perf@alpha.values[[1]])
+```
+
+ - Resumiendo
+
+```{r}
+colnames(KS.matrix) <- c("KS-distance","cut-point")
+head(KS.matrix)
+ind.ks  <- sort( KS.matrix[,1] , index.return=TRUE )$ix[nrow(KS.matrix)] 
+```
+
+ - El punto de corte óptimo de KS:
+```{r}
+  rf1.KScutoff <- KS.matrix[ind.ks,2] # := f(rf1.KS1)
+  rf1.KScutoff
+# 0.04 - 0.05 
+```
+
+
+> Gráfico de la Curva ROC y su métrica: Área bajo la curva ROC (AUC)
+
+
+ - Cálculo de AUC mediante la función 'performance'
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+rf1.auc1 <- performance(rf1.pred,"auc")@y.values[[1]]
+rf1.auc1
+```
+
+ -Cálculo de la curva ROC junto con la métrica AUC 
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+#win.graph()
+plot( rf1.perf , col='red'  , lwd=2, type="l", xlab="Tasa de falsos positivos" , ylab="Tasa de verdaderos positivos", main="Curva ROC con Random Forest")
+abline( 0 , 1  , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4, 0.15 , c(paste0("AUC (Random Forest)=",round(rf1.auc1,4)),"AUC (clasificacion al azar)=0.50"),lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```
+
+ - Se realizar el mismo gráfico de la curva ROC utilizando la librería `ggplot2`. Para ello guardamos los datos en un `data.frame`
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+library("ggplot2")
+df.perf <- data.frame(x=rf1.perf@x.values[[1]],y=rf1.perf@y.values[[1]])
+```
+
+ - Construcción del objeto gráfico con `ggplot2`
+```{r , echo=TRUE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results='markup'}
+#win.graph()
+p <- ggplot(df.perf,aes(x=x,y=y)) + geom_path(size=1, colour="red")
+p <- p + ggtitle("Curva ROC modelo Random Forest")
+p <- p + theme_update(plot.title = element_text(hjust = 0.5))
+p <- p + geom_segment(aes(x=0,y=0,xend=1,yend=1),colour="blue",linetype= 2)
+p <- p + geom_text(aes(x=0.75 , y=0.3 , label=paste(sep ="","AUC (Random Forest) ) = ",round(rf1.auc1,4) )),colour="black",size=4)
+p <- p + geom_text(aes(x=0.75 , y=0.25 , label=paste(sep ="","AUC (Coin toss) = ",round(0.50,4) )),colour="black",size=4)
+p <- p + scale_x_continuous(name= "Tasa de falsos positivos")
+p <- p + scale_y_continuous(name= "Tasa de verdaderos positivos")
+p <- p + theme(
+  plot.title   = element_text(size = 2),
+  axis.text.x  = element_text(size = 10),
+  axis.text.y  = element_text(size = 10),
+  axis.title.x = element_text(size = 12,face = "italic"),
+  axis.title.y = element_text(size = 12,face = "italic",angle=90),
+  legend.title     = element_blank(), 
+  panel.background = element_rect(fill = "grey"),
+  panel.grid.minor = element_blank(), 
+  panel.grid.major = element_line(colour='white'),
+  plot.background  = element_blank()
+)
+
+p
+```
+
+ > Métricas de evaluación del poder predictivo
+
+ - Calculamos la predicción en el _test_ y evaluamos el poder de clasificación del modelo
+```{r} 
+rf1.pred_test     <- as.data.frame(predict( rf1, newdata = dt_test))
+dt_test$pred_rf1  <- rf1.pred_test$`predict(rf1, newdata = dt_test)` 
+```
+
+```{r}
+head(dt_test,3)
+tail(dt_test,3)
+summary(dt_test)
+```
+
+ - Con el _test_ creamos un objeto de tipo 'prediction' y calculamos la curva ROC
+```{r}
+dt_test.pred  <- prediction(as.numeric(rf1.pred_test$`predict(rf1, newdata = dt_test)`),dt_test$Y) 
+dt_test.perf  <- performance(dt_test.pred,"tpr","fpr") 
+```
+
+ - Evaluación del poder de clasificación del modelo RF1 vía curva ROC
+```{r} 
+rf1.test.auc <- performance(dt_test.pred ,"auc")@y.values[[1]]
+```
+
+ - Gráfico de la curva ROC para el _test_ 
+```{r}
+#win.graph()
+plot( dt_test.perf , col='red' , lwd=2, type="l" , main="Curva ROC modelo RF - test",xlab="Tasa de falsos positivos", ylab="Tasa de verdaderos positivos")
+abline( 0 , 1  , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4, 0.2 , c(paste0("AUC (Random Forest)=",round(rf1.test.auc,4)),"AUC (Coin toss)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```
+
+
+
+> Métrica de error del clasificador RF:
+
+ - Error tipo I ($\alpha$): 22.50%, indica el error que se comete clasificando una pérdida 'severa' como 'no severa'
+ - Error tipo II ($\beta$): 43.15%, indica el error que se comete clasificando una pérdida 'no severa' como 'severa'
+ - % mala clasificación ($%mc$) : 40.66%, indica el % de veces que el modelo clasifica incorrectamente las pérdidas 
+ - Accuracy = $100 - %$: 59.34%, indica el % de veces que el modelo acierta clasificando las pérdidas
+ - Area bajo la curva ROC $AUC$: 0.6988, medida global del poder de clasificación del modelo
+ - Finalmente calculamos la curva ROC junto con la métrica AUC
+
+
+ > Resumiendo:
+
+Una función útil para obtener rápidamente el análisis de un clasificador binario es la siguiente:
+
+
+```{r} 
+metricBinaryClass = function( fitted.model , dataset , cutpoint=NULL , roc.graph=TRUE){
+  
+  # fitted.model : The Binary Classification model that is under evaluation. If provided, dataset contains all variables in the fitted model (target and predictors).
+  # dataset      : If fitted.model is not provided, dataset should has only two columns, predictions and labels.
+  # cuttpoint    : potimal cutoff or cutpoint to be used to split continuous predictions into two response categories of target variable
+  # roc.graph    : If true, ROC curve graph for the model is shown 
+  
+  #install.packages("binaryLogic")
+  library(binaryLogic)
+  
+  if( missing(fitted.model) | is.null(fitted.model) ){
+    
+    tabl  <- as.data.frame(dataset)
+  } 
+  
+  else {
+    if( class(fitted.model)[1] %in% c('glm','lm','randomForest.formula','randomForest') ){
+      tabl.pred <- as.data.frame(predict( fitted.model, newdata = dataset ))
+      tabl <- as.data.frame(cbind(tabl.pred[[1]], dataset[,'Y'] )) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+    if( class(fitted.model)[1] %in% c("gbm") ){
+      tabl.pred <- as.data.frame(predict.gbm( fitted.model , newdata = dataset , n.trees = 5000 , type="response" ))
+      tabl <- as.data.frame(cbind(tabl.pred[[1]], dataset[,'Y'] )) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+    if( class(fitted.model)[1] %in% c('svm.formula','svm') ){
+      tabl.pred <- as.data.frame(predict( fitted.model, newdata = dataset ))
+      ids_NAs <- na.index(dataset)
+      tabl <- as.data.frame( cbind(tabl.pred[[1]], dataset[-ids_NAs,'Y']) ) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+  }
+  colnames(tabl) <- c('predicted','actual')
+  
+  # ROCR objects
+  require(ROCR)
+  obj.pred <- prediction(tabl$predicted,tabl$actual)
+  obj.perf <- performance(obj.pred,"tpr","fpr")
+  obj.auc  <- performance(obj.pred,"auc")@y.values[[1]]
+  # For ROC curve:
+  obj.perf@alpha.values[[1]][obj.perf@alpha.values[[1]]==Inf] <- max(obj.perf@alpha.values[[1]][obj.perf@alpha.values[[1]]!=Inf])
+  # KS criteria
+  KS.matrix= cbind(abs(obj.perf@y.values[[1]]-obj.perf@x.values[[1]]), obj.perf@alpha.values[[1]])
+  # KS cutoff
+  # colnames(KS.matrix) <- c("KS-distance","cut-point")
+  ind.ks  <- sort( KS.matrix[,1] , index.return=TRUE )$ix[nrow(KS.matrix)] 
+  
+  if( missing(cutpoint) | is.null(cutpoint) ) cutpoint <- KS.matrix[ind.ks,2]
+  
+  if( !(is.binary(tabl)) ){
+    
+    # Make predictions objs.
+    # Binary metrics 
+    tp = sum( tabl$predicted  >  cutpoint & tabl$actual >  cutpoint)
+    fp = sum( tabl$predicted  >  cutpoint & tabl$actual <= cutpoint)
+    tn = sum( tabl$predicted  <= cutpoint & tabl$actual <= cutpoint)
+    fn = sum( tabl$predicted  <= cutpoint & tabl$actual >  cutpoint) 
+    pos = tp+fn
+    neg = tn+fp
+    acc=  100*(tp+tn)/(pos+neg)
+    prec= 100*tp/(tp+fp)
+    sens= 100*tp/(tp+fn) # = tpr = recall = 1 - error alpha
+    spec= 100*tn/(tn+fp) # 1- error beta
+    fpr = 100*fp/neg  # error beta (tipo II) = 1 - spec
+    fnr = 100*fn/pos  # error alpha (tipo I) = 1- recall = 1- sens
+  }
+  
+  if( is.binary(tabl) ){
+    
+    tp = sum( tabl$predicted  == 1 & tabl$actual == 1)
+    fp = sum( tabl$predicted  == 1 & tabl$actual == 0)
+    tn = sum( tabl$predicted  == 0 & tabl$actual == 0)
+    fn = sum( tabl$predicted  == 0 & tabl$actual == 1) 
+    pos = tp+fn
+    neg = tn+fp
+    acc=  100*(tp+tn)/(pos+neg)
+    prec= 100*tp/(tp+fp)
+    sens= 100*tp/(tp+fn) # = tpr = recall = 1 - error alpha
+    spec= 100*tn/(tn+fp) # 1- error beta
+    fpr = 100*fp/neg  # error beta (tipo II) = 1 - spec
+    fnr = 100*fn/pos  # error alpha (tipo I) = 1- recall = 1- sens
+  }  
+  
+  if(roc.graph==TRUE){
+    win.graph()
+    plot( obj.perf  , col='red' , lwd=2, type="l",xlab="Tasa de falsos positivos" , ylab="Tasa de verdaderos positivos", main="Curva ROC modelo clasificación")
+    abline( 0.0 , 1.0 , col="blue", lwd=2, lty=2)
+    abline( 0.0 , 0.0 , 1 , col="gray40" , lty=3)
+    legend( 0.45, 0.2 , c(paste0("AUC (Model)=",round(obj.auc,4)),"AUC (Rolling dice)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+  }
+  
+  list(ClassError.tI=round(fnr,2), ClassError.tII=round(fpr,2), Accuracy=round(acc,2),Sensitivity = round(sens,2) , Specificity= round(spec,2), auc= obj.auc , Fisher.F1=round(2*prec*sens/(prec+sens),4) )
+  
+}
+```
+
+
+```{r} 
+ metricBinaryClass( fitted.model = rf1 , dataset= dt_test , cutpoint=rf1.KScutoff , roc.graph=TRUE)
+```
+
+### Regresión
+
+<div class="info">
+Vamos a construir un modelo para prever las pérdidas.
+</div>
+
+ > Modelo con _Random Forest_ en _train_
+
+```{r}
+fmla.rf2 <- as.formula(paste0('LOSS','~',paste0(colnames(df_autobi[,-c(7,8)]),collapse = "+"),collapse = ''))
+set.seed(112233) #recomendado
+
+rf2 <- randomForest( fmla.rf2,
+                     data =dt_train,
+                     ntree = 5000,
+                     replace =TRUE,
+                     mtry=4,
+                     maxnodes =50,
+                     importance = TRUE,
+                     na.action=na.omit)
+
+summary(rf2)
+```
+
+```{r}
+str(rf2)
+```
+
+ > Importancia Relativa de las Variables _Input_
+
+```{r}
+varImpPlot(rf2,sort = T,main="Variable Importance")
+```  
+
+ > Previsión en _test_
+
+```{r}  
+rf2.prediction <- as.data.frame(predict(rf2, newdata = dt_test))
+dt_test$pred_rf2 <- rf2.prediction[[1]] 
+```
+
+```{r}
+head(dt_test, 3)
+tail(dt_test, 3)
+summary(dt_test, 3)
+```
+
+
+ > Graficamos la distribución de los valores estimados en el _train_
+ 
+```{r}
+plot(density(dt_test$pred_rf2[!is.na(dt_test$pred_rf2) & dt_test$pred_rf2 < 30]), ylim= c(0,.25) , col="red" , main="")
+lines(density(dt_test$LOSS[dt_test$LOSS<30]),col="blue",lty=1)
+```
+
+```{r}
+modelchecktest1 <- as.data.frame( cbind(real=dt_test$LOSS , predicted=dt_test$pred_rf2) )
+modelchecktest1[is.na(modelchecktest1)] <- 0
+
+summary(modelchecktest1)
+```
+
+ > Error de ajuste del modelo
+
+```{r}
+plot(modelchecktest1, xlim=c(0,100) , ylim=c(0,100) ,  pch="." , cex=1.5)
+segments( 0, 0 , 100, 100 , col="red")
+``` 
+
+ > Resumiendo
+ 
+Una función útil para medir el error:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+modelMetrics = function( real, pred, limits = NULL ) {
+  
+  filter_top_quantile = NULL
+  show_plots=FALSE # By the moment. Need to be revised.
+  
+  label="Model performance: real vs predicted"
+  
+  ind = !is.na(real) & !is.na(pred)
+  real = real[ind]
+  pred = pred[ind]
+  
+  indSegFull = findInterval(real, limits)
+  indPrvFull = findInterval(pred, limits)
+  
+  if (!is.null(filter_top_quantile)) {
+    limit = quantile(real, filter_top_quantile, na.rm=TRUE)
+    ind = which(real<limit)
+    real = real[ind]
+    pred = pred[ind]
+  }
+  
+  indSeg = findInterval(real, limits)
+  indPrv = findInterval(pred, limits)
+  
+  varAbsReal = abs(real)
+  varAbsPred = abs(pred)
+  varAbsError = abs(real-pred)
+  varAbsRelError = varAbsError/(1+varAbsReal)
+  varAbsRelErrorsim = varAbsError/(1+0.5*varAbsReal+0.5*varAbsPred)
+  
+  MAEref  = mean(abs(real-mean(real)))
+  MAE     = mean(varAbsError)
+  MAPE    = mean(varAbsRelError)
+  MAPEsim = mean(varAbsRelErrorsim)
+  WMAPE   = sum(varAbsError)/sum(varAbsReal)
+  RMSE    = sqrt(mean(varAbsError^2))  
+  
+  if(is.null(limits)|| missing(limits)){       
+    message( " Accuracy metrics (global): " )
+    message(paste0("MAE(ref) = ", round(MAEref,4)))
+    message(paste0("MAE = " , round(MAE,4)))
+    message(paste0("RMSE = ", round(RMSE,4)))  
+    message(paste0("MAPE = ", 100*round(MAPE,4)))
+    message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+    message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+  }
+  else{
+    message( " Accuracy metrics (global): " )
+    message(paste0("MAE(ref) = ", round(MAEref,4)))
+    message(paste0("MAE = " , round(MAE,4)))
+    message(paste0("RMSE = ", round(RMSE,4)))  
+    message(paste0("MAPE = ", 100*round(MAPE,4)))
+    message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+    message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+    message("")
+    message("")
+    message(paste0(" Accuracy metrics by segments:" ))
+    
+    for (i in sort(unique(indSeg))) {
+      
+      ind = which(indSeg==i)
+      
+      MAEref  = mean(abs(real[ind]-mean(real[ind])))
+      MAE     = mean(varAbsError[ind])
+      MAPE    = mean(varAbsRelError[ind])
+      MAPEsim = mean(varAbsRelErrorsim[ind])
+      WMAPE   = sum(varAbsError[ind])/sum(varAbsReal[ind])
+      RMSE    = sqrt(mean(varAbsError[ind]^2))  
+      
+      message(paste0(" Segment: ", i)  )
+      message(paste0("Segment size = ", length(ind) , " ; ", 100*round(length(ind)/length(indSegFull),4),"% of total sample"))
+      message(paste0("MAE(ref) = ", round(MAEref,4)))
+      message(paste0("MAE  = ", round(MAE,4)))
+      message(paste0("RMSE = ", round(RMSE,4)))
+      message(paste0("MAPE = ", 100*round(MAPE,4)))
+      message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+      message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+      
+    }
+    
+    if (show_plots) {
+      phist <- ggplot(data = data.frame(real=real[ind], pred=pred[ind])) + 
+        geom_vline(xintercept = 1, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^1, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^2, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^3, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^4, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^5, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^6, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^7, color=rgb(1,1,1,0.8)) +
+        geom_histogram(aes(x = abs(real-pred), y = ..density..), fill = r.color(1), color = rgb(0,0,0,0.5), binwidth=0.25) + 
+        scale_x_log10() + coord_cartesian(xlim = c(1,10^7)) + labs(title = label) + xlab(NULL) + ylab(NULL)
+    } else {
+      phist <- NULL
+    }
+  }    
+  metrics=list(MAE=MAE, MAPE=MAPE, WMAPE=WMAPE)
+  invisible(metrics)
+  
+}
+```
+
+
+```{r}
+modelMetrics(real=modelchecktest1$real, pred=modelchecktest1$predicted )
+``` 
+ 
+
+ * Commentario: El error de ajuste del modelo de regresión es demasiado alto: $RMSE= 54.57$ y el $MAPE=127.19%$
+Con estos errores de predicción, es preferible utilizar a un modelo de clasificación en lugar de un     modelo de regresión.
+
+
+<div class="rmdcomment">
+
+ **Ejercicio sugerido**
+
+ - Ajustar un Modelo de Regresión Logística para $Y$ y comparar los resultados con los proporcionados por el _Random Forest_
+
+ - Ajustar un Modelo de Regresión Lineal para $LOSS$ y comparar los resultados con los proporcionados por el _Random Forest_
+
+
+</div>
+ 

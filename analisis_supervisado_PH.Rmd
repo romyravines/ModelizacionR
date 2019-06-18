@@ -1,0 +1,316 @@
+---
+title: 'Análisis no supervisado: clustering'
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+    number_sections: true
+---
+
+
+# Aprendizaje supervisado
+
+Los modelos de la estadística tradicional (regresiones lineales, por ejemplo) suelen ser poco flexibles por su naturaleza paramétrica, es decir, estos modelos se construyen partiendo de unas hipótesis y que, si estas no se cumplen, el modelo falla estrepitosamente. 
+
+Por ejemplo, una regresión lineal supone que la estructura de los datos sigue una tendencia lineal. 
+
+```{r echo=FALSE}
+library(ggplot2)
+n <- 100
+x <- runif(n, 0, 10)
+y <- 2 + 3*x + rnorm(n, 0, 4)
+y2 <- sin(2*x) + rnorm(n, 0, 0.5)
+
+datos <- data.frame(x = x, y = y, y2 = y2)
+ggplot(datos, aes(x = x, y = y)) +
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  ggtitle("Tendencia lineal")
+```
+
+Si la estructura de los datos no sigue la hipótesis de linealidad, el modelo lineal es inservible en este caso
+
+```{r, echo=FALSE}
+ggplot(datos, aes(x = x, y = y2)) +
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  ggtitle("Tendencia no lineal")
+```
+
+Los métodos propios del machine learning intentan ser **métodos flexibles** que permitan adaptarse a estructuras sin imponer hipótesis rígidas. 
+
+Una de las ideas más potentes y que más éxito ha tenido es la de los **modelos ensamblados** Estos modelos consisten en utilizar algún tipo de modelo que a priori pueda ser débil (como un árbol de decisión) y *ensamblar* distintos modelos con algún tipo de modificación en el que cada uno enfatice alguna característica.
+
+Los modelos ensamblados (*ensemble learning*) que más uso tienen son:
+
+- Bagging (bootstrap aggregating)
+- Random Forest
+- Boosting
+
+Estos tres modelos utilizan los árboles de decisión como algoritmo base, así que primero vamos a hablar sobre ellos.
+
+## Árboles de decisión
+
+![](img/CartHastie.PNG)
+
+Los **árboles de decisión** particionan el espacio en un conjunto de rectángulos y ajustan un modelo simple (como una constante) en cada uno de ellos.
+
+
+Formalmente, un árbol de decisión se puede expresar como
+
+$$h(x; \Theta) = \sum_{j=1}^J  \gamma_J \cdot I(x\in R_j)$$
+
+con parámetros $\Theta = \{ R_j, \gamma_j \}_1^J$. Los parámetros se buscan de forma que
+
+$$\hat{\Theta} = \underset{\Theta}{\arg\min} \sum_{j=1}^J \sum_{x_i \in R_j} L(y_i, \gamma_j)$$
+
+### En R
+
+El siguiente ejemplo está sacado del libro [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
+
+```{r fig.height=7}
+library(tree)
+library(ISLR)
+datos <- Carseats
+datos$High <- as.factor(ifelse(datos$Sales <= 8,
+                     "No",
+                     "Yes"))
+names(datos)
+tree.carseats <- tree(High ~ .-Sales, datos)
+summary(tree.carseats)
+plot(tree.carseats)
+text(tree.carseats)
+tree.carseats
+```
+
+Para puntuar nuevas observaciones, simplemente utilizamos la función `predict()` cuyos parámetros más importantes son:
+
+- `object`: el objeto resultante del ajuste del árbol.
+- `newdata`: el data.frame que contiene la información a puntuar.
+- `type`: el tipo de la predicción. Lo más recomendable es elegir `vector` que devuelve la probabilidad de cada clase.
+
+### Ventajas y desventajas
+
+Las **ventajas** son:
+
+- Fáciles de entender su funcionamiento.
+- Pueden ser interpretados gráficamente.
+- Pueden manejar variables cualitativas sin necesidad de crear variables *dummy*.
+
+Las **desventajas** son:
+
+- No tienen un buen poder predictivo.
+- Poco robustos: un pequeño cambio en los datos suponen un gran cambio en el árbol estimado.
+
+
+![](img/arbol2.PNG)
+
+## Bagging y Random Forest
+
+Uno de los problemas de los árboles de decisión es su alta varianza, es decir, un ligero cambio en los datos puede producir un gran cambio en la estructura del árbol. Para paliar este hecho, los **modelos de bagging** actuan de la siguienet forma:
+
+- Se obtienen **$n$ muestras bootstrap**.
+- Se ajusta un modelo para cada una de las muestras.
+- La predicción final será la media de las predicciones.
+
+Las muestras bootstrap consisten en seleccionar **con reemplazamiento** muestras de las observaciones originales.
+
+Esta idea se puede aplicar desde otro enfoque. Pueden existir variables que sean muy buenas predictoras y, aunque escojamos muestras bootstrap, puede que lso árboles siempre escojan estas variables haciendo que otras varaibles menos buenas no sean tenidas nunca en cuenta. Para ello, el **modelo random forest** actúa de la misma forma que el método de bagging pero **muestreando sobre las columnas en vez de las observaciones. Esto favorece que puedan intervenir variables que, a priori, no son tan buenas predictoras.
+
+### En R
+
+
+
+```{r}
+library (randomForest)
+set.seed (1)
+train <- sample(1:nrow(Boston), nrow(Boston)/2)
+bag.boston <- randomForest(medv~., data = Boston, subset = train, mtry=13, importance =TRUE)
+bag.boston
+
+
+rf.boston <- randomForest(medv~., data=Boston,
+                          subset =train,
+                          mtry=6, 
+                          importance =TRUE)
+yhat.rf <- predict(rf.boston, newdata = Boston[-train ,])
+importance(rf.boston)
+varImpPlot(rf.boston)
+```
+
+
+## Boosting
+
+Es una familia de algoritmos de *machine learning* cuya idea es la de utilizar **métodos de aprendizaje débiles** (*weak learners*) para crear un método de aprendizaje fuerte con alto poder predictivo. Es uno de los algoritmos de aprendizaje que **mayor impacto han tenido en los últimos 20 años.** Robert E. Schapire y Yoav Freund recibieron el **premio Gödel en 2003** por su trabajo sobre boosting. La mayoría de los **ganadores recientes en Kaggle**, utilizan boosting. Buscadores como *Yahoo* utilizan **versiones propias de algoritmos de boosting**.
+
+<img src=img/Intuicion_1(2).png width=500 height=500 />
+
+<img src=img/Intuicion_2(2).png width=500 height=500 />
+
+<img src=img/Intuicion_3(2).png width=500 height=500 />
+
+<img src=img/Intuicion_4(2).png width=500 height=500 />
+
+<img src=img/Intuicion_5(2).png width=500 height=500 />
+
+<img src=img/Intuicion_6(2).png width=500 height=500 />
+
+<img src=img/Intuicion_8(2).png width=500 height=500 />
+
+<img src=img/LibroBoosting.png width=500 height=500 />
+
+
+El algoritmo sería 
+
+- Inicializar: $\omega_1^{(i)}=\frac{1}{n} \text{ con } i = 1, \ldots , n$
+-Repetir $t = 1, \ldots, T$:
+    + Seleccionar un clasificador $h_t(x_i)$ para los datos de entrenamiento usando $\omega_t^{(i)}$ 
+    + Calcular $\alpha_t$
+    + Calcular  $\omega_{t+1}^{(i)} \text{ para } i = 1, \ldots, n$
+
+- Modelo final:
+  $$H(x) = sign\left(\sum_{t=1}^T\alpha_th_t(x)\right)$$
+  
+
+Lo descrito anteriormente se denomina AdaBoost y se aplica solamente para problema de tipo binario. Para poder aplicarlo a cualquier tipo de problema, tenemos el gradient boosting, donde se utiliza el algoritmo del descenso del gradiente:
+
+El algoritmo gradient boosting queda de la siguiente forma
+
+* Inicializar: $H_0 \equiv 0$
+* Repetir para $t = 1, \ldots, T$:
+    + Calcular para $i = 1, \ldots, n$
+          $$r_{it}=-\left[ \frac{\partial L(y_i, H(x_i))}{\partial H(x_i)}\right]_{H=H_{t-1}}$$
+    + Ajustar $h_t$ a $r_{it}$
+    + Elegir $\alpha_t >0$ tal que
+      $$\alpha_t = \underset{\alpha_t}{\arg\min} \sum_{i= 1}^n L(x_i, H_{t-1}(x_i)+\alpha_th_t(x_i))$$
+  
+### Optimización de parámetros
+
+Como con cualquier otro modelo, lleva asociados una serie de parámetros que necesitan ser ajustados para encontrar el mejor modelo. Dos formas básicas de hacerlo son
+
+* Hacer un barrido con un número elevado de combinaciones.
+* Hacer una búsqueda orientada de los metaparámetros óptimos.
+
+**Paso 1. Modelo inicial.**
+
+Hacer un primer lanzamiento dejando las opciones por defecto o elegir una combinación inicial.
+
+Por ejemplo,
+
+*   profundidad = 5.
+*   submuestra = 0.8.
+*   **shrinkage = 0.1.**
+
+
+**Paso 2. Profundidad del árbol**
+
+Una vez que tenemos un modelo base, realizamos pruebas con distintas profundidades de árbol.
+
+Una buena idea suele ser elegir profundidades entre 2 y 10.
+
+**Paso 3. Submuestra (y muestra de columnas)**
+
+El siguiente paso es elegir un porcentaje de observaciones que se utilizarán, aleatoriamente, en cada iteración.
+
+Se suelen elegir valores 0.6, 0.7, 0.8, 0.9.
+
+A veces, si el volumen de datos es muy grande, se pueden elegir submuestras por debajo de 0.5 sin que se vea afectado el poder predictivo.
+
+En caso de que el *software* lo permita, se puede probar a la vez el muestreo sobre columnas (idea de *random forest*)
+
+**Paso 4. Shrinkage**
+
+Por último, nos ocupamos del *shrinkage*, probablemente el valor que más puede ayudar a tener un mejor modelo.
+
+En función de la estructura de los datos, podemos hacer un barrido inicial de, por ejemplo, 0.1, 0.01 y 0.001. En este caso es importante cambiar el número de iteraciones a un valor alto y elegir el número óptimo de estas mediante parada temprana.
+
+
+### En R
+
+```{r, eval = FALSE}
+library(xgboost)
+
+dtrain <- xgb.DMatrix(agaricus.train$data, label = agaricus.train$label)
+dtest <- xgb.DMatrix(agaricus.test$data, label = agaricus.test$label)
+watchlist <- list(eval = dtest, train = dtrain)
+
+xgb_grid = expand.grid(
+  eta                 = c(0.1, 0.05, 0.01, 0.001),
+  max_depth           = c(3, 6, 8, 10),
+  colsample_bytree    = 1,
+  subsample  = c(0.6, 0.75, 1)
+)
+
+
+modelos.xgb <- data.frame()
+tiempo.ini <- Sys.time()
+for (model in 1:nrow(xgb_grid)){
+  set.seed(1234)
+  boosting <- xgb.train(data                = dtrain,
+                        nrounds             = 10,
+                        objective           = "binary:logistic", 
+                        booster             = "gbtree",
+                        eval_metric         = "auc",
+                        params              = as.list(xgb_grid[model,]),
+                        watchlist           = watchlist,
+                        early_stopping_rounds    = 3
+  )
+  
+  modelos.xgb <- rbind(modelos.xgb, data.frame( xgb_grid[model,],
+                                                iteracion = boosting$best_iteration,
+                                                ntree = boosting$best_ntreelimit,
+                                                error = boosting$best_score))
+  
+  print(paste('modelo', model, ' de ', nrow(xgb_grid)))
+  print(max(modelos.xgb$error))
+  print(paste('Tiempo ',Sys.time() - tiempo.ini))
+}
+
+pred <- predict(boosting, agaricus.test$data, ntreelimit = 8)
+
+```
+
+## Explicación de predicción
+
+Una crítica que se hace a los modelos de Machine Learning es que están muy orientados hacia la predicción lo que provoca que sean modelos muy complejos convirtiéndose en *cajas negras* y de los que perdemos la *"explicatividad"* del modelo. Esto conlleva que los usuarios finales para los que se desarrollan los modelos puedan perder el interés por el ya que no entienden la naturaleza de las predicciones. Esto es especialmente relevante en entornos médicos: si se construye un modelo para determinar si se debe hacer una intervención, para que el equipo médico pueda confiar en el modelo necesita entender qué soporta la decisión de intervenir al margen de indicadores formales.
+
+Para solventar estos problemas surge una iniciativa relativamente novedosa conocida como **LIME**. La referencia se puede consultar en el siguiente paper: [https://arxiv.org/pdf/1602.04938v1.pdf].
+
+La idea intuitiva que hay detrás de esta técnica es que, aunque un modelo pueda ser altamente complejo y flexible, se supone que es localmente estable:
+
+<img src=img/lime.png width=500 height=500 />
+
+Por ejemplo, si entrenasemos una red neuronal para intenar describir los elementos de una fotografía, nos interesaría saber **qué es lo que soporta la decisión**
+
+<img src=img/lime2.png width=500 height=500 />
+
+### Un ejemplo en R
+
+```{r fig.height=8}
+library(lime)
+library(MASS)
+data(biopsy)
+
+biopsy$ID <- NULL
+biopsy <- na.omit(biopsy)
+names(biopsy) <- c('clump thickness', 'uniformity of cell size', 
+                   'uniformity of cell shape', 'marginal adhesion',
+                   'single epithelial cell size', 'bare nuclei', 
+                   'bland chromatin', 'normal nucleoli', 'mitoses',
+                   'class')
+
+set.seed(4)
+test_set <- sample(seq_len(nrow(biopsy)), 100)
+prediction <- biopsy$class
+biopsy$class <- NULL
+model <- lda(biopsy[-test_set, ], prediction[-test_set])
+
+explainer <- lime(biopsy[-test_set,],
+                  model)
+
+explanation <- explain(biopsy[test_set[1:4], ], explainer, n_labels = 1, n_features = 4)
+
+
+plot_features(explanation, ncol = 1)
+```
+
