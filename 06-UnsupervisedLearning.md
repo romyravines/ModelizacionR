@@ -1,0 +1,346 @@
+# (PART) Machine Learning {-} 
+
+
+# Unsupervised Learning
+
+En esta sección hablaremos sobre el aprendizaje no supervisado. Hablamos de aprendizaje no supervisado cuando no tenemos la etiqueta o clase a la que pertenece cada registro.
+
+ - Resumen sección
+
+ - Aplicaciones: segmentación de usuarios.
+
+## K-means
+
+### Modelo
+
+**K-means Clustering** es un algoritmo no supervisado que trata de agrupar los datos. Es decir, agrupa $n$ observaciones en $k$ grupos. Es importante remarcar que $k$ debe ser fijado por el usuario.
+
+El algoritmo asigna aleatoriamente cada observación a un clúster y encuentra el centroide de cada clúster. Entonces, el algoritmo itera a través de dos pasos:
+
+ - Reasigna los puntos al centroide cuya distancia es menor.
+ - Calcula el nuevo centroide de cada grupo.
+
+Estos dos pasos se repiten hasta que la variación dentro del clúster no se puede reducir más. La variación dentro del clúster se calcula como la suma de las distancias entre los puntos y sus respectivos centroides.
+
+Es decir, Dado un conjunto de $n$ observaciones, $x_1, ..., x_n$. K-means construye una partición de las observaciones en $k$ conjuntos ($k ≤ n$) a fin de minimizar la suma de las distancias dentro de cada grupo, $S = {S_{1}, S_{2}, …, S_{k}}$.
+
+$$\min \sum_{i=1}^{k}\sum_{x_{j}\in S_{j}} d(x_{j}, \mu_{i}),$$
+donde $\mu_i$ es el centroide de $S_i$.
+
+Se suele usar la distancia euclidea, pero podemos buscar otras distancias que se adecuen mejor a los datos, como por ejemplo, la norma infinita o la distancia de Manhattan.
+
+
+### Implementación en R
+
+Para esta sección usaremos el data set de iris, donde tenemos datos sobre las dimensiones de pétalos y sépalos de distintas especies de flores.
+
+
+```r
+data(iris)
+head(iris)
+```
+
+```
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+## 1          5.1         3.5          1.4         0.2  setosa
+## 2          4.9         3.0          1.4         0.2  setosa
+## 3          4.7         3.2          1.3         0.2  setosa
+## 4          4.6         3.1          1.5         0.2  setosa
+## 5          5.0         3.6          1.4         0.2  setosa
+## 6          5.4         3.9          1.7         0.4  setosa
+```
+
+Nos centraremos en las dimensiones de los pétalos.
+
+
+```r
+library(ggplot2)
+p = ggplot(iris, aes(Petal.Length, Petal.Width, color = Species)) + geom_point()
+p
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-2-1.png" width="672" />
+
+Ahora aplicamos K-means con $k=3$ y $nstart=20$. Esto significa que agrupará los datos en tres grupos y el algoritmo probará 20 distintas formas de empezar y se quedará con la mejor, es decir, seleccionará aquella con menor variación de los clústers.
+
+
+```r
+set.seed(20)
+irisCluster = kmeans(iris[, 3:4], 3, nstart = 20)
+irisCluster
+```
+
+```
+## K-means clustering with 3 clusters of sizes 50, 52, 48
+## 
+## Cluster means:
+##   Petal.Length Petal.Width
+## 1     1.462000    0.246000
+## 2     4.269231    1.342308
+## 3     5.595833    2.037500
+## 
+## Clustering vector:
+##   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [36] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [71] 2 2 2 2 2 2 2 3 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
+## [106] 3 2 3 3 3 3 3 3 3 3 3 3 3 3 2 3 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 3 2 3
+## [141] 3 3 3 3 3 3 3 3 3 3
+## 
+## Within cluster sum of squares by cluster:
+## [1]  2.02200 13.05769 16.29167
+##  (between_SS / total_SS =  94.3 %)
+## 
+## Available components:
+## 
+## [1] "cluster"      "centers"      "totss"        "withinss"    
+## [5] "tot.withinss" "betweenss"    "size"         "iter"        
+## [9] "ifault"
+```
+
+A continuación, hacemos una comprobación de si el algoritmo funciona correctamente. 
+
+
+```r
+table(irisCluster$cluster, iris$Species)
+```
+
+```
+##    
+##     setosa versicolor virginica
+##   1     50          0         0
+##   2      0         48         4
+##   3      0          2        46
+```
+
+Normalmente, esta comprobación no la podemos hacer, ya que al tratarse de aprendizaje no supervisado no tenemos las clases.
+
+
+```r
+p = ggplot() + geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, shape = iris$Species, color = as.factor(irisCluster$cluster))) + geom_point(data = as.data.frame(irisCluster$centers), aes(x = Petal.Length, y = Petal.Width), size = 3)
+p
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-5-1.png" width="672" />
+
+
+### Evaluación
+
+Como hemos visto se puede hacer una evaluación visual del funcionamiento del algoritmo. En el caso anterior se puede plotear bien, ya que sólo usamos dos componentes. En caso de tener más componentes podemos usar un PCA y usar las dos componentes principales.
+
+
+
+```r
+library(cluster)
+x = rbind(cbind(rnorm(10,0,0.5), rnorm(10,0,0.5)), cbind(rnorm(15,5,0.5), rnorm(15,5,0.5)))
+clusplot(clara(x, 2))
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-6-1.png" width="672" />
+
+```r
+x4 = cbind(x, rnorm(25), rnorm(25))
+clusplot(pam(x4, 2))
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-6-2.png" width="672" />
+
+Hay que tener cuidado con estas visualizaciones, ya que reducir grandes dimensiones a dos componentes se pierde mucha información. Aunque visualmente parezca que no agrupa bien es posible que sí lo haga en una tercera componente.
+
+Otro método más numérico es usar el coeficiente de **Silhouette**. El coeficiente de Silhouette contrasta la distancia media con los elementos en el mismo grupo con la distancia media a los elementos en otros grupos. Los objetos con un valor alto se consideran agrupados. 
+
+
+```r
+library(cluster)
+irisCluster = clara(iris[, 3:4], k = 3, metric = "euclidean")
+si = silhouette(irisCluster)
+cat(paste("Cluster 1:", mean(si[, 3][si[, 1]==1]), 
+          "\nCluster 2:", mean(si[, 3][si[, 1]==2]), 
+          "\nCluster 3:", mean(si[, 3][si[, 1]==3])))
+```
+
+```
+## Cluster 1: 0.932477754552061 
+## Cluster 2: 0.647244785444017 
+## Cluster 3: 0.549691563362595
+```
+
+
+Nota: **clara** es una variante de K-means que se suele usar cuando tienes una gran cantidad de datos. Véase también **pam**.
+
+
+### Determinar el número de clústers óptimo
+
+Hay varios criterios para determinar el número óptimo de clústers, como por ejemplo, el coeficiente de Silhouette entre otros. 
+
+El siguiente método usa 26 criterios distintos para determinar el número óptimo de clústers.
+
+
+```r
+library(NbClust)
+set.seed(4)
+nc = NbClust(iris[, 3:4], min.nc=2, max.nc=15, method="kmeans")
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-8-1.png" width="672" />
+
+```
+## *** : The Hubert index is a graphical method of determining the number of clusters.
+##                 In the plot of Hubert index, we seek a significant knee that corresponds to a 
+##                 significant increase of the value of the measure i.e the significant peak in Hubert
+##                 index second differences plot. 
+## 
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-8-2.png" width="672" />
+
+```
+## *** : The D index is a graphical method of determining the number of clusters. 
+##                 In the plot of D index, we seek a significant knee (the significant peak in Dindex
+##                 second differences plot) that corresponds to a significant increase of the value of
+##                 the measure. 
+##  
+## ******************************************************************* 
+## * Among all indices:                                                
+## * 10 proposed 2 as the best number of clusters 
+## * 7 proposed 3 as the best number of clusters 
+## * 1 proposed 4 as the best number of clusters 
+## * 1 proposed 9 as the best number of clusters 
+## * 2 proposed 11 as the best number of clusters 
+## * 3 proposed 12 as the best number of clusters 
+## 
+##                    ***** Conclusion *****                            
+##  
+## * According to the majority rule, the best number of clusters is  2 
+##  
+##  
+## *******************************************************************
+```
+
+
+```r
+barplot(table(nc$Best.n[1,]), 
+          xlab="Numer of Clusters", ylab="Number of Criteria",
+          main="Number of Clusters Chosen by 26 Criteria")
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-9-1.png" width="672" />
+
+Como podemos observar el número optimo de clúster es dos, aunque hay siete criterios que dicen que el número óptimo es tres. Esta conclusión tiene sentido observando los datos.
+
+
+## Hierarchical clustering
+
+### Modelo
+
+El agrupamiento jerárquico es un método de análisis de grupos, el cual busca construir una jerarquía de grupos. Hoy dos tipos de estrategias para agrupamiento jerárquico:
+
+* Aglomerativas: Este es un acercamiento ascendente. Cada observación comienza en su propio grupo y los pares de grupos son mezclados mientras uno sube en la jerarquía.
+
+* Divisivas: Este es un acercamiento descendente. Todas las observaciones comienzan en un grupo y se realizan divisiones mientras uno baja en la jerarquía.
+
+Es aconsejable usar los métodos **aglomerativos**, ya que tienen menor orden de complejidad. Por esta razón nos centraremos en los métodos aglomerativos.
+
+
+El algoritmo funciona de la siguiente manera:
+
+* Colocar cada punto en su propio clúster.
+* Identificar los dos clústers más cercanos y combinarlos en un clúster.
+* Repetir el paso anterior hasta que todos los puntos estén en un solo clúster.
+
+Hay varios criterios de enlace:
+
+* Agrupamiento de máximo o completo enlace.
+* Agrupamiento de mínimo o simple enlace.
+* Agrupamiento de enlace media o promedio (UPGMA).
+* Agrupamiento de mínima energía.
+* La suma de todas las varianzas intra-grupo.
+* El decrecimiento en la varianza para los grupos que están siendo mezclados (criterio de Ward).
+* La probabilidad de que grupos candidatos se produzcan desde la misma función de distribución (V-enlace).
+
+### Implementación en R
+
+Como en la sección anterior usaremos el data set de iris, así podremos comparar los métodos.
+
+Los árboles jerárquicos se suelen representar con un dendograma.
+
+
+```r
+set.seed(44)
+hclusters = hclust(dist(iris[, 3:4]), method = "complete")
+plot(hclusters)
+abline(h = 3, col = "red")
+abline(h = 2, col = "red")
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-10-1.png" width="672" />
+
+Como podemos observar en el dendograma el número óptimo de clusters es tres o cuatro. Seleccionamos tres para comparar con *Species*.
+
+
+```r
+clusterCut = cutree(hclusters, 3)
+table(clusterCut, iris$Species)
+```
+
+```
+##           
+## clusterCut setosa versicolor virginica
+##          1     50          0         0
+##          2      0         21        50
+##          3      0         29         0
+```
+
+```r
+p = ggplot() + geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, shape = iris$Species, color = as.factor(clusterCut)))
+p
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-11-1.png" width="672" />
+
+Parece que este método no va muy bien. Probamos ahora usando el criterio de agrupamiento de enlace media o promedio (UPGMA).
+
+
+```r
+hclusters <- hclust(dist(iris[, 3:4]), method = 'average')
+plot(hclusters)
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-12-1.png" width="672" />
+
+
+```r
+clusterCut = cutree(hclusters, 3)
+table(clusterCut, iris$Species)
+```
+
+```
+##           
+## clusterCut setosa versicolor virginica
+##          1     50          0         0
+##          2      0         45         1
+##          3      0          5        49
+```
+
+```r
+p = ggplot() + geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, shape = iris$Species, color = as.factor(clusterCut)))
+p
+```
+
+<img src="06-UnsupervisedLearning_files/figure-html4/unnamed-chunk-13-1.png" width="672" />
+
+Estos resultados ya nos gustan más. Hay que recordar que normalment no podemos calcular la matriz de confusión en el aprendizaje no supervisado. 
+
+La evaluación es análoga al método de K-means. La evaluación de los métodos no supervisados suele ser algo un poco subjetivo. Hay que buscar una métrica que se ajuste al problema y comparar distintos métodos y parámetros.
+
+## Other clustering methods
+
+![Caption for the picture.](sphx_glr_plot_cluster_comparison_0011.png)
+
+#### Un caso práctico
+
+Veremos como aplicar las técnicas vistas anteriormente en un caso real. Usarremos un data set de Kaggle 
+
+¿¿¿??????
+
+
+

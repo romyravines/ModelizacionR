@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Modelización en R</title>
+  <meta name="description" content="Curso-taller preparado para profesionales analiticos.">
+  <meta name="generator" content="bookdown 0.5.13 and GitBook 2.6.7">
+
+  <meta property="og:title" content="Modelización en R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Curso-taller preparado para profesionales analiticos." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Modelización en R" />
+  
+  <meta name="twitter:description" content="Curso-taller preparado para profesionales analiticos." />
+  
+
+<meta name="author" content="Aula Innova. Innova-tsn">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="gradient-boosting-models.html">
+<link rel="next" href="d-entrenamiento-del-modelo-gbm-regresion.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/htmlwidgets-0.9/htmlwidgets.js"></script>
+<script src="assets/proj4js-2.3.15/proj4.js"></script>
+<link href="assets/highcharts-5.0.6/css/motion.css" rel="stylesheet" />
+<script src="assets/highcharts-5.0.6/highstock.js"></script>
+<script src="assets/highcharts-5.0.6/highcharts-3d.js"></script>
+<script src="assets/highcharts-5.0.6/highcharts-more.js"></script>
+<script src="assets/highcharts-5.0.6/modules/annotations.js"></script>
+<script src="assets/highcharts-5.0.6/modules/broken-axis.js"></script>
+<script src="assets/highcharts-5.0.6/modules/data.js"></script>
+<script src="assets/highcharts-5.0.6/modules/drilldown.js"></script>
+<script src="assets/highcharts-5.0.6/modules/exporting.js"></script>
+<script src="assets/highcharts-5.0.6/modules/funnel.js"></script>
+<script src="assets/highcharts-5.0.6/modules/heatmap.js"></script>
+<script src="assets/highcharts-5.0.6/modules/map.js"></script>
+<script src="assets/highcharts-5.0.6/modules/no-data-to-display.js"></script>
+<script src="assets/highcharts-5.0.6/modules/offline-exporting.js"></script>
+<script src="assets/highcharts-5.0.6/modules/solid-gauge.js"></script>
+<script src="assets/highcharts-5.0.6/modules/treemap.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/annotations.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/draggable-legend.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/draggable-points.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/export-csv.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/grouped-categories.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/motion.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/pattern-fill-v2.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/tooltip-delay.js"></script>
+<script src="assets/highcharts-5.0.6/custom/reset.js"></script>
+<script src="assets/highcharts-5.0.6/custom/symbols-extra.js"></script>
+<script src="assets/highcharts-5.0.6/custom/text-symbols.js"></script>
+<link href="assets/fontawesome-4.5.0/font-awesome.min.css" rel="stylesheet" />
+<link href="assets/htmlwdgtgrid-1/htmlwdgtgrid.css" rel="stylesheet" />
+<script src="assets/highchart-binding-0.5.0/highchart.js"></script>
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Presentación</a></li>
+<li class="part"><span><b>I MODELOS ANALÍTICOS</b></span></li>
+<li class="chapter" data-level="1" data-path="modelizacion.html"><a href="modelizacion.html"><i class="fa fa-check"></i><b>1</b> Modelizar</a><ul>
+<li class="chapter" data-level="1.1" data-path="modelizar.html"><a href="modelizar.html"><i class="fa fa-check"></i><b>1.1</b> ¿Qué es Modelizar?</a></li>
+<li class="chapter" data-level="1.2" data-path="que-es-un-modelo-analitico.html"><a href="que-es-un-modelo-analitico.html"><i class="fa fa-check"></i><b>1.2</b> ¿Qué es un modelo analítico?</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="tipos-de-problemas.html"><a href="tipos-de-problemas.html"><i class="fa fa-check"></i><b>2</b> Tipos de Problemas</a><ul>
+<li class="chapter" data-level="2.1" data-path="clasemodelos.html"><a href="clasemodelos.html"><i class="fa fa-check"></i><b>2.1</b> Enfoques de Modelización</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="catalogo-de-tecnicas.html"><a href="catalogo-de-tecnicas.html"><i class="fa fa-check"></i><b>3</b> Catálogo de Técnicas</a><ul>
+<li class="chapter" data-level="3.1" data-path="tecnicas-de-clustering.html"><a href="tecnicas-de-clustering.html"><i class="fa fa-check"></i><b>3.1</b> Técnicas de <em>Clustering</em></a></li>
+<li class="chapter" data-level="3.2" data-path="tecnicas-de-clasificacion.html"><a href="tecnicas-de-clasificacion.html"><i class="fa fa-check"></i><b>3.2</b> Técnicas de Clasificación</a></li>
+<li class="chapter" data-level="3.3" data-path="tecnicas-de-regresion.html"><a href="tecnicas-de-regresion.html"><i class="fa fa-check"></i><b>3.3</b> Técnicas de Regresión</a></li>
+<li class="chapter" data-level="3.4" data-path="tecnicas-de-reduccion-de-dimension.html"><a href="tecnicas-de-reduccion-de-dimension.html"><i class="fa fa-check"></i><b>3.4</b> Técnicas de Reducción de Dimensión</a></li>
+<li class="chapter" data-level="3.5" data-path="otras-tecnicas.html"><a href="otras-tecnicas.html"><i class="fa fa-check"></i><b>3.5</b> Otras ‘Técnicas’</a></li>
+<li class="chapter" data-level="3.6" data-path="que-tecnica-utilizar.html"><a href="que-tecnica-utilizar.html"><i class="fa fa-check"></i><b>3.6</b> ¿Qué técnica utilizar?</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="evaluacion-de-modelos.html"><a href="evaluacion-de-modelos.html"><i class="fa fa-check"></i><b>4</b> Evaluación de modelos</a><ul>
+<li class="chapter" data-level="4.1" data-path="diagnosis-de-negocio.html"><a href="diagnosis-de-negocio.html"><i class="fa fa-check"></i><b>4.1</b> Diagnosis de Negocio</a></li>
+<li class="chapter" data-level="4.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html"><i class="fa fa-check"></i><b>4.2</b> Evaluación en Respuesta Binaria</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#clasificacion"><i class="fa fa-check"></i><b>4.2.1</b> Clasificación</a></li>
+<li class="chapter" data-level="4.2.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#medidas-de-desigualdad"><i class="fa fa-check"></i><b>4.2.2</b> Medidas de desigualdad</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html"><i class="fa fa-check"></i><b>4.3</b> Evaluación en Respuesta Continúa</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-regresion"><i class="fa fa-check"></i><b>4.3.1</b> Modelos de Regresión</a></li>
+<li class="chapter" data-level="4.3.2" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-series-temporales"><i class="fa fa-check"></i><b>4.3.2</b> Modelos de Series temporales</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html"><i class="fa fa-check"></i><b>4.4</b> Evaluación en <em>Clustering</em></a><ul>
+<li class="chapter" data-level="4.4.1" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html#silueta"><i class="fa fa-check"></i><b>4.4.1</b> Silueta</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html"><i class="fa fa-check"></i><b>4.5</b> Métodos de re-muestreo</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#training-testing"><i class="fa fa-check"></i><b>4.5.1</b> Training &amp; testing</a></li>
+<li class="chapter" data-level="4.5.2" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#cross-validation"><i class="fa fa-check"></i><b>4.5.2</b> Cross validation</a></li>
+</ul></li>
+<li class="chapter" data-level="4.6" data-path="practica-en-r.html"><a href="practica-en-r.html"><i class="fa fa-check"></i><b>4.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="practica-en-r.html"><a href="practica-en-r.html#preparacion-de-los-datos"><i class="fa fa-check"></i><b>4.6.1</b> Preparación de los datos</a></li>
+<li class="chapter" data-level="4.6.2" data-path="practica-en-r.html"><a href="practica-en-r.html#clasificacion-1"><i class="fa fa-check"></i><b>4.6.2</b> Clasificación</a></li>
+<li class="chapter" data-level="4.6.3" data-path="practica-en-r.html"><a href="practica-en-r.html#regresion"><i class="fa fa-check"></i><b>4.6.3</b> Regresión</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II Modelos Estadísticos</b></span></li>
+<li class="chapter" data-level="5" data-path="modelos-de-regresion-lineal.html"><a href="modelos-de-regresion-lineal.html"><i class="fa fa-check"></i><b>5</b> Modelos de regresión lineal</a><ul>
+<li class="chapter" data-level="5.1" data-path="modelo.html"><a href="modelo.html"><i class="fa fa-check"></i><b>5.1</b> Modelo</a></li>
+<li class="chapter" data-level="5.2" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html"><i class="fa fa-check"></i><b>5.2</b> Aplicación en R</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html#regresion-lineal-simple"><i class="fa fa-check"></i><b>5.2.1</b> Regresión lineal simple</a></li>
+<li class="chapter" data-level="5.2.2" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html#regresion-lineal-multiple"><i class="fa fa-check"></i><b>5.2.2</b> Regresión lineal múltiple</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="modelos-de-respuesta-0-1.html"><a href="modelos-de-respuesta-0-1.html"><i class="fa fa-check"></i><b>6</b> Modelos de Respuesta 0-1</a><ul>
+<li class="chapter" data-level="6.1" data-path="motivacion.html"><a href="motivacion.html"><i class="fa fa-check"></i><b>6.1</b> Motivación</a></li>
+<li class="chapter" data-level="6.2" data-path="modelos-lineales-generalizados.html"><a href="modelos-lineales-generalizados.html"><i class="fa fa-check"></i><b>6.2</b> Modelos Lineales Generalizados</a></li>
+<li class="chapter" data-level="6.3" data-path="modelo-logit.html"><a href="modelo-logit.html"><i class="fa fa-check"></i><b>6.3</b> Modelo Logit</a></li>
+<li class="chapter" data-level="6.4" data-path="modelo-probit.html"><a href="modelo-probit.html"><i class="fa fa-check"></i><b>6.4</b> Modelo Probit</a></li>
+<li class="chapter" data-level="6.5" data-path="modelos-de-regresion-logistica.html"><a href="modelos-de-regresion-logistica.html"><i class="fa fa-check"></i><b>6.5</b> Modelos de regresión logística</a></li>
+<li class="chapter" data-level="6.6" data-path="aplicacion-en-r-1.html"><a href="aplicacion-en-r-1.html"><i class="fa fa-check"></i><b>6.6</b> Aplicación en R</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="modelos-de-series-temporales-1.html"><a href="modelos-de-series-temporales-1.html"><i class="fa fa-check"></i><b>7</b> Modelos de Series Temporales</a><ul>
+<li class="chapter" data-level="7.1" data-path="series-temporales.html"><a href="series-temporales.html"><i class="fa fa-check"></i><b>7.1</b> Series Temporales</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="series-temporales.html"><a href="series-temporales.html#que-es-una-serie-temporal"><i class="fa fa-check"></i><b>7.1.1</b> ¿Qué es una Serie Temporal?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.2" data-path="operadores.html"><a href="operadores.html"><i class="fa fa-check"></i><b>7.2</b> Operadores</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="operadores.html"><a href="operadores.html#operador-de-retardo-simple"><i class="fa fa-check"></i><b>7.2.1</b> Operador de retardo simple</a></li>
+<li class="chapter" data-level="7.2.2" data-path="operadores.html"><a href="operadores.html#operador-de-adelanto-simple"><i class="fa fa-check"></i><b>7.2.2</b> Operador de adelanto simple</a></li>
+<li class="chapter" data-level="7.2.3" data-path="operadores.html"><a href="operadores.html#polinomios-en-b"><i class="fa fa-check"></i><b>7.2.3</b> Polinomios en B</a></li>
+<li class="chapter" data-level="7.2.4" data-path="operadores.html"><a href="operadores.html#operador-diferencia"><i class="fa fa-check"></i><b>7.2.4</b> Operador diferencia</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html"><i class="fa fa-check"></i><b>7.3</b> Alisado Exponencial</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html#que-es-el-alisado-exponencial"><i class="fa fa-check"></i><b>7.3.1</b> ¿Qué es el Alisado Exponencial?</a></li>
+<li class="chapter" data-level="7.3.2" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html#librerias"><i class="fa fa-check"></i><b>7.3.2</b> Librerías</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html"><i class="fa fa-check"></i><b>7.4</b> Lectura y Visualización</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#datos-originales"><i class="fa fa-check"></i><b>7.4.1</b> Datos Originales</a></li>
+<li class="chapter" data-level="7.4.2" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#objeto-xts"><i class="fa fa-check"></i><b>7.4.2</b> Objeto XTS</a></li>
+<li class="chapter" data-level="7.4.3" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#seleccion-de-datos-usando-las-fechas"><i class="fa fa-check"></i><b>7.4.3</b> Selección de datos usando las fechas</a></li>
+</ul></li>
+<li class="chapter" data-level="7.5" data-path="manipulacion.html"><a href="manipulacion.html"><i class="fa fa-check"></i><b>7.5</b> Manipulación</a><ul>
+<li class="chapter" data-level="7.5.1" data-path="manipulacion.html"><a href="manipulacion.html#cambios-de-fechado"><i class="fa fa-check"></i><b>7.5.1</b> Cambios de Fechado</a></li>
+<li class="chapter" data-level="7.5.2" data-path="manipulacion.html"><a href="manipulacion.html#imputacion-de-datos-faltantes"><i class="fa fa-check"></i><b>7.5.2</b> Imputación de Datos Faltantes</a></li>
+<li class="chapter" data-level="7.5.3" data-path="manipulacion.html"><a href="manipulacion.html#estadisticos-en-diferentes-fechados"><i class="fa fa-check"></i><b>7.5.3</b> Estadísticos en diferentes fechados</a></li>
+<li class="chapter" data-level="7.5.4" data-path="manipulacion.html"><a href="manipulacion.html#division-del-conjunto-de-datos-usando-fechas"><i class="fa fa-check"></i><b>7.5.4</b> División del conjunto de datos usando fechas</a></li>
+<li class="chapter" data-level="7.5.5" data-path="manipulacion.html"><a href="manipulacion.html#otras-operaciones-con-los-datos"><i class="fa fa-check"></i><b>7.5.5</b> Otras operaciones con los datos</a></li>
+</ul></li>
+<li class="chapter" data-level="7.6" data-path="graficos.html"><a href="graficos.html"><i class="fa fa-check"></i><b>7.6</b> Gráficos</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="graficos.html"><a href="graficos.html#con-xts"><i class="fa fa-check"></i><b>7.6.1</b> Con xts</a></li>
+<li class="chapter" data-level="7.6.2" data-path="graficos.html"><a href="graficos.html#con-highcharter"><i class="fa fa-check"></i><b>7.6.2</b> Con highcharter</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>III Machine Learning</b></span></li>
+<li class="chapter" data-level="8" data-path="unsupervised-learning.html"><a href="unsupervised-learning.html"><i class="fa fa-check"></i><b>8</b> Unsupervised Learning</a><ul>
+<li class="chapter" data-level="8.1" data-path="k-means.html"><a href="k-means.html"><i class="fa fa-check"></i><b>8.1</b> K-means</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="k-means.html"><a href="k-means.html#modelo-1"><i class="fa fa-check"></i><b>8.1.1</b> Modelo</a></li>
+<li class="chapter" data-level="8.1.2" data-path="k-means.html"><a href="k-means.html#implementacion-en-r"><i class="fa fa-check"></i><b>8.1.2</b> Implementación en R</a></li>
+<li class="chapter" data-level="8.1.3" data-path="k-means.html"><a href="k-means.html#evaluacion"><i class="fa fa-check"></i><b>8.1.3</b> Evaluación</a></li>
+<li class="chapter" data-level="8.1.4" data-path="k-means.html"><a href="k-means.html#determinar-el-numero-de-clusters-optimo"><i class="fa fa-check"></i><b>8.1.4</b> Determinar el número de clústers óptimo</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html"><i class="fa fa-check"></i><b>8.2</b> Hierarchical clustering</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#modelo-2"><i class="fa fa-check"></i><b>8.2.1</b> Modelo</a></li>
+<li class="chapter" data-level="8.2.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#implementacion-en-r-1"><i class="fa fa-check"></i><b>8.2.2</b> Implementación en R</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="other-clustering-methods.html"><a href="other-clustering-methods.html"><i class="fa fa-check"></i><b>8.3</b> Other clustering methods</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="random-forests.html"><a href="random-forests.html"><i class="fa fa-check"></i><b>9</b> Random Forests</a><ul>
+<li class="chapter" data-level="9.1" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html"><i class="fa fa-check"></i><b>9.1</b> A. Entrenamiento del modelo RF-clasificación</a><ul>
+<li class="chapter" data-level="9.1.1" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#criterio-de-la-distancia-de-ks"><i class="fa fa-check"></i><b>9.1.1</b> Criterio de la distancia de KS:</a></li>
+<li class="chapter" data-level="9.1.2" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#grafico-de-la-curva-roc-y-su-metrica-asociada"><i class="fa fa-check"></i><b>9.1.2</b> Gráfico de la Curva ROC y su métrica asociada</a></li>
+<li class="chapter" data-level="9.1.3" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#metrica-de-error-del-clasificador-rf"><i class="fa fa-check"></i><b>9.1.3</b> Métrica de error del clasificador RF:</a></li>
+<li class="chapter" data-level="9.1.4" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#ejercicio-propuesto"><i class="fa fa-check"></i><b>9.1.4</b> Ejercicio propuesto:</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="b-entrenamiento-del-modelo-rf-regresion.html"><a href="b-entrenamiento-del-modelo-rf-regresion.html"><i class="fa fa-check"></i><b>9.2</b> B. Entrenamiento del modelo RF-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="gradient-boosting-models.html"><a href="gradient-boosting-models.html"><i class="fa fa-check"></i><b>10</b> Gradient Boosting Models</a><ul>
+<li class="chapter" data-level="10.1" data-path="c-entrenamiento-del-modelo-gbm-clasificacion.html"><a href="c-entrenamiento-del-modelo-gbm-clasificacion.html"><i class="fa fa-check"></i><b>10.1</b> C. Entrenamiento del modelo GBM-clasificación</a></li>
+<li class="chapter" data-level="10.2" data-path="d-entrenamiento-del-modelo-gbm-regresion.html"><a href="d-entrenamiento-del-modelo-gbm-regresion.html"><i class="fa fa-check"></i><b>10.2</b> D. Entrenamiento del modelo GBM-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="support-vector-machines.html"><a href="support-vector-machines.html"><i class="fa fa-check"></i><b>11</b> Support Vector Machines</a><ul>
+<li class="chapter" data-level="11.1" data-path="introduccion.html"><a href="introduccion.html"><i class="fa fa-check"></i><b>11.1</b> Introducción</a></li>
+<li class="chapter" data-level="11.2" data-path="descripcion.html"><a href="descripcion.html"><i class="fa fa-check"></i><b>11.2</b> Descripción</a></li>
+<li class="chapter" data-level="11.3" data-path="svm-clasificacion-ejemplo.html"><a href="svm-clasificacion-ejemplo.html"><i class="fa fa-check"></i><b>11.3</b> SVM-clasificación: ejemplo</a></li>
+<li class="chapter" data-level="11.4" data-path="f-entrenamiento-del-modelo-svm-regresion.html"><a href="f-entrenamiento-del-modelo-svm-regresion.html"><i class="fa fa-check"></i><b>11.4</b> F. Entrenamiento del modelo SVM-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="incompleto.html"><a href="incompleto.html"><i class="fa fa-check"></i><b>12</b> Incompleto…</a><ul>
+<li class="chapter" data-level="12.0.1" data-path="incompleto.html"><a href="incompleto.html#g.-comparativa-de-modelos-de-clasificacin"><i class="fa fa-check"></i><b>12.0.1</b> G. comparativa de modelos de clasificaci?n</a></li>
+<li class="chapter" data-level="12.0.2" data-path="incompleto.html"><a href="incompleto.html#curvas-roc-1"><i class="fa fa-check"></i><b>12.0.2</b> Curvas ROC</a></li>
+<li class="chapter" data-level="12.0.3" data-path="incompleto.html"><a href="incompleto.html#falta---incompleto"><i class="fa fa-check"></i><b>12.0.3</b> falta - Incompleto</a></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="boosting.html"><a href="boosting.html"><i class="fa fa-check"></i><b>13</b> Boosting</a><ul>
+<li class="chapter" data-level="13.1" data-path="que-es-boosting.html"><a href="que-es-boosting.html"><i class="fa fa-check"></i><b>13.1</b> ¿Qué es boosting?</a></li>
+<li class="chapter" data-level="13.2" data-path="modelos-ensamblados.html"><a href="modelos-ensamblados.html"><i class="fa fa-check"></i><b>13.2</b> Modelos ensamblados</a></li>
+<li class="chapter" data-level="13.3" data-path="adaboost.html"><a href="adaboost.html"><i class="fa fa-check"></i><b>13.3</b> AdaBoost</a><ul>
+<li class="chapter" data-level="13.3.1" data-path="adaboost.html"><a href="adaboost.html#idea-intuitiva"><i class="fa fa-check"></i><b>13.3.1</b> Idea intuitiva</a></li>
+<li class="chapter" data-level="13.3.2" data-path="adaboost.html"><a href="adaboost.html#nomenclatura"><i class="fa fa-check"></i><b>13.3.2</b> Nomenclatura</a></li>
+<li class="chapter" data-level="13.3.3" data-path="adaboost.html"><a href="adaboost.html#adaboost.-algoritmo"><i class="fa fa-check"></i><b>13.3.3</b> AdaBoost. Algoritmo</a></li>
+</ul></li>
+<li class="chapter" data-level="13.4" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html"><i class="fa fa-check"></i><b>13.4</b> Funciones de pérdida</a><ul>
+<li class="chapter" data-level="13.4.1" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-regresion-lineal"><i class="fa fa-check"></i><b>13.4.1</b> Funciones de pérdida: Regresión lineal</a></li>
+<li class="chapter" data-level="13.4.2" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-clasificacion."><i class="fa fa-check"></i><b>13.4.2</b> Funciones de pérdida: Clasificación.</a></li>
+<li class="chapter" data-level="13.4.3" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-para-clasificacion."><i class="fa fa-check"></i><b>13.4.3</b> Funciones de pérdida para clasificación.</a></li>
+<li class="chapter" data-level="13.4.4" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#perdida-exponencial"><i class="fa fa-check"></i><b>13.4.4</b> Pérdida exponencial</a></li>
+</ul></li>
+<li class="chapter" data-level="13.5" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html"><i class="fa fa-check"></i><b>13.5</b> Algoritmo AdaBoost Revisitado</a><ul>
+<li class="chapter" data-level="13.5.1" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html#adaboost-en-accion"><i class="fa fa-check"></i><b>13.5.1</b> AdaBoost en acción</a></li>
+<li class="chapter" data-level="13.5.2" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html#adaboost.-propiedades"><i class="fa fa-check"></i><b>13.5.2</b> AdaBoost. Propiedades</a></li>
+</ul></li>
+<li class="chapter" data-level="13.6" data-path="gradient-boosting.html"><a href="gradient-boosting.html"><i class="fa fa-check"></i><b>13.6</b> Gradient boosting</a><ul>
+<li class="chapter" data-level="13.6.1" data-path="gradient-boosting.html"><a href="gradient-boosting.html#algoritmo"><i class="fa fa-check"></i><b>13.6.1</b> Algoritmo</a></li>
+</ul></li>
+<li class="chapter" data-level="13.7" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html"><i class="fa fa-check"></i><b>13.7</b> Optimización numérica</a><ul>
+<li class="chapter" data-level="13.7.1" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html#descenso-del-gradiente-gradient-descent"><i class="fa fa-check"></i><b>13.7.1</b> Descenso del gradiente (gradient descent)</a></li>
+<li class="chapter" data-level="13.7.2" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html#a-jugar"><i class="fa fa-check"></i><b>13.7.2</b> ¡A jugar!</a></li>
+</ul></li>
+<li class="chapter" data-level="13.8" data-path="funciones-de-perdida-mas-habituales.html"><a href="funciones-de-perdida-mas-habituales.html"><i class="fa fa-check"></i><b>13.8</b> Funciones de pérdida más habituales</a></li>
+<li class="chapter" data-level="13.9" data-path="parametro-de-shrinkage.html"><a href="parametro-de-shrinkage.html"><i class="fa fa-check"></i><b>13.9</b> Parámetro de <em>shrinkage</em></a></li>
+<li class="chapter" data-level="13.10" data-path="otros-metodos.html"><a href="otros-metodos.html"><i class="fa fa-check"></i><b>13.10</b> Otros métodos</a></li>
+</ul></li>
+<li class="appendix"><span><b>ANEXO</b></span></li>
+<li class="chapter" data-level="A" data-path="sobre-in-training.html"><a href="sobre-in-training.html"><i class="fa fa-check"></i><b>A</b> Sobre in-training</a></li>
+<li class="chapter" data-level="B" data-path="colaboradores.html"><a href="colaboradores.html"><i class="fa fa-check"></i><b>B</b> Colaboradores</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Modelización en R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="c.-entrenamiento-del-modelo-gbm-clasificacion" class="section level2">
+<h2><span class="header-section-number">10.1</span> C. Entrenamiento del modelo GBM-clasificación</h2>
+<div class="sourceCode" id="cb400"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb400-1" data-line-number="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(gbm)) <span class="kw">install.packages</span>(<span class="st">&#39;gbm&#39;</span>)</a></code></pre></div>
+<pre><code>## Loading required package: gbm</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<pre><code>## 
+## Attaching package: &#39;survival&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:caret&#39;:
+## 
+##     cluster</code></pre>
+<pre><code>## Loading required package: splines</code></pre>
+<pre><code>## Loading required package: parallel</code></pre>
+<pre><code>## Loaded gbm 2.1.3</code></pre>
+<div class="sourceCode" id="cb408"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb408-1" data-line-number="1"><span class="kw">library</span>(gbm)</a></code></pre></div>
+<p>Creamos un objeto de clase ‘formula’ y se lo pasamos como argumento a la función <code>gbm</code></p>
+<div class="sourceCode" id="cb409"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb409-1" data-line-number="1">xVars &lt;-<span class="st"> </span><span class="kw">colnames</span>(AutoBi[ , <span class="op">-</span><span class="kw">match</span>(<span class="kw">c</span>(<span class="st">&quot;SEATBELT&quot;</span>,<span class="st">&quot;CASENUM&quot;</span>,<span class="st">&quot;LOSS&quot;</span>), <span class="kw">colnames</span>(AutoBi)) ])</a>
+<a class="sourceLine" id="cb409-2" data-line-number="2">targets &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;LOSS&quot;</span>,<span class="st">&quot;Y&quot;</span>)</a>
+<a class="sourceLine" id="cb409-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb409-4" data-line-number="4">fmla.gbm1 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste0</span>(targets[<span class="dv">2</span>],<span class="st">&quot;~&quot;</span>,<span class="kw">paste0</span>(xVars,<span class="dt">collapse =</span> <span class="st">&quot;+&quot;</span>),<span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>))</a>
+<a class="sourceLine" id="cb409-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb409-6" data-line-number="6"><span class="kw">set.seed</span>(<span class="dv">999</span>)</a>
+<a class="sourceLine" id="cb409-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb409-8" data-line-number="8">gbm1 &lt;-<span class="st"> </span><span class="kw">gbm</span>(fmla.gbm1,</a>
+<a class="sourceLine" id="cb409-9" data-line-number="9">            <span class="dt">data =</span> dt_train,</a>
+<a class="sourceLine" id="cb409-10" data-line-number="10">            <span class="dt">distribution=</span><span class="st">&quot;bernoulli&quot;</span>,</a>
+<a class="sourceLine" id="cb409-11" data-line-number="11">            <span class="dt">n.trees =</span> <span class="dv">5000</span>,</a>
+<a class="sourceLine" id="cb409-12" data-line-number="12">            <span class="dt">interaction.depth =</span> <span class="dv">3</span>,</a>
+<a class="sourceLine" id="cb409-13" data-line-number="13">            <span class="dt">n.minobsinnode =</span> <span class="dv">20</span>,</a>
+<a class="sourceLine" id="cb409-14" data-line-number="14">            <span class="dt">shrinkage =</span> <span class="fl">0.001</span> )</a>
+<a class="sourceLine" id="cb409-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb409-16" data-line-number="16"><span class="kw">summary</span>(gbm1)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-68-1.png" width="672" /></p>
+<pre><code>##               var   rel.inf
+## CLMAGE     CLMAGE 40.705984
+## ATTORNEY ATTORNEY 26.230600
+## MARITAL   MARITAL 23.253011
+## CLMSEX     CLMSEX  5.331329
+## CLMINSUR CLMINSUR  4.479076</code></pre>
+<p>Como valor estimado se obtiene la probabilidad condicional $ P(Y=1|X_1=ATTORNEY,,X_6=SEATBELT)$</p>
+<p>Miramos el resultado en el test:</p>
+<div class="sourceCode" id="cb411"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb411-1" data-line-number="1">gbm1.prediction &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">predict.gbm</span>(gbm1, <span class="dt">newdata =</span> dt_train , <span class="dt">n.trees =</span> <span class="dv">5000</span> , <span class="dt">type=</span><span class="st">&quot;response&quot;</span>))</a>
+<a class="sourceLine" id="cb411-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb411-3" data-line-number="3">dt_train<span class="op">$</span>pred_gbm1 &lt;-<span class="st"> </span>gbm1.prediction[[<span class="dv">1</span>]]</a></code></pre></div>
+<p>Calculamos la medida de “performance” del mecanismo (modelo) de predicción ‘gbm1’</p>
+<div class="sourceCode" id="cb412"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb412-1" data-line-number="1">gbm1.pred &lt;-<span class="st"> </span><span class="kw">prediction</span>(dt_train<span class="op">$</span>pred_gbm1,dt_train<span class="op">$</span>Y) <span class="co"># con el train creamos un</span></a>
+<a class="sourceLine" id="cb412-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb412-3" data-line-number="3">gbm1.perf &lt;-<span class="st"> </span><span class="kw">performance</span>(gbm1.pred,<span class="st">&quot;tpr&quot;</span>,<span class="st">&quot;fpr&quot;</span>) </a></code></pre></div>
+<p>Calculamos el punto de corte</p>
+<div class="sourceCode" id="cb413"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb413-1" data-line-number="1">gbm1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]][gbm1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]]<span class="op">==</span><span class="ot">Inf</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">max</span>(gbm1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]][gbm1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]]<span class="op">!=</span><span class="ot">Inf</span>]),<span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb413-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb413-3" data-line-number="3">KS.matrix=<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">abs</span>(gbm1.perf<span class="op">@</span>y.values[[<span class="dv">1</span>]]<span class="op">-</span>gbm1.perf<span class="op">@</span>x.values[[<span class="dv">1</span>]]), gbm1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]])</a>
+<a class="sourceLine" id="cb413-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb413-5" data-line-number="5"><span class="kw">colnames</span>(KS.matrix) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;KS-distance&quot;</span>,<span class="st">&quot;cut-point&quot;</span>)</a>
+<a class="sourceLine" id="cb413-6" data-line-number="6"><span class="kw">head</span>(KS.matrix)</a></code></pre></div>
+<pre><code>##      KS-distance cut-point
+## [1,] 0.000000000 0.4900000
+## [2,] 0.009345794 0.4940501
+## [3,] 0.018691589 0.4661792
+## [4,] 0.028037383 0.4474047
+## [5,] 0.037383178 0.4411769
+## [6,] 0.046728972 0.4358773</code></pre>
+<div class="sourceCode" id="cb415"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb415-1" data-line-number="1">ind.ks  &lt;-<span class="st"> </span><span class="kw">sort</span>( KS.matrix[,<span class="dv">1</span>] , <span class="dt">index.return=</span><span class="ot">TRUE</span> )<span class="op">$</span>ix[<span class="kw">nrow</span>(KS.matrix)]</a></code></pre></div>
+<p>El punto de corte óptimo de KS</p>
+<div class="sourceCode" id="cb416"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb416-1" data-line-number="1">gbm1.KScutoff &lt;-<span class="st"> </span>KS.matrix[ind.ks,<span class="dv">2</span>]</a></code></pre></div>
+<p>(Opcional) Area bajo la curva ROC</p>
+<div class="sourceCode" id="cb417"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb417-1" data-line-number="1">gbm1.auc &lt;-<span class="st"> </span><span class="kw">performance</span>(gbm1.pred ,<span class="st">&quot;auc&quot;</span>)<span class="op">@</span>y.values[[<span class="dv">1</span>]]</a></code></pre></div>
+<p>(opcional) Curva ROC GBM - train</p>
+<div class="sourceCode" id="cb418"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb418-1" data-line-number="1"><span class="co">#win.graph()</span></a>
+<a class="sourceLine" id="cb418-2" data-line-number="2"><span class="kw">plot</span>( gbm1.perf , <span class="dt">col=</span><span class="st">&#39;red&#39;</span> , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">type=</span><span class="st">&quot;l&quot;</span> , <span class="dt">main=</span><span class="st">&quot;Curva ROC modelo GBM&quot;</span>,<span class="dt">xlab=</span><span class="st">&quot;Tasa de falsos positivos&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Tasa de verdaderos positivos&quot;</span>)</a>
+<a class="sourceLine" id="cb418-3" data-line-number="3"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">1</span> , <span class="dt">col=</span><span class="st">&quot;blue&quot;</span> , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">lty=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb418-4" data-line-number="4"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">0</span> , <span class="dv">1</span> , <span class="dt">col=</span><span class="st">&quot;gray40&quot;</span>   , <span class="dt">lty=</span><span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb418-5" data-line-number="5"><span class="kw">legend</span>( <span class="fl">0.4</span>  , <span class="fl">0.2</span> , <span class="kw">c</span>(<span class="kw">paste0</span>(<span class="st">&quot;AUC (Gradient Boosting)=&quot;</span>,<span class="kw">round</span>(gbm1.auc,<span class="dv">4</span>)),<span class="st">&quot;AUC (Coin toss)=0.50&quot;</span>) ,<span class="dt">lty=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">lwd=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>) ,<span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;blue&quot;</span>), <span class="dt">bty=</span><span class="st">&quot;n&quot;</span>)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-74-1.png" width="672" /></p>
+<p>Calculamos la predicción en el test y evaluamos el poder de clasificación del modelo</p>
+<div class="sourceCode" id="cb419"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb419-1" data-line-number="1">gbm1.pred_test    &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">predict.gbm</span>( gbm1, <span class="dt">newdata =</span> dt_test , <span class="dt">n.trees =</span> <span class="dv">5000</span> , <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>))</a>
+<a class="sourceLine" id="cb419-2" data-line-number="2">dt_test<span class="op">$</span>pred_gbm1 &lt;-<span class="st"> </span>gbm1.pred_test[[<span class="dv">1</span>]] </a></code></pre></div>
+<p>Con el test creamos un objeto de tipo ‘prediction’</p>
+<div class="sourceCode" id="cb420"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb420-1" data-line-number="1">dt_gbm1.pred  &lt;-<span class="st"> </span><span class="kw">prediction</span>(dt_test<span class="op">$</span>pred_gbm1,dt_test<span class="op">$</span>Y) </a>
+<a class="sourceLine" id="cb420-2" data-line-number="2">dt_gbm1.perf  &lt;-<span class="st"> </span><span class="kw">performance</span>(dt_gbm1.pred,<span class="st">&quot;tpr&quot;</span>,<span class="st">&quot;fpr&quot;</span>) </a></code></pre></div>
+<p>Evaluación del poder de clasificaci?n del modelo GBM1 vía curva ROC</p>
+<div class="sourceCode" id="cb421"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb421-1" data-line-number="1">gbm1.auc_test &lt;-<span class="st"> </span><span class="kw">performance</span>( dt_gbm1.pred ,<span class="st">&quot;auc&quot;</span>)<span class="op">@</span>y.values[[<span class="dv">1</span>]]</a></code></pre></div>
+<ul>
+<li>Error tipo I (<span class="math inline">\(\alpha\)</span>): 10.87% indica el error que se comete clasificando una pérdida ‘severa’ como ‘no severa’</li>
+<li>Error tipo II (<span class="math inline">\(\beta\)</span>): 39.89% indica el error que se comete clasificando una pérdida ‘no severa’ como ‘severa’</li>
+<li>% de mala clasificación: 35.81% nos da el % de veces que el modelo clasifica incorrectamente las pérdidas</li>
+<li>Accuracy = <span class="math inline">\(100 - %mc\)</span>: 63.43% nos da el % de veces que el modelo acierta clasificando las pérdidas</li>
+<li>Area bajo la curva ROC, <span class="math inline">\(AUC\)</span>: 0.7583 nos da una medida global del poder de clasificación del modelo</li>
+<li>Finalmente calculamos la curva ROC junto con la métrica AUC</li>
+</ul>
+<p>Evaluamos el poder de clasificación con la función <code>metricBinaryClass</code>:</p>
+<div class="sourceCode" id="cb422"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb422-1" data-line-number="1"><span class="kw">metricBinaryClass</span>( <span class="dt">fitted.model =</span> gbm1 , <span class="dt">dataset=</span> dt_test , <span class="dt">cutpoint=</span>gbm1.KScutoff , <span class="dt">roc.graph=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<pre><code>## $ClassError.tI
+## [1] 10.87
+## 
+## $ClassError.tII
+## [1] 39.89
+## 
+## $Accuracy
+## [1] 63.43
+## 
+## $Sensitivity
+## [1] 89.13
+## 
+## $Specificity
+## [1] 60.11
+## 
+## $auc
+## [1] 0.7582743
+## 
+## $Fisher.F1
+## [1] 35.8079</code></pre>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="gradient-boosting-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="d-entrenamiento-del-modelo-gbm-regresion.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": null,
+"download": ["bookdown-start.pdf"],
+"toc": {
+"collapse": "section",
+"scroll_highlight": true
+},
+"toolbar": {
+"position": "fixed"
+},
+"search": true
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

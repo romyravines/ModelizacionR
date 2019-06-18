@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Modelización en R</title>
+  <meta name="description" content="Curso-taller preparado para profesionales analiticos.">
+  <meta name="generator" content="bookdown 0.5.13 and GitBook 2.6.7">
+
+  <meta property="og:title" content="Modelización en R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Curso-taller preparado para profesionales analiticos." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Modelización en R" />
+  
+  <meta name="twitter:description" content="Curso-taller preparado para profesionales analiticos." />
+  
+
+<meta name="author" content="Aula Innova. Innova-tsn">
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="random-forests.html">
+<link rel="next" href="b-entrenamiento-del-modelo-rf-regresion.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/htmlwidgets-0.9/htmlwidgets.js"></script>
+<script src="assets/proj4js-2.3.15/proj4.js"></script>
+<link href="assets/highcharts-5.0.6/css/motion.css" rel="stylesheet" />
+<script src="assets/highcharts-5.0.6/highstock.js"></script>
+<script src="assets/highcharts-5.0.6/highcharts-3d.js"></script>
+<script src="assets/highcharts-5.0.6/highcharts-more.js"></script>
+<script src="assets/highcharts-5.0.6/modules/annotations.js"></script>
+<script src="assets/highcharts-5.0.6/modules/broken-axis.js"></script>
+<script src="assets/highcharts-5.0.6/modules/data.js"></script>
+<script src="assets/highcharts-5.0.6/modules/drilldown.js"></script>
+<script src="assets/highcharts-5.0.6/modules/exporting.js"></script>
+<script src="assets/highcharts-5.0.6/modules/funnel.js"></script>
+<script src="assets/highcharts-5.0.6/modules/heatmap.js"></script>
+<script src="assets/highcharts-5.0.6/modules/map.js"></script>
+<script src="assets/highcharts-5.0.6/modules/no-data-to-display.js"></script>
+<script src="assets/highcharts-5.0.6/modules/offline-exporting.js"></script>
+<script src="assets/highcharts-5.0.6/modules/solid-gauge.js"></script>
+<script src="assets/highcharts-5.0.6/modules/treemap.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/annotations.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/draggable-legend.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/draggable-points.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/export-csv.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/grouped-categories.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/motion.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/pattern-fill-v2.js"></script>
+<script src="assets/highcharts-5.0.6/plugins/tooltip-delay.js"></script>
+<script src="assets/highcharts-5.0.6/custom/reset.js"></script>
+<script src="assets/highcharts-5.0.6/custom/symbols-extra.js"></script>
+<script src="assets/highcharts-5.0.6/custom/text-symbols.js"></script>
+<link href="assets/fontawesome-4.5.0/font-awesome.min.css" rel="stylesheet" />
+<link href="assets/htmlwdgtgrid-1/htmlwdgtgrid.css" rel="stylesheet" />
+<script src="assets/highchart-binding-0.5.0/highchart.js"></script>
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Presentación</a></li>
+<li class="part"><span><b>I MODELOS ANALÍTICOS</b></span></li>
+<li class="chapter" data-level="1" data-path="modelizacion.html"><a href="modelizacion.html"><i class="fa fa-check"></i><b>1</b> Modelizar</a><ul>
+<li class="chapter" data-level="1.1" data-path="modelizar.html"><a href="modelizar.html"><i class="fa fa-check"></i><b>1.1</b> ¿Qué es Modelizar?</a></li>
+<li class="chapter" data-level="1.2" data-path="que-es-un-modelo-analitico.html"><a href="que-es-un-modelo-analitico.html"><i class="fa fa-check"></i><b>1.2</b> ¿Qué es un modelo analítico?</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="tipos-de-problemas.html"><a href="tipos-de-problemas.html"><i class="fa fa-check"></i><b>2</b> Tipos de Problemas</a><ul>
+<li class="chapter" data-level="2.1" data-path="clasemodelos.html"><a href="clasemodelos.html"><i class="fa fa-check"></i><b>2.1</b> Enfoques de Modelización</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="catalogo-de-tecnicas.html"><a href="catalogo-de-tecnicas.html"><i class="fa fa-check"></i><b>3</b> Catálogo de Técnicas</a><ul>
+<li class="chapter" data-level="3.1" data-path="tecnicas-de-clustering.html"><a href="tecnicas-de-clustering.html"><i class="fa fa-check"></i><b>3.1</b> Técnicas de <em>Clustering</em></a></li>
+<li class="chapter" data-level="3.2" data-path="tecnicas-de-clasificacion.html"><a href="tecnicas-de-clasificacion.html"><i class="fa fa-check"></i><b>3.2</b> Técnicas de Clasificación</a></li>
+<li class="chapter" data-level="3.3" data-path="tecnicas-de-regresion.html"><a href="tecnicas-de-regresion.html"><i class="fa fa-check"></i><b>3.3</b> Técnicas de Regresión</a></li>
+<li class="chapter" data-level="3.4" data-path="tecnicas-de-reduccion-de-dimension.html"><a href="tecnicas-de-reduccion-de-dimension.html"><i class="fa fa-check"></i><b>3.4</b> Técnicas de Reducción de Dimensión</a></li>
+<li class="chapter" data-level="3.5" data-path="otras-tecnicas.html"><a href="otras-tecnicas.html"><i class="fa fa-check"></i><b>3.5</b> Otras ‘Técnicas’</a></li>
+<li class="chapter" data-level="3.6" data-path="que-tecnica-utilizar.html"><a href="que-tecnica-utilizar.html"><i class="fa fa-check"></i><b>3.6</b> ¿Qué técnica utilizar?</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="evaluacion-de-modelos.html"><a href="evaluacion-de-modelos.html"><i class="fa fa-check"></i><b>4</b> Evaluación de modelos</a><ul>
+<li class="chapter" data-level="4.1" data-path="diagnosis-de-negocio.html"><a href="diagnosis-de-negocio.html"><i class="fa fa-check"></i><b>4.1</b> Diagnosis de Negocio</a></li>
+<li class="chapter" data-level="4.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html"><i class="fa fa-check"></i><b>4.2</b> Evaluación en Respuesta Binaria</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#clasificacion"><i class="fa fa-check"></i><b>4.2.1</b> Clasificación</a></li>
+<li class="chapter" data-level="4.2.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#medidas-de-desigualdad"><i class="fa fa-check"></i><b>4.2.2</b> Medidas de desigualdad</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html"><i class="fa fa-check"></i><b>4.3</b> Evaluación en Respuesta Continúa</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-regresion"><i class="fa fa-check"></i><b>4.3.1</b> Modelos de Regresión</a></li>
+<li class="chapter" data-level="4.3.2" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-series-temporales"><i class="fa fa-check"></i><b>4.3.2</b> Modelos de Series temporales</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html"><i class="fa fa-check"></i><b>4.4</b> Evaluación en <em>Clustering</em></a><ul>
+<li class="chapter" data-level="4.4.1" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html#silueta"><i class="fa fa-check"></i><b>4.4.1</b> Silueta</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html"><i class="fa fa-check"></i><b>4.5</b> Métodos de re-muestreo</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#training-testing"><i class="fa fa-check"></i><b>4.5.1</b> Training &amp; testing</a></li>
+<li class="chapter" data-level="4.5.2" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#cross-validation"><i class="fa fa-check"></i><b>4.5.2</b> Cross validation</a></li>
+</ul></li>
+<li class="chapter" data-level="4.6" data-path="practica-en-r.html"><a href="practica-en-r.html"><i class="fa fa-check"></i><b>4.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="practica-en-r.html"><a href="practica-en-r.html#preparacion-de-los-datos"><i class="fa fa-check"></i><b>4.6.1</b> Preparación de los datos</a></li>
+<li class="chapter" data-level="4.6.2" data-path="practica-en-r.html"><a href="practica-en-r.html#clasificacion-1"><i class="fa fa-check"></i><b>4.6.2</b> Clasificación</a></li>
+<li class="chapter" data-level="4.6.3" data-path="practica-en-r.html"><a href="practica-en-r.html#regresion"><i class="fa fa-check"></i><b>4.6.3</b> Regresión</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II Modelos Estadísticos</b></span></li>
+<li class="chapter" data-level="5" data-path="modelos-de-regresion-lineal.html"><a href="modelos-de-regresion-lineal.html"><i class="fa fa-check"></i><b>5</b> Modelos de regresión lineal</a><ul>
+<li class="chapter" data-level="5.1" data-path="modelo.html"><a href="modelo.html"><i class="fa fa-check"></i><b>5.1</b> Modelo</a></li>
+<li class="chapter" data-level="5.2" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html"><i class="fa fa-check"></i><b>5.2</b> Aplicación en R</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html#regresion-lineal-simple"><i class="fa fa-check"></i><b>5.2.1</b> Regresión lineal simple</a></li>
+<li class="chapter" data-level="5.2.2" data-path="aplicacion-en-r.html"><a href="aplicacion-en-r.html#regresion-lineal-multiple"><i class="fa fa-check"></i><b>5.2.2</b> Regresión lineal múltiple</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="modelos-de-respuesta-0-1.html"><a href="modelos-de-respuesta-0-1.html"><i class="fa fa-check"></i><b>6</b> Modelos de Respuesta 0-1</a><ul>
+<li class="chapter" data-level="6.1" data-path="motivacion.html"><a href="motivacion.html"><i class="fa fa-check"></i><b>6.1</b> Motivación</a></li>
+<li class="chapter" data-level="6.2" data-path="modelos-lineales-generalizados.html"><a href="modelos-lineales-generalizados.html"><i class="fa fa-check"></i><b>6.2</b> Modelos Lineales Generalizados</a></li>
+<li class="chapter" data-level="6.3" data-path="modelo-logit.html"><a href="modelo-logit.html"><i class="fa fa-check"></i><b>6.3</b> Modelo Logit</a></li>
+<li class="chapter" data-level="6.4" data-path="modelo-probit.html"><a href="modelo-probit.html"><i class="fa fa-check"></i><b>6.4</b> Modelo Probit</a></li>
+<li class="chapter" data-level="6.5" data-path="modelos-de-regresion-logistica.html"><a href="modelos-de-regresion-logistica.html"><i class="fa fa-check"></i><b>6.5</b> Modelos de regresión logística</a></li>
+<li class="chapter" data-level="6.6" data-path="aplicacion-en-r-1.html"><a href="aplicacion-en-r-1.html"><i class="fa fa-check"></i><b>6.6</b> Aplicación en R</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="modelos-de-series-temporales-1.html"><a href="modelos-de-series-temporales-1.html"><i class="fa fa-check"></i><b>7</b> Modelos de Series Temporales</a><ul>
+<li class="chapter" data-level="7.1" data-path="series-temporales.html"><a href="series-temporales.html"><i class="fa fa-check"></i><b>7.1</b> Series Temporales</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="series-temporales.html"><a href="series-temporales.html#que-es-una-serie-temporal"><i class="fa fa-check"></i><b>7.1.1</b> ¿Qué es una Serie Temporal?</a></li>
+</ul></li>
+<li class="chapter" data-level="7.2" data-path="operadores.html"><a href="operadores.html"><i class="fa fa-check"></i><b>7.2</b> Operadores</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="operadores.html"><a href="operadores.html#operador-de-retardo-simple"><i class="fa fa-check"></i><b>7.2.1</b> Operador de retardo simple</a></li>
+<li class="chapter" data-level="7.2.2" data-path="operadores.html"><a href="operadores.html#operador-de-adelanto-simple"><i class="fa fa-check"></i><b>7.2.2</b> Operador de adelanto simple</a></li>
+<li class="chapter" data-level="7.2.3" data-path="operadores.html"><a href="operadores.html#polinomios-en-b"><i class="fa fa-check"></i><b>7.2.3</b> Polinomios en B</a></li>
+<li class="chapter" data-level="7.2.4" data-path="operadores.html"><a href="operadores.html#operador-diferencia"><i class="fa fa-check"></i><b>7.2.4</b> Operador diferencia</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html"><i class="fa fa-check"></i><b>7.3</b> Alisado Exponencial</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html#que-es-el-alisado-exponencial"><i class="fa fa-check"></i><b>7.3.1</b> ¿Qué es el Alisado Exponencial?</a></li>
+<li class="chapter" data-level="7.3.2" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html#librerias"><i class="fa fa-check"></i><b>7.3.2</b> Librerías</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html"><i class="fa fa-check"></i><b>7.4</b> Lectura y Visualización</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#datos-originales"><i class="fa fa-check"></i><b>7.4.1</b> Datos Originales</a></li>
+<li class="chapter" data-level="7.4.2" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#objeto-xts"><i class="fa fa-check"></i><b>7.4.2</b> Objeto XTS</a></li>
+<li class="chapter" data-level="7.4.3" data-path="lectura-y-visualizacion.html"><a href="lectura-y-visualizacion.html#seleccion-de-datos-usando-las-fechas"><i class="fa fa-check"></i><b>7.4.3</b> Selección de datos usando las fechas</a></li>
+</ul></li>
+<li class="chapter" data-level="7.5" data-path="manipulacion.html"><a href="manipulacion.html"><i class="fa fa-check"></i><b>7.5</b> Manipulación</a><ul>
+<li class="chapter" data-level="7.5.1" data-path="manipulacion.html"><a href="manipulacion.html#cambios-de-fechado"><i class="fa fa-check"></i><b>7.5.1</b> Cambios de Fechado</a></li>
+<li class="chapter" data-level="7.5.2" data-path="manipulacion.html"><a href="manipulacion.html#imputacion-de-datos-faltantes"><i class="fa fa-check"></i><b>7.5.2</b> Imputación de Datos Faltantes</a></li>
+<li class="chapter" data-level="7.5.3" data-path="manipulacion.html"><a href="manipulacion.html#estadisticos-en-diferentes-fechados"><i class="fa fa-check"></i><b>7.5.3</b> Estadísticos en diferentes fechados</a></li>
+<li class="chapter" data-level="7.5.4" data-path="manipulacion.html"><a href="manipulacion.html#division-del-conjunto-de-datos-usando-fechas"><i class="fa fa-check"></i><b>7.5.4</b> División del conjunto de datos usando fechas</a></li>
+<li class="chapter" data-level="7.5.5" data-path="manipulacion.html"><a href="manipulacion.html#otras-operaciones-con-los-datos"><i class="fa fa-check"></i><b>7.5.5</b> Otras operaciones con los datos</a></li>
+</ul></li>
+<li class="chapter" data-level="7.6" data-path="graficos.html"><a href="graficos.html"><i class="fa fa-check"></i><b>7.6</b> Gráficos</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="graficos.html"><a href="graficos.html#con-xts"><i class="fa fa-check"></i><b>7.6.1</b> Con xts</a></li>
+<li class="chapter" data-level="7.6.2" data-path="graficos.html"><a href="graficos.html#con-highcharter"><i class="fa fa-check"></i><b>7.6.2</b> Con highcharter</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>III Machine Learning</b></span></li>
+<li class="chapter" data-level="8" data-path="unsupervised-learning.html"><a href="unsupervised-learning.html"><i class="fa fa-check"></i><b>8</b> Unsupervised Learning</a><ul>
+<li class="chapter" data-level="8.1" data-path="k-means.html"><a href="k-means.html"><i class="fa fa-check"></i><b>8.1</b> K-means</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="k-means.html"><a href="k-means.html#modelo-1"><i class="fa fa-check"></i><b>8.1.1</b> Modelo</a></li>
+<li class="chapter" data-level="8.1.2" data-path="k-means.html"><a href="k-means.html#implementacion-en-r"><i class="fa fa-check"></i><b>8.1.2</b> Implementación en R</a></li>
+<li class="chapter" data-level="8.1.3" data-path="k-means.html"><a href="k-means.html#evaluacion"><i class="fa fa-check"></i><b>8.1.3</b> Evaluación</a></li>
+<li class="chapter" data-level="8.1.4" data-path="k-means.html"><a href="k-means.html#determinar-el-numero-de-clusters-optimo"><i class="fa fa-check"></i><b>8.1.4</b> Determinar el número de clústers óptimo</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html"><i class="fa fa-check"></i><b>8.2</b> Hierarchical clustering</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#modelo-2"><i class="fa fa-check"></i><b>8.2.1</b> Modelo</a></li>
+<li class="chapter" data-level="8.2.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#implementacion-en-r-1"><i class="fa fa-check"></i><b>8.2.2</b> Implementación en R</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="other-clustering-methods.html"><a href="other-clustering-methods.html"><i class="fa fa-check"></i><b>8.3</b> Other clustering methods</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="random-forests.html"><a href="random-forests.html"><i class="fa fa-check"></i><b>9</b> Random Forests</a><ul>
+<li class="chapter" data-level="9.1" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html"><i class="fa fa-check"></i><b>9.1</b> A. Entrenamiento del modelo RF-clasificación</a><ul>
+<li class="chapter" data-level="9.1.1" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#criterio-de-la-distancia-de-ks"><i class="fa fa-check"></i><b>9.1.1</b> Criterio de la distancia de KS:</a></li>
+<li class="chapter" data-level="9.1.2" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#grafico-de-la-curva-roc-y-su-metrica-asociada"><i class="fa fa-check"></i><b>9.1.2</b> Gráfico de la Curva ROC y su métrica asociada</a></li>
+<li class="chapter" data-level="9.1.3" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#metrica-de-error-del-clasificador-rf"><i class="fa fa-check"></i><b>9.1.3</b> Métrica de error del clasificador RF:</a></li>
+<li class="chapter" data-level="9.1.4" data-path="a-entrenamiento-del-modelo-rf-clasificacion.html"><a href="a-entrenamiento-del-modelo-rf-clasificacion.html#ejercicio-propuesto"><i class="fa fa-check"></i><b>9.1.4</b> Ejercicio propuesto:</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="b-entrenamiento-del-modelo-rf-regresion.html"><a href="b-entrenamiento-del-modelo-rf-regresion.html"><i class="fa fa-check"></i><b>9.2</b> B. Entrenamiento del modelo RF-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="gradient-boosting-models.html"><a href="gradient-boosting-models.html"><i class="fa fa-check"></i><b>10</b> Gradient Boosting Models</a><ul>
+<li class="chapter" data-level="10.1" data-path="c-entrenamiento-del-modelo-gbm-clasificacion.html"><a href="c-entrenamiento-del-modelo-gbm-clasificacion.html"><i class="fa fa-check"></i><b>10.1</b> C. Entrenamiento del modelo GBM-clasificación</a></li>
+<li class="chapter" data-level="10.2" data-path="d-entrenamiento-del-modelo-gbm-regresion.html"><a href="d-entrenamiento-del-modelo-gbm-regresion.html"><i class="fa fa-check"></i><b>10.2</b> D. Entrenamiento del modelo GBM-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="support-vector-machines.html"><a href="support-vector-machines.html"><i class="fa fa-check"></i><b>11</b> Support Vector Machines</a><ul>
+<li class="chapter" data-level="11.1" data-path="introduccion.html"><a href="introduccion.html"><i class="fa fa-check"></i><b>11.1</b> Introducción</a></li>
+<li class="chapter" data-level="11.2" data-path="descripcion.html"><a href="descripcion.html"><i class="fa fa-check"></i><b>11.2</b> Descripción</a></li>
+<li class="chapter" data-level="11.3" data-path="svm-clasificacion-ejemplo.html"><a href="svm-clasificacion-ejemplo.html"><i class="fa fa-check"></i><b>11.3</b> SVM-clasificación: ejemplo</a></li>
+<li class="chapter" data-level="11.4" data-path="f-entrenamiento-del-modelo-svm-regresion.html"><a href="f-entrenamiento-del-modelo-svm-regresion.html"><i class="fa fa-check"></i><b>11.4</b> F. Entrenamiento del modelo SVM-regresión</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="incompleto.html"><a href="incompleto.html"><i class="fa fa-check"></i><b>12</b> Incompleto…</a><ul>
+<li class="chapter" data-level="12.0.1" data-path="incompleto.html"><a href="incompleto.html#g.-comparativa-de-modelos-de-clasificacin"><i class="fa fa-check"></i><b>12.0.1</b> G. comparativa de modelos de clasificaci?n</a></li>
+<li class="chapter" data-level="12.0.2" data-path="incompleto.html"><a href="incompleto.html#curvas-roc-1"><i class="fa fa-check"></i><b>12.0.2</b> Curvas ROC</a></li>
+<li class="chapter" data-level="12.0.3" data-path="incompleto.html"><a href="incompleto.html#falta---incompleto"><i class="fa fa-check"></i><b>12.0.3</b> falta - Incompleto</a></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="boosting.html"><a href="boosting.html"><i class="fa fa-check"></i><b>13</b> Boosting</a><ul>
+<li class="chapter" data-level="13.1" data-path="que-es-boosting.html"><a href="que-es-boosting.html"><i class="fa fa-check"></i><b>13.1</b> ¿Qué es boosting?</a></li>
+<li class="chapter" data-level="13.2" data-path="modelos-ensamblados.html"><a href="modelos-ensamblados.html"><i class="fa fa-check"></i><b>13.2</b> Modelos ensamblados</a></li>
+<li class="chapter" data-level="13.3" data-path="adaboost.html"><a href="adaboost.html"><i class="fa fa-check"></i><b>13.3</b> AdaBoost</a><ul>
+<li class="chapter" data-level="13.3.1" data-path="adaboost.html"><a href="adaboost.html#idea-intuitiva"><i class="fa fa-check"></i><b>13.3.1</b> Idea intuitiva</a></li>
+<li class="chapter" data-level="13.3.2" data-path="adaboost.html"><a href="adaboost.html#nomenclatura"><i class="fa fa-check"></i><b>13.3.2</b> Nomenclatura</a></li>
+<li class="chapter" data-level="13.3.3" data-path="adaboost.html"><a href="adaboost.html#adaboost.-algoritmo"><i class="fa fa-check"></i><b>13.3.3</b> AdaBoost. Algoritmo</a></li>
+</ul></li>
+<li class="chapter" data-level="13.4" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html"><i class="fa fa-check"></i><b>13.4</b> Funciones de pérdida</a><ul>
+<li class="chapter" data-level="13.4.1" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-regresion-lineal"><i class="fa fa-check"></i><b>13.4.1</b> Funciones de pérdida: Regresión lineal</a></li>
+<li class="chapter" data-level="13.4.2" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-clasificacion."><i class="fa fa-check"></i><b>13.4.2</b> Funciones de pérdida: Clasificación.</a></li>
+<li class="chapter" data-level="13.4.3" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#funciones-de-perdida-para-clasificacion."><i class="fa fa-check"></i><b>13.4.3</b> Funciones de pérdida para clasificación.</a></li>
+<li class="chapter" data-level="13.4.4" data-path="funciones-de-perdida.html"><a href="funciones-de-perdida.html#perdida-exponencial"><i class="fa fa-check"></i><b>13.4.4</b> Pérdida exponencial</a></li>
+</ul></li>
+<li class="chapter" data-level="13.5" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html"><i class="fa fa-check"></i><b>13.5</b> Algoritmo AdaBoost Revisitado</a><ul>
+<li class="chapter" data-level="13.5.1" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html#adaboost-en-accion"><i class="fa fa-check"></i><b>13.5.1</b> AdaBoost en acción</a></li>
+<li class="chapter" data-level="13.5.2" data-path="algoritmo-adaboost-revisitado.html"><a href="algoritmo-adaboost-revisitado.html#adaboost.-propiedades"><i class="fa fa-check"></i><b>13.5.2</b> AdaBoost. Propiedades</a></li>
+</ul></li>
+<li class="chapter" data-level="13.6" data-path="gradient-boosting.html"><a href="gradient-boosting.html"><i class="fa fa-check"></i><b>13.6</b> Gradient boosting</a><ul>
+<li class="chapter" data-level="13.6.1" data-path="gradient-boosting.html"><a href="gradient-boosting.html#algoritmo"><i class="fa fa-check"></i><b>13.6.1</b> Algoritmo</a></li>
+</ul></li>
+<li class="chapter" data-level="13.7" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html"><i class="fa fa-check"></i><b>13.7</b> Optimización numérica</a><ul>
+<li class="chapter" data-level="13.7.1" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html#descenso-del-gradiente-gradient-descent"><i class="fa fa-check"></i><b>13.7.1</b> Descenso del gradiente (gradient descent)</a></li>
+<li class="chapter" data-level="13.7.2" data-path="optimizacion-numerica.html"><a href="optimizacion-numerica.html#a-jugar"><i class="fa fa-check"></i><b>13.7.2</b> ¡A jugar!</a></li>
+</ul></li>
+<li class="chapter" data-level="13.8" data-path="funciones-de-perdida-mas-habituales.html"><a href="funciones-de-perdida-mas-habituales.html"><i class="fa fa-check"></i><b>13.8</b> Funciones de pérdida más habituales</a></li>
+<li class="chapter" data-level="13.9" data-path="parametro-de-shrinkage.html"><a href="parametro-de-shrinkage.html"><i class="fa fa-check"></i><b>13.9</b> Parámetro de <em>shrinkage</em></a></li>
+<li class="chapter" data-level="13.10" data-path="otros-metodos.html"><a href="otros-metodos.html"><i class="fa fa-check"></i><b>13.10</b> Otros métodos</a></li>
+</ul></li>
+<li class="appendix"><span><b>ANEXO</b></span></li>
+<li class="chapter" data-level="A" data-path="sobre-in-training.html"><a href="sobre-in-training.html"><i class="fa fa-check"></i><b>A</b> Sobre in-training</a></li>
+<li class="chapter" data-level="B" data-path="colaboradores.html"><a href="colaboradores.html"><i class="fa fa-check"></i><b>B</b> Colaboradores</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Modelización en R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="a.-entrenamiento-del-modelo-rf-clasificacion" class="section level2">
+<h2><span class="header-section-number">9.1</span> A. Entrenamiento del modelo RF-clasificación</h2>
+<div class="sourceCode" id="cb321"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb321-1" data-line-number="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(randomForest)) <span class="kw">install.packages</span>(<span class="st">&#39;randomForest&#39;</span>)</a></code></pre></div>
+<pre><code>## Loading required package: randomForest</code></pre>
+<pre><code>## randomForest 4.6-12</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<div class="sourceCode" id="cb327"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb327-1" data-line-number="1"><span class="kw">library</span>(randomForest)</a></code></pre></div>
+<p>Creamos un objeto de clase ‘formula’ y se lo pasamos como argumento a la función <code>randomForest</code></p>
+<div class="sourceCode" id="cb328"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb328-1" data-line-number="1"><span class="kw">set.seed</span>(<span class="dv">123456</span>)</a>
+<a class="sourceLine" id="cb328-2" data-line-number="2">fmla.rf1 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste0</span>(<span class="st">&quot;Y&quot;</span>,<span class="st">&quot; ~&quot;</span>,<span class="kw">paste0</span>(<span class="kw">colnames</span>(df_autobi[,<span class="op">-</span><span class="kw">c</span>(<span class="dv">7</span>,<span class="dv">8</span>)]),<span class="dt">collapse =</span> <span class="st">&quot;+&quot;</span>),<span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>))</a>
+<a class="sourceLine" id="cb328-3" data-line-number="3">rf1 &lt;-<span class="st"> </span><span class="kw">randomForest</span>( fmla.rf1,</a>
+<a class="sourceLine" id="cb328-4" data-line-number="4">                       <span class="dt">data =</span>dt_train,</a>
+<a class="sourceLine" id="cb328-5" data-line-number="5">                       <span class="dt">ntree =</span> <span class="dv">5000</span>, </a>
+<a class="sourceLine" id="cb328-6" data-line-number="6"><span class="co"># El procedimiento es bastante rapido con una muestra tan pequena por lo que podemos utilizar ntree &gt; = 2500</span></a>
+<a class="sourceLine" id="cb328-7" data-line-number="7">                       <span class="dt">replace =</span><span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb328-8" data-line-number="8">                       <span class="dt">mtry=</span><span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb328-9" data-line-number="9">                       <span class="dt">maxnodes =</span><span class="dv">50</span>,</a>
+<a class="sourceLine" id="cb328-10" data-line-number="10">                       <span class="dt">importance =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb328-11" data-line-number="11">                       <span class="dt">proximity =</span>   <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb328-12" data-line-number="12">                       <span class="dt">keep.forest =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb328-13" data-line-number="13">                       <span class="dt">na.action=</span>na.omit)</a></code></pre></div>
+<pre><code>## Warning in randomForest.default(m, y, ...): The response has five or fewer
+## unique values. Are you sure you want to do regression?</code></pre>
+<p>No se ha hecho tuning en los parámetros básicos del modelo, se puede hacer con <code>ntree</code>, <code>mtry</code> y <code>maxnodes</code></p>
+<div class="sourceCode" id="cb330"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb330-1" data-line-number="1"><span class="kw">summary</span>(rf1)</a></code></pre></div>
+<pre><code>##                 Length Class  Mode     
+## call                11 -none- call     
+## type                 1 -none- character
+## predicted          759 -none- numeric  
+## mse               5000 -none- numeric  
+## rsq               5000 -none- numeric  
+## oob.times          759 -none- numeric  
+## importance          12 -none- numeric  
+## importanceSD         6 -none- numeric  
+## localImportance      0 -none- NULL     
+## proximity       576081 -none- numeric  
+## ntree                1 -none- numeric  
+## mtry                 1 -none- numeric  
+## forest              11 -none- list     
+## coefs                0 -none- NULL     
+## y                  759 -none- numeric  
+## test                 0 -none- NULL     
+## inbag                0 -none- NULL     
+## terms                3 terms  call     
+## na.action          179 omit   numeric</code></pre>
+<div class="sourceCode" id="cb332"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb332-1" data-line-number="1"><span class="kw">str</span>(rf1)</a></code></pre></div>
+<pre><code>## List of 19
+##  $ call           : language randomForest(formula = fmla.rf1, data = dt_train, ntree = 5000, replace = TRUE,      mtry = 4, maxnodes = 50, imp| __truncated__ ...
+##  $ type           : chr &quot;regression&quot;
+##  $ predicted      : atomic [1:759] 0.007273 0.000081 0.675016 0.006908 0.017108 ...
+##   ..- attr(*, &quot;na.action&quot;)=Class &#39;omit&#39;  Named int [1:179] 1 9 19 25 27 40 43 46 50 51 ...
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:179] &quot;1&quot; &quot;10&quot; &quot;24&quot; &quot;30&quot; ...
+##  $ mse            : num [1:5000] 0.104 0.119 0.117 0.12 0.121 ...
+##  $ rsq            : num [1:5000] 0.0107 -0.1241 -0.112 -0.1409 -0.1452 ...
+##  $ oob.times      : int [1:759] 1836 1929 1846 1829 1860 1811 1808 1830 1811 1797 ...
+##  $ importance     : num [1:6, 1:2] 0.016961 -0.002353 0.004298 0.000851 0.001241 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; &quot;CLMINSUR&quot; ...
+##   .. ..$ : chr [1:2] &quot;%IncMSE&quot; &quot;IncNodePurity&quot;
+##  $ importanceSD   : Named num [1:6] 1.63e-04 1.05e-04 1.70e-04 8.66e-05 5.90e-05 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:6] &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; &quot;CLMINSUR&quot; ...
+##  $ localImportance: NULL
+##  $ proximity      : num [1:759, 1:759] 1 0.192 0 0.427 0 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:759] &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; ...
+##   .. ..$ : chr [1:759] &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; ...
+##  $ ntree          : num 5000
+##  $ mtry           : num 4
+##  $ forest         :List of 11
+##   ..$ ndbigtree    : int [1:5000] 99 99 99 99 99 99 99 99 99 99 ...
+##   ..$ nodestatus   : int [1:99, 1:5000] -3 -3 -3 -3 -3 -3 -3 -1 -1 -3 ...
+##   ..$ leftDaughter : int [1:99, 1:5000] 2 4 6 8 10 12 14 0 0 16 ...
+##   ..$ rightDaughter: int [1:99, 1:5000] 3 5 7 9 11 13 15 0 0 17 ...
+##   ..$ nodepred     : num [1:99, 1:5000] 1.26e-01 1.50e-02 1.66e-01 1.53e-16 2.61e-02 ...
+##   ..$ bestvar      : int [1:99, 1:5000] 6 6 3 6 6 1 4 0 0 1 ...
+##   ..$ xbestsplit   : num [1:99, 1:5000] 20.5 15.5 3.5 3.5 17.5 1.5 1.5 0 0 1.5 ...
+##   ..$ ncat         : Named int [1:6] 1 1 1 1 1 1
+##   .. ..- attr(*, &quot;names&quot;)= chr [1:6] &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; &quot;CLMINSUR&quot; ...
+##   ..$ nrnodes      : int 99
+##   ..$ ntree        : num 5000
+##   ..$ xlevels      :List of 6
+##   .. ..$ ATTORNEY: num 0
+##   .. ..$ CLMSEX  : num 0
+##   .. ..$ MARITAL : num 0
+##   .. ..$ CLMINSUR: num 0
+##   .. ..$ SEATBELT: num 0
+##   .. ..$ CLMAGE  : num 0
+##  $ coefs          : NULL
+##  $ y              : atomic [1:759] 1 0 1 0 0 0 0 0 0 1 ...
+##   ..- attr(*, &quot;na.action&quot;)=Class &#39;omit&#39;  Named int [1:179] 1 9 19 25 27 40 43 46 50 51 ...
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:179] &quot;1&quot; &quot;10&quot; &quot;24&quot; &quot;30&quot; ...
+##  $ test           : NULL
+##  $ inbag          : NULL
+##  $ terms          :Classes &#39;terms&#39;, &#39;formula&#39;  language Y ~ ATTORNEY + CLMSEX + MARITAL + CLMINSUR + SEATBELT + CLMAGE
+##   .. ..- attr(*, &quot;variables&quot;)= language list(Y, ATTORNEY, CLMSEX, MARITAL, CLMINSUR, SEATBELT, CLMAGE)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:7, 1:6] 0 1 0 0 0 0 0 0 0 1 ...
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. ..$ : chr [1:7] &quot;Y&quot; &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; ...
+##   .. .. .. ..$ : chr [1:6] &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; &quot;CLMINSUR&quot; ...
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:6] &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; &quot;CLMINSUR&quot; ...
+##   .. ..- attr(*, &quot;order&quot;)= int [1:6] 1 1 1 1 1 1
+##   .. ..- attr(*, &quot;intercept&quot;)= num 0
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(Y, ATTORNEY, CLMSEX, MARITAL, CLMINSUR, SEATBELT, CLMAGE)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:7] &quot;numeric&quot; &quot;ordered&quot; &quot;ordered&quot; &quot;ordered&quot; ...
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:7] &quot;Y&quot; &quot;ATTORNEY&quot; &quot;CLMSEX&quot; &quot;MARITAL&quot; ...
+##  $ na.action      :Class &#39;omit&#39;  Named int [1:179] 1 9 19 25 27 40 43 46 50 51 ...
+##   .. ..- attr(*, &quot;names&quot;)= chr [1:179] &quot;1&quot; &quot;10&quot; &quot;24&quot; &quot;30&quot; ...
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;randomForest.formula&quot; &quot;randomForest&quot;</code></pre>
+<p>Gráfico de la importancia relativa de los predictores</p>
+<div class="sourceCode" id="cb334"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb334-1" data-line-number="1">  <span class="kw">varImpPlot</span>(rf1,<span class="dt">sort =</span> T,<span class="dt">main =</span> <span class="st">&quot;Variable Importance&quot;</span>)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-34-1.png" width="672" /></p>
+<p>Gráfico del Error vs número de árboles</p>
+<div class="sourceCode" id="cb335"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb335-1" data-line-number="1">  <span class="kw">plot</span>(rf1, <span class="dt">main=</span><span class="st">&quot;Error de clasificación vs núero de  árboles&quot;</span>) </a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-35-1.png" width="672" /></p>
+<p>Como valor predicho se obtiene la probabilidad condicional: <span class="math inline">\(P(Y=1|X_1 = ATTORNEY,\ldots,X_6=SEATBELT)\)</span></p>
+<p>Miramos el resultado en el train:</p>
+<div class="sourceCode" id="cb336"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb336-1" data-line-number="1">  rf1.prediction &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">predict</span>(rf1, <span class="dt">newdata =</span> dt_train))</a>
+<a class="sourceLine" id="cb336-2" data-line-number="2">  dt_train<span class="op">$</span>pred_rf1 &lt;-<span class="st"> </span>rf1.prediction<span class="op">$</span><span class="st">`</span><span class="dt">predict(rf1, newdata = dt_train)</span><span class="st">`</span> </a>
+<a class="sourceLine" id="cb336-3" data-line-number="3">  <span class="kw">head</span>(dt_train)</a></code></pre></div>
+<pre><code>##   ATTORNEY CLMSEX MARITAL CLMINSUR SEATBELT CLMAGE   LOSS Y     pred_rf1
+## 1        1      1    &lt;NA&gt;        2        1     50 34.940 1           NA
+## 2        2      2       2        1        1     28 10.892 1 3.739339e-01
+## 3        2      1       2        2        1      5  0.330 0 6.700844e-05
+## 4        1      1       1        2        2     32 11.037 1 8.044245e-01
+## 5        2      1       4        2        1     30  0.138 0 4.058483e-03
+## 7        1      1       2        2        1     19  3.538 0 1.521188e-02</code></pre>
+<div class="sourceCode" id="cb338"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb338-1" data-line-number="1">  <span class="kw">tail</span>(dt_train)</a></code></pre></div>
+<pre><code>##      ATTORNEY CLMSEX MARITAL CLMINSUR SEATBELT CLMAGE  LOSS Y     pred_rf1
+## 1332        1      2       2        2        1     13 1.951 0 0.0007952672
+## 1333        2      2       2        2        1     19 1.110 0 0.0006900556
+## 1334        2      1       2        2        1     49 0.100 0 0.0062276082
+## 1335        2      2       2        2        1     26 0.161 0 0.0007159829
+## 1338        2      2       1        2        1     39 0.099 0 0.0080326490
+## 1340        2      2       2        2        1     30 0.688 0 0.0011077024</code></pre>
+<div class="sourceCode" id="cb340"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb340-1" data-line-number="1">  <span class="kw">summary</span>(dt_train)</a></code></pre></div>
+<pre><code>##  ATTORNEY  CLMSEX    MARITAL    CLMINSUR   SEATBELT       CLMAGE     
+##  1:471    1   :406   1   :439   1   : 77   1   :885   Min.   : 0.00  
+##  2:467    2   :523   2   :455   2   :833   2   : 17   1st Qu.:20.00  
+##           NA&#39;s:  9   3   : 10   NA&#39;s: 28   NA&#39;s: 36   Median :32.00  
+##                      4   : 25                         Mean   :33.06  
+##                      NA&#39;s:  9                         3rd Qu.:43.00  
+##                                                       Max.   :95.00  
+##                                                       NA&#39;s   :134    
+##       LOSS                Y             pred_rf1      
+##  Min.   :  0.0050   Min.   :0.0000   Min.   :0.00007  
+##  1st Qu.:  0.7123   1st Qu.:0.0000   1st Qu.:0.00483  
+##  Median :  2.3645   Median :0.0000   Median :0.03644  
+##  Mean   :  5.4656   Mean   :0.1141   Mean   :0.12016  
+##  3rd Qu.:  4.0263   3rd Qu.:0.0000   3rd Qu.:0.20796  
+##  Max.   :273.6040   Max.   :1.0000   Max.   :0.80442  
+##                                      NA&#39;s   :179</code></pre>
+<div class="sourceCode" id="cb342"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb342-1" data-line-number="1">  <span class="kw">plot</span>(<span class="kw">density</span>(dt_train<span class="op">$</span>pred_rf1[<span class="op">!</span><span class="kw">is.na</span>(dt_train<span class="op">$</span>pred_rf1)]), <span class="dt">col=</span><span class="st">&quot;red&quot;</span> , <span class="dt">xlab=</span><span class="st">&quot;Predicciones&quot;</span> , <span class="dt">main=</span><span class="st">&quot;Función de densidad estimada&quot;</span>)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-36-1.png" width="672" /></p>
+<p>Vemos que hay (claramente) dos concentraciones (clases) de probabilidades de pérdida, una concentranción en torno a la probabilidad de pérdida no severa (<span class="math inline">\(Y=0\)</span>) y otra para la pérdida severa (<span class="math inline">\(Y=1\)</span>).</p>
+<p>Esto no lleva a determinar la elección del punto de corte óptimo para obtener una regla de clasificación, es decir, un criterio para <span class="math inline">\(Y_predicted=1\)</span> (pérdida severa), o bien, para <span class="math inline">\(Y_predicted=0\)</span> (pérdida no severa). Para ello utilizaremos el criterio de la distancia de Kolmogorov-Smirnov (KS).</p>
+<p>Calculamos la medida de “performance” del mecanismo (modelo) de predicción ‘rf1’</p>
+<div class="sourceCode" id="cb343"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb343-1" data-line-number="1">  rf1.pred &lt;-<span class="st"> </span><span class="kw">prediction</span>(<span class="kw">as.numeric</span>(rf1<span class="op">$</span>predicted),<span class="kw">as.numeric</span>(rf1<span class="op">$</span>y)) </a></code></pre></div>
+<p>con el train creamos un objeto de tipo ‘prediction’</p>
+<div class="sourceCode" id="cb344"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb344-1" data-line-number="1">  rf1.perf &lt;-<span class="st"> </span><span class="kw">performance</span>(rf1.pred,<span class="st">&quot;tpr&quot;</span>,<span class="st">&quot;fpr&quot;</span>) </a></code></pre></div>
+<div id="criterio-de-la-distancia-de-ks" class="section level3">
+<h3><span class="header-section-number">9.1.1</span> Criterio de la distancia de KS:</h3>
+<div class="sourceCode" id="cb345"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb345-1" data-line-number="1">rf1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]][rf1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]]<span class="op">==</span><span class="ot">Inf</span>] &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">max</span>(rf1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]][rf1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]]<span class="op">!=</span><span class="ot">Inf</span>]),<span class="dv">2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb346"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb346-1" data-line-number="1">  KS.matrix=<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">abs</span>(rf1.perf<span class="op">@</span>y.values[[<span class="dv">1</span>]]<span class="op">-</span>rf1.perf<span class="op">@</span>x.values[[<span class="dv">1</span>]]), rf1.perf<span class="op">@</span>alpha.values[[<span class="dv">1</span>]])</a></code></pre></div>
+<p>La distancia KS se calcula como: KS = abs(<a href="mailto:rf1.perf@y.values">rf1.perf@y.values</a>[[1]]-<a href="mailto:rf1.perf@x.values">rf1.perf@x.values</a>[[1]])</p>
+<div class="sourceCode" id="cb347"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb347-1" data-line-number="1"><span class="kw">colnames</span>(KS.matrix) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;KS-distance&quot;</span>,<span class="st">&quot;cut-point&quot;</span>)</a>
+<a class="sourceLine" id="cb347-2" data-line-number="2"><span class="kw">head</span>(KS.matrix)</a></code></pre></div>
+<pre><code>##      KS-distance cut-point
+## [1,] 0.000000000 0.7800000
+## [2,] 0.001497006 0.7826242
+## [3,] 0.002994012 0.7452204
+## [4,] 0.007994999 0.6750160
+## [5,] 0.006497993 0.6717595
+## [6,] 0.005000987 0.6529603</code></pre>
+<div class="sourceCode" id="cb349"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb349-1" data-line-number="1">ind.ks  &lt;-<span class="st"> </span><span class="kw">sort</span>( KS.matrix[,<span class="dv">1</span>] , <span class="dt">index.return=</span><span class="ot">TRUE</span> )<span class="op">$</span>ix[<span class="kw">nrow</span>(KS.matrix)] </a></code></pre></div>
+<p>El punto de corte óptimo de KS</p>
+<div class="sourceCode" id="cb350"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb350-1" data-line-number="1">  rf1.KScutoff &lt;-<span class="st"> </span>KS.matrix[ind.ks,<span class="dv">2</span>] <span class="co"># := f(rf1.KS1)</span></a>
+<a class="sourceLine" id="cb350-2" data-line-number="2"><span class="co"># 0.04 - 0.05 </span></a></code></pre></div>
+</div>
+<div id="grafico-de-la-curva-roc-y-su-metrica-asociada" class="section level3">
+<h3><span class="header-section-number">9.1.2</span> Gráfico de la Curva ROC y su métrica asociada</h3>
+<p>Área bajo la curva ROC (AUC), para evaluar el poder de clasificación</p>
+<p>Tenemos dos maneras de calcular el área bajo la curva ROC:</p>
+<p>Cálculo de AUC mediante la función ‘performance’</p>
+<div class="sourceCode" id="cb351"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb351-1" data-line-number="1">rf1.auc1 &lt;-<span class="st"> </span><span class="kw">performance</span>(rf1.pred,<span class="st">&quot;auc&quot;</span>)<span class="op">@</span>y.values[[<span class="dv">1</span>]]</a></code></pre></div>
+<p>0.737 - 0.738</p>
+<p>Finalmente calculamos la curva ROC junto con la métrica AUC</p>
+<div class="sourceCode" id="cb352"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb352-1" data-line-number="1"><span class="co">#win.graph()</span></a>
+<a class="sourceLine" id="cb352-2" data-line-number="2"><span class="kw">plot</span>( rf1.perf , <span class="dt">col=</span><span class="st">&#39;red&#39;</span>  , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">type=</span><span class="st">&quot;l&quot;</span>, <span class="dt">xlab=</span><span class="st">&quot;Tasa de falsos positivos&quot;</span> , <span class="dt">ylab=</span><span class="st">&quot;Tasa de verdaderos positivos&quot;</span>, <span class="dt">main=</span><span class="st">&quot;Curva ROC modelo Random Forest&quot;</span>)</a>
+<a class="sourceLine" id="cb352-3" data-line-number="3"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">1</span>  , <span class="dt">col=</span><span class="st">&quot;blue&quot;</span> , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">lty=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb352-4" data-line-number="4"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">0</span> , <span class="dv">1</span> , <span class="dt">col=</span><span class="st">&quot;gray40&quot;</span>   , <span class="dt">lty=</span><span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb352-5" data-line-number="5"><span class="kw">legend</span>( <span class="fl">0.4</span>, <span class="fl">0.15</span> , <span class="kw">c</span>(<span class="kw">paste0</span>(<span class="st">&quot;AUC (Random Forest)=&quot;</span>,<span class="kw">round</span>(rf1.auc1,<span class="dv">4</span>)),<span class="st">&quot;AUC (clasificaci?n al azar)=0.50&quot;</span>),<span class="dt">lty=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">lwd=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>) ,<span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;blue&quot;</span>), <span class="dt">bty=</span><span class="st">&quot;n&quot;</span>)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-44-1.png" width="672" /></p>
+<p>Para realizar el mismo gráfico de la curva ROC utilizando la librería <code>ggplot2</code></p>
+<div class="sourceCode" id="cb353"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb353-1" data-line-number="1"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)</a></code></pre></div>
+<p>Generamos los datos en un data.frame</p>
+<div class="sourceCode" id="cb354"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb354-1" data-line-number="1">  df.perf &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x=</span>rf1.perf<span class="op">@</span>x.values[[<span class="dv">1</span>]],<span class="dt">y=</span>rf1.perf<span class="op">@</span>y.values[[<span class="dv">1</span>]])</a></code></pre></div>
+<p>Costrucción del objeto gráfico con ggplot2</p>
+<div class="sourceCode" id="cb355"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb355-1" data-line-number="1"><span class="co">#win.graph()</span></a>
+<a class="sourceLine" id="cb355-2" data-line-number="2">p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df.perf,<span class="kw">aes</span>(<span class="dt">x=</span>x,<span class="dt">y=</span>y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_path</span>(<span class="dt">size=</span><span class="dv">1</span>, <span class="dt">colour=</span><span class="st">&quot;red&quot;</span>)</a>
+<a class="sourceLine" id="cb355-3" data-line-number="3">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Curva ROC modelo Random Forest&quot;</span>)</a>
+<a class="sourceLine" id="cb355-4" data-line-number="4">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">theme_update</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">hjust =</span> <span class="fl">0.5</span>))</a>
+<a class="sourceLine" id="cb355-5" data-line-number="5">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="dv">0</span>,<span class="dt">y=</span><span class="dv">0</span>,<span class="dt">xend=</span><span class="dv">1</span>,<span class="dt">yend=</span><span class="dv">1</span>),<span class="dt">colour=</span><span class="st">&quot;blue&quot;</span>,<span class="dt">linetype=</span> <span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb355-6" data-line-number="6">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="fl">0.75</span> , <span class="dt">y=</span><span class="fl">0.3</span> , <span class="dt">label=</span><span class="kw">paste</span>(<span class="dt">sep =</span><span class="st">&quot;&quot;</span>,<span class="st">&quot;AUC (Random Forest) ) = &quot;</span>,<span class="kw">round</span>(rf1.auc1,<span class="dv">4</span>) )),<span class="dt">colour=</span><span class="st">&quot;black&quot;</span>,<span class="dt">size=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb355-7" data-line-number="7">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="fl">0.75</span> , <span class="dt">y=</span><span class="fl">0.25</span> , <span class="dt">label=</span><span class="kw">paste</span>(<span class="dt">sep =</span><span class="st">&quot;&quot;</span>,<span class="st">&quot;AUC (Coin toss) = &quot;</span>,<span class="kw">round</span>(<span class="fl">0.50</span>,<span class="dv">4</span>) )),<span class="dt">colour=</span><span class="st">&quot;black&quot;</span>,<span class="dt">size=</span><span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb355-8" data-line-number="8">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_continuous</span>(<span class="dt">name=</span> <span class="st">&quot;Tasa de falsos positivos&quot;</span>)</a>
+<a class="sourceLine" id="cb355-9" data-line-number="9">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">scale_y_continuous</span>(<span class="dt">name=</span> <span class="st">&quot;Tasa de verdaderos positivos&quot;</span>)</a>
+<a class="sourceLine" id="cb355-10" data-line-number="10">p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(</a>
+<a class="sourceLine" id="cb355-11" data-line-number="11">  <span class="dt">plot.title   =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">2</span>),</a>
+<a class="sourceLine" id="cb355-12" data-line-number="12">  <span class="dt">axis.text.x  =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>),</a>
+<a class="sourceLine" id="cb355-13" data-line-number="13">  <span class="dt">axis.text.y  =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>),</a>
+<a class="sourceLine" id="cb355-14" data-line-number="14">  <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>,<span class="dt">face =</span> <span class="st">&quot;italic&quot;</span>),</a>
+<a class="sourceLine" id="cb355-15" data-line-number="15">  <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>,<span class="dt">face =</span> <span class="st">&quot;italic&quot;</span>,<span class="dt">angle=</span><span class="dv">90</span>),</a>
+<a class="sourceLine" id="cb355-16" data-line-number="16">  <span class="dt">legend.title     =</span> <span class="kw">element_blank</span>(), </a>
+<a class="sourceLine" id="cb355-17" data-line-number="17">  <span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;grey&quot;</span>),</a>
+<a class="sourceLine" id="cb355-18" data-line-number="18">  <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>(), </a>
+<a class="sourceLine" id="cb355-19" data-line-number="19">  <span class="dt">panel.grid.major =</span> <span class="kw">element_line</span>(<span class="dt">colour=</span><span class="st">&#39;white&#39;</span>),</a>
+<a class="sourceLine" id="cb355-20" data-line-number="20">  <span class="dt">plot.background  =</span> <span class="kw">element_blank</span>()</a>
+<a class="sourceLine" id="cb355-21" data-line-number="21">)</a></code></pre></div>
+<p>Generamos el gráfico que hemos almacenado en la variable ‘p’:</p>
+<div class="sourceCode" id="cb356"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb356-1" data-line-number="1">p</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-48-1.png" width="672" /></p>
+<p>Calculamos la predicción en el test y evaluamos el poder de clasificación del modelo</p>
+<div class="sourceCode" id="cb357"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb357-1" data-line-number="1">rf1.pred_test     &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">predict</span>( rf1, <span class="dt">newdata =</span> dt_test))</a>
+<a class="sourceLine" id="cb357-2" data-line-number="2">dt_test<span class="op">$</span>pred_rf1  &lt;-<span class="st"> </span>rf1.pred_test<span class="op">$</span><span class="st">`</span><span class="dt">predict(rf1, newdata = dt_test)</span><span class="st">`</span> </a></code></pre></div>
+<div class="sourceCode" id="cb358"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb358-1" data-line-number="1"><span class="kw">head</span>(dt_test)</a></code></pre></div>
+<pre><code>##    ATTORNEY CLMSEX MARITAL CLMINSUR SEATBELT CLMAGE   LOSS Y    pred_rf1
+## 6         1      2       1        2        1     35  0.309 0 0.248381186
+## 12        1      1       1        2        1     42 29.620 1 0.220724924
+## 18        1      1       1        2        1     58  0.758 0 0.199511204
+## 21        1      1       2     &lt;NA&gt;        1     37  3.200 0          NA
+## 22        2      2       1        2        1     39  0.230 0 0.008032649
+## 34        1      2       2        2        1     35  2.673 0 0.303488003</code></pre>
+<div class="sourceCode" id="cb360"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb360-1" data-line-number="1"><span class="kw">tail</span>(dt_test)</a></code></pre></div>
+<pre><code>##      ATTORNEY CLMSEX MARITAL CLMINSUR SEATBELT CLMAGE  LOSS Y    pred_rf1
+## 1326        1      2       2        2        1     19 3.269 0 0.001133968
+## 1328        1      2       3        2        1     71 0.505 0 0.625923580
+## 1330        2      2       2        2        1     33 1.535 0 0.001283937
+## 1336        2      1       2        2        1     NA 0.576 0          NA
+## 1337        1      2       1        2        1     46 3.705 0 0.431751239
+## 1339        1      2       2        1        1     18 3.277 0 0.003433201</code></pre>
+<div class="sourceCode" id="cb362"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb362-1" data-line-number="1"><span class="kw">summary</span>(dt_test)</a></code></pre></div>
+<pre><code>##  ATTORNEY  CLMSEX    MARITAL    CLMINSUR   SEATBELT       CLMAGE     
+##  1:214    1   :180   1   :185   1   : 43   1   :385   Min.   : 0.00  
+##  2:188    2   :219   2   :195   2   :346   2   :  5   1st Qu.:19.00  
+##           NA&#39;s:  3   3   :  5   NA&#39;s: 13   NA&#39;s: 12   Median :29.00  
+##                      4   : 10                         Mean   :31.31  
+##                      NA&#39;s:  7                         3rd Qu.:42.00  
+##                                                       Max.   :78.00  
+##                                                       NA&#39;s   :55     
+##       LOSS                 Y             pred_rf1      
+##  Min.   :   0.0050   Min.   :0.0000   Min.   :0.00007  
+##  1st Qu.:   0.5175   1st Qu.:0.0000   1st Qu.:0.00615  
+##  Median :   2.1645   Median :0.0000   Median :0.03819  
+##  Mean   :   7.0917   Mean   :0.1144   Mean   :0.12815  
+##  3rd Qu.:   3.7782   3rd Qu.:0.0000   3rd Qu.:0.22274  
+##  Max.   :1067.6970   Max.   :1.0000   Max.   :0.78703  
+##                                       NA&#39;s   :70</code></pre>
+<p>Con el test creamos un objeto de tipo ‘prediction’</p>
+<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb364-1" data-line-number="1">dt_test.pred  &lt;-<span class="st"> </span><span class="kw">prediction</span>(<span class="kw">as.numeric</span>(rf1.pred_test<span class="op">$</span><span class="st">`</span><span class="dt">predict(rf1, newdata = dt_test)</span><span class="st">`</span>),dt_test<span class="op">$</span>Y) </a>
+<a class="sourceLine" id="cb364-2" data-line-number="2">dt_test.perf  &lt;-<span class="st"> </span><span class="kw">performance</span>(dt_test.pred,<span class="st">&quot;tpr&quot;</span>,<span class="st">&quot;fpr&quot;</span>) </a></code></pre></div>
+<p>Evaluación del poder de clasificación del modelo RF1 vía curva ROC</p>
+<div class="sourceCode" id="cb365"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb365-1" data-line-number="1">rf1.test.auc &lt;-<span class="st"> </span><span class="kw">performance</span>(dt_test.pred ,<span class="st">&quot;auc&quot;</span>)<span class="op">@</span>y.values[[<span class="dv">1</span>]]</a></code></pre></div>
+<p>Gráfico de la curva ROC para el test</p>
+<div class="sourceCode" id="cb366"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb366-1" data-line-number="1"><span class="co">#win.graph()</span></a>
+<a class="sourceLine" id="cb366-2" data-line-number="2"><span class="kw">plot</span>( dt_test.perf , <span class="dt">col=</span><span class="st">&#39;red&#39;</span> , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">type=</span><span class="st">&quot;l&quot;</span> , <span class="dt">main=</span><span class="st">&quot;Curva ROC modelo RF - test&quot;</span>,<span class="dt">xlab=</span><span class="st">&quot;Tasa de falsos positivos&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Tasa de verdaderos positivos&quot;</span>)</a>
+<a class="sourceLine" id="cb366-3" data-line-number="3"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">1</span>  , <span class="dt">col=</span><span class="st">&quot;blue&quot;</span> , <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">lty=</span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb366-4" data-line-number="4"><span class="kw">abline</span>( <span class="dv">0</span> , <span class="dv">0</span> , <span class="dv">1</span> , <span class="dt">col=</span><span class="st">&quot;gray40&quot;</span>   , <span class="dt">lty=</span><span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb366-5" data-line-number="5"><span class="kw">legend</span>( <span class="fl">0.4</span>, <span class="fl">0.2</span> , <span class="kw">c</span>(<span class="kw">paste0</span>(<span class="st">&quot;AUC (Random Forest)=&quot;</span>,<span class="kw">round</span>(rf1.test.auc,<span class="dv">4</span>)),<span class="st">&quot;AUC (Coin toss)=0.50&quot;</span>) ,<span class="dt">lty=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">lwd=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>) ,<span class="dt">col=</span><span class="kw">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;blue&quot;</span>), <span class="dt">bty=</span><span class="st">&quot;n&quot;</span>)</a></code></pre></div>
+<p><img src="09-RandomForests_files/figure-html4/unnamed-chunk-55-1.png" width="672" /></p>
+</div>
+<div id="metrica-de-error-del-clasificador-rf" class="section level3">
+<h3><span class="header-section-number">9.1.3</span> Métrica de error del clasificador RF:</h3>
+<ul>
+<li>Error tipo I (<span class="math inline">\(\alpha\)</span>): 22.50%, indica el error que se comete clasificando una pérdida ‘severa’ como ‘no severa’</li>
+<li>Error tipo II (<span class="math inline">\(\beta\)</span>): 43.15%, indica el error que se comete clasificando una pérdida ‘no severa’ como ‘severa’</li>
+<li>% mala clasificación (<span class="math inline">\(%mc\)</span>) : 40.66%, indica el % de veces que el modelo clasifica incorrectamente las pérdidas</li>
+<li>Accuracy = <span class="math inline">\(100 - %\)</span>: 59.34%, indica el % de veces que el modelo acierta clasificando las pérdidas</li>
+<li>Area bajo la curva ROC <span class="math inline">\(AUC\)</span>: 0.6988, medida global del poder de clasificación del modelo</li>
+<li>Finalmente calculamos la curva ROC junto con la métrica AUC</li>
+</ul>
+<p>Una función útil para obtener rápidamente el análisis de un clasificador binario es la siguiente:</p>
+<div class="sourceCode" id="cb367"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb367-1" data-line-number="1"><span class="kw">library</span>(binaryLogic)</a>
+<a class="sourceLine" id="cb367-2" data-line-number="2"><span class="kw">metricBinaryClass</span>( <span class="dt">fitted.model =</span> rf1 , <span class="dt">dataset=</span> dt_test , <span class="dt">cutpoint=</span>rf1.KScutoff , <span class="dt">roc.graph=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<pre><code>## $ClassError.tI
+## [1] 22.5
+## 
+## $ClassError.tII
+## [1] 44.52
+## 
+## $Accuracy
+## [1] 58.13
+## 
+## $Sensitivity
+## [1] 77.5
+## 
+## $Specificity
+## [1] 55.48
+## 
+## $auc
+## [1] 0.698887
+## 
+## $Fisher.F1
+## [1] 30.8458</code></pre>
+<div class="sourceCode" id="cb369"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb369-1" data-line-number="1"><span class="kw">metricBinaryClass</span>(<span class="dt">fitted.model =</span> rf1 , <span class="dt">dataset=</span> dt_test , <span class="dt">cutpoint=</span>rf1.KScutoff , <span class="dt">roc.graph=</span><span class="ot">TRUE</span>)</a></code></pre></div>
+<pre><code>## $ClassError.tI
+## [1] 22.5
+## 
+## $ClassError.tII
+## [1] 44.52
+## 
+## $Accuracy
+## [1] 58.13
+## 
+## $Sensitivity
+## [1] 77.5
+## 
+## $Specificity
+## [1] 55.48
+## 
+## $auc
+## [1] 0.698887
+## 
+## $Fisher.F1
+## [1] 30.8458</code></pre>
+</div>
+<div id="ejercicio-propuesto" class="section level3">
+<h3><span class="header-section-number">9.1.4</span> Ejercicio propuesto:</h3>
+<p>¿Qué suecede con los errores de clasificación si cambiamos el punto de corte (<strong>cutpoint</strong>)?</p>
+<ol style="list-style-type: decimal">
+<li>Tomar una serie de valores distintos para el parámetro cutpoint y graficar las distintas curvas ROC resultantes</li>
+<li>Graficar la superficie formada por los errores tipo I y tipo II versus el punto de corte ¿Qué valor minimiza ambos errores?</li>
+</ol>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="random-forests.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="b-entrenamiento-del-modelo-rf-regresion.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": null,
+"download": ["bookdown-start.pdf"],
+"toc": {
+"collapse": "section",
+"scroll_highlight": true
+},
+"toolbar": {
+"position": "fixed"
+},
+"search": true
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
