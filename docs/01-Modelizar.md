@@ -59,9 +59,9 @@ Las técnicas/modelos analíticos utilizadas dependen del output o target. En ge
 
 Un esquema aceptado sobre las fases de un proyecto de _Data Science_ es^[Fuente: http://r4ds.had.co.nz/introduction.html]:
 
-<img src='http://r4ds.had.co.nz/diagrams/data-science-model.png' alt="Modelling" style="float:width:90%;">
+<!-- <img src='http://r4ds.had.co.nz/diagrams/data-science-model.png' alt="Modelling" style="float:width:90%;"> -->
 
-
+<img src="imgs/data-science-model.png" width="90%" />
 
  > _Data_ y _Analytics_ van de la mano.  
 
@@ -69,7 +69,10 @@ Un esquema aceptado sobre las fases de un proyecto de _Data Science_ es^[Fuente:
 
 Más generalmente, como lo expone @mar2015, en el context de _Big Data_, **apply analytics** (A), se encuentra en el corazón de la estrategia para crear  _SMART Business_ y aprovechar al máximo el valor de los datos.
 
-<img src='http://www.meiyusheng.com/wp-content/uploads/2015/04/1.jpg' alt="SMART Model" style="float:width:60%;">
+<!-- <img src='https://pbs.twimg.com/media/CDgmVL8VIAAlZSa.jpg' alt="SMART Model" style="float:width:60%;"> -->
+
+
+<img src="imgs/CDgmVL8VIAAlZSa.jpg" width="90%" />
 
 En resumen, **Modelizar** es el proceso de crear, desarrollar y validar modelos que sirvan  para convertir los datos en información de negocio significativa que ayude a ejecutar las estrategias y mejorar el rendimiento.
 

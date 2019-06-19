@@ -14,12 +14,18 @@
 
 
 
-<img src='http://reliawiki.org/images/8/81/Doe4.4.png' alt="Linear Regression Model" style="float:width:90%;">
+<!-- <img src='http://reliawiki.org/images/8/81/Doe4.4.png' alt="Linear Regression Model" style="float:width:90%;"> -->
+
+
+<img src="imgs/Doe4.4.png" width="90%" />
 
 
 
-<img src='http://reliawiki.org/images/2/28/Doe4.3.png' alt="Linear Regression Model" style="float:width:90%;">
+<!-- <img src='http://reliawiki.org/images/2/28/Doe4.3.png' alt="Linear Regression Model" style="float:width:90%;"> -->
 
+
+
+<img src="imgs/Doe4.3.png" width="90%" />
 
 
 
@@ -271,7 +277,7 @@ reg_ls
 ## 
 ## Coefficients:
 ## (Intercept)        lstat  
-##     34.6025      -0.9588
+##     34.5623      -0.9507
 ```
 
 Veamos los coeficientes de la regresión
@@ -282,7 +288,7 @@ reg_ls$coefficients
 
 ```
 ## (Intercept)       lstat 
-##  34.6024754  -0.9587758
+##  34.5623206  -0.9507218
 ```
 
 Donde el término independiente es:
@@ -293,7 +299,7 @@ reg_ls$coefficients[1]
 
 ```
 ## (Intercept) 
-##    34.60248
+##    34.56232
 ```
 
 y el coeficiente de la variable `lstat`es:
@@ -304,13 +310,13 @@ reg_ls$coefficients[2]
 
 ```
 ##      lstat 
-## -0.9587758
+## -0.9507218
 ```
 
 De manera que la recta de regresión lineal, siendo $y$ la variable `medv` y $x$ la variable `lstat`,  es:
 
 ```
-## y =  34.60248 +  -0.9587758 x
+## y =  34.56232 +  -0.9507218 x
 ```
 
 
@@ -323,10 +329,10 @@ residuales[1:10]
 ```
 
 ```
-##          119          172          310          296          302 
-##  0.533909389 -3.968401947 -4.743480196  0.009049163 -3.494104845 
-##           97          281           64           10          138 
-## -2.329957283 14.402521782 -0.494104845  0.692591608 -3.513935773
+##       292       490       254       391       264       396        99 
+##  6.122249 -4.773519 11.603235 -3.195471  7.133299 -5.185964 12.631756 
+##       123        67       120 
+##  2.984121 -5.426930 -2.322997
 ```
 
 Una vez obtenido el modelo de regresión lineal, para realizar la predicción sobre un nuevo conjunto de datos, utilizamos la función `predict`, de la siguiente manera:
@@ -338,10 +344,10 @@ predic[1:10]
 ```
 
 ```
-##        3        4        6        7       15       17       23       24 
-## 30.73861 31.78367 29.60725 22.68489 24.76544 28.29373 16.65419 15.54201 
-##       32       40 
-## 22.10004 30.46056
+##        1        4        5       11       13       16       26       29 
+## 29.82773 31.76720 29.49497 15.12006 19.62648 26.50971 18.86590 22.39308 
+##       36       40 
+## 25.35933 30.45520
 ```
 
 Algunas representaciones gráficas de un modelo de regresión son:
@@ -358,7 +364,7 @@ b <- regresion$coefficients[[2]]
 text(30,40,labels = paste('Y = ', round(b,2),'x +', round(a,2)), col='red')
 ```
 
-<img src="03-RegresionLineal_files/figure-html/unnamed-chunk-17-1.png" width="672" />
+<img src="03-RegresionLineal_files/figure-html/unnamed-chunk-19-1.png" width="672" />
 
  - Análisis de residuos:
 
@@ -367,7 +373,7 @@ par(mfrow=c(2,2))
 plot(regresion)
 ```
 
-<img src="03-RegresionLineal_files/figure-html/unnamed-chunk-18-1.png" width="672" />
+<img src="03-RegresionLineal_files/figure-html/unnamed-chunk-20-1.png" width="672" />
 
 
 
@@ -387,7 +393,7 @@ reg_lm
 ## 
 ## Coefficients:
 ## (Intercept)        lstat          age  
-##    33.01208     -1.05444      0.04043
+##    33.15672     -1.04496      0.03772
 ```
 Veamos los coeficientes de la regresión
 
@@ -397,7 +403,7 @@ reg_lm$coefficients
 
 ```
 ## (Intercept)       lstat         age 
-## 33.01208016 -1.05443525  0.04043364
+## 33.15671847 -1.04495825  0.03772379
 ```
 
 Donde el término independiente es:
@@ -408,7 +414,7 @@ reg_lm$coefficients[1]
 
 ```
 ## (Intercept) 
-##    33.01208
+##    33.15672
 ```
 
 el coeficiente de la variable `lstat` es:
@@ -419,7 +425,7 @@ reg_lm$coefficients[2]
 
 ```
 ##     lstat 
-## -1.054435
+## -1.044958
 ```
 y el coeficiente de la variable `age` es:
 
@@ -429,13 +435,13 @@ reg_lm$coefficients[3]
 
 ```
 ##        age 
-## 0.04043364
+## 0.03772379
 ```
 
 De manera que la recta de regresión lineal, siendo $y$ la variable `medv`, $x1$ la variable `lstat` y $x2$ la variable `age`, será:
 
 ```
-## y =  33.01208 +  -1.054435 x1 + 0.04043364 x2
+## y =  33.15672 +  -1.044958 x1 + 0.03772379 x2
 ```
 
 Veamos los gráficos de dispersión 2 a 2:
@@ -462,11 +468,11 @@ reg_lm2
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##   34.974966    -0.107018     0.048068     0.013927     3.857327  
+##   40.685456    -0.103266     0.053443     0.053404     2.622868  
 ##         nox           rm          age          dis          rad  
-##  -16.117031     3.453519     0.008654    -1.393086     0.280090  
+##  -20.762079     3.509399     0.012496    -1.420615     0.325632  
 ##         tax      ptratio        black        lstat  
-##   -0.011566    -0.825490     0.009525    -0.575474
+##   -0.012429    -1.012739     0.007428    -0.559932
 ```
 
 Por otro lado, si quisieramos usarlas todas excepto alguna, podemos escribir:
@@ -483,11 +489,11 @@ reg_lm3
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##   34.831525    -0.107240     0.046749     0.014307     3.881510  
+##   40.653754    -0.103041     0.051837     0.052493     2.651261  
 ##         nox           rm          dis          rad          tax  
-##  -15.547730     3.507795    -1.434833     0.277867    -0.011533  
+##  -19.989302     3.574275    -1.485743     0.322502    -0.012378  
 ##     ptratio        black        lstat  
-##   -0.821080     0.009619    -0.564270
+##   -1.007982     0.007521    -0.542632
 ```
 
 

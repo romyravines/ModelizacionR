@@ -1,7 +1,6 @@
 # Tipos de Problemas
 
 
-
 <!-- ## Problemas Supervisados vs. Problemas No Supervisados -->
 
 <!-- Machine learning uses two types of techniques: supervised -->
