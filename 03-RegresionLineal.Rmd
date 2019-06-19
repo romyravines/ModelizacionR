@@ -1,7 +1,10 @@
 # (PART) Modelos Estadísticos {-} 
 
 ```{r setup, include=FALSE}
+library(knitr)    # For knitting document and include_graphics function
+library(png)      # For grabbing the dimensions of png files
 knitr::opts_chunk$set(echo = TRUE)
+imgs_path = "imgs/"
 ```
 
 # Regresión Lineal
@@ -27,12 +30,24 @@ abline(regresion, col='blue', lwd=1,lty=3)
 
 
 
-<img src='http://reliawiki.org/images/8/81/Doe4.4.png' alt="Linear Regression Model" style="float:width:90%;">
+<!-- <img src='http://reliawiki.org/images/8/81/Doe4.4.png' alt="Linear Regression Model" style="float:width:90%;"> -->
+
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"Doe4.4.png",sep="")
+include_graphics(img_path) 
+```
 
 
 
-<img src='http://reliawiki.org/images/2/28/Doe4.3.png' alt="Linear Regression Model" style="float:width:90%;">
+<!-- <img src='http://reliawiki.org/images/2/28/Doe4.3.png' alt="Linear Regression Model" style="float:width:90%;"> -->
 
+
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"Doe4.3.png",sep="")
+include_graphics(img_path) 
+```
 
 
 

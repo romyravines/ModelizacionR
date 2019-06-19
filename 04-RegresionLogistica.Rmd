@@ -1,12 +1,31 @@
 # Regresión Logística
 
 
+```{r , echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results="hide"}
+if (!require(knitr)) install.packages('knitr', repos = c('https://xran.yihui.name', 'https://cran.rstudio.org'))
+#devtools::install_github("yihui/knitr", build_vignettes = TRUE)
+library(knitr)    # For knitting document and include_graphics function
+if (!require(png)) install.packages('png')
+library(png)      # For grabbing the dimensions of png files
+imgs_path = "imgs/"
+```
 
-<img src='http://ravanhami.com/wp-content/uploads/2017/10/LogReg_1.png' alt="Logistic Regression Model" style="float:width:95%;">
 
+<!-- <img src='http://ravanhami.com/wp-content/uploads/2017/10/LogReg_1.png' alt="Logistic Regression Model" style="float:width:95%;"> -->
+
+```{r  out.width = "95%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"LogReg_1.png",sep="")
+include_graphics(img_path) 
+```
 
 <br>
-<img src='https://cdn.livechatinc.com/website/uploads/2016/04/customer-churn@2x.jpg' alt=" " style="float:right;width:50%;">
+<!-- <img src='https://cdn.livechatinc.com/website/uploads/2016/04/customer-churn@2x.jpg' alt=" " style="float:right;width:50%;"> -->
+
+```{r  out.width = "50%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"customer-churn@2x.jpg",sep="")
+include_graphics(img_path) 
+```
+
 
 Una aplicación muy conocida son los modelos de **churn**. Un modelo de churn es una herramienta que permite evaluar la **probabilidad de baja o fuga** de un cliente en función de sus características propias y del tipo de relación que tiene con la empresa.</p>
 

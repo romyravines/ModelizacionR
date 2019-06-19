@@ -10,8 +10,7 @@ El conocimiento y especialización que Innova-tsn ha adquirido a lo largo de los
 De este modo, se pretende alcanzar eficientemente el principal objetivo de Aula Innova: Dotar a los clientes de Innova-tsn de los conocimientos y competencias necesarias para afrontar eficiente y autónomamente sus propios retos de negocio.
 
 
-
-\includegraphics[width=0.89\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/InnovaTrainingLogo} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/InnovaTrainingLogo.png" width="89%" />
 
 
  
@@ -21,18 +20,15 @@ De este modo, se pretende alcanzar eficientemente el principal objetivo de Aula 
 
 
 
-\begin{tabular}{ll}
-\toprule
-Alicia Morales & <alicia.morales@innova-tsn.com>\\
-Alicia Muñoz & <alicia.munoz@innova-tsn.com>\\
-Alvaro Díaz & <alvaro.munoz@innova-tsn.com>\\
-Andrés Devia & <andres.devia@innova-tsn.com>\\
-Daniel Vélez & <daniel.velez@innova-tsn.com>\\
-\addlinespace
-Diego Fernández & <diego.fernandez@innova-tsn.com>\\
-Jaume Puigbó & <jaume.puigbo@innova-tsn.com>\\
-Juan Luis Rivero & <juan.rivero@innova-tsn.com>\\
-Pablo Hidalgo & <pablo.hidalgo@innova-tsn.com>\\
-Romy Rodríguez & <romy.rodríguez@innova-tsn.com>\\
-\bottomrule
-\end{tabular}
+-----------------  ---------------------------------
+Alicia Morales     <alicia.morales@innova-tsn.com>  
+Alicia Muñoz       <alicia.munoz@innova-tsn.com>    
+Alvaro Díaz        <alvaro.munoz@innova-tsn.com>    
+Andrés Devia       <andres.devia@innova-tsn.com>    
+Daniel Vélez       <daniel.velez@innova-tsn.com>    
+Diego Fernández    <diego.fernandez@innova-tsn.com> 
+Jaume Puigbó       <jaume.puigbo@innova-tsn.com>    
+Juan Luis Rivero   <juan.rivero@innova-tsn.com>     
+Pablo Hidalgo      <pablo.hidalgo@innova-tsn.com>   
+Romy Rodríguez     <romy.rodríguez@innova-tsn.com>  
+-----------------  ---------------------------------

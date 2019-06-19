@@ -8,11 +8,11 @@ nas hipótesis y que, si estas no se cumplen, el modelo falla estrepitosamente.
 
 Por ejemplo, una regresión lineal supone que la estructura de los datos sigue una tendencia lineal. 
 
-![](07-SupervisedLearning_files/figure-latex/unnamed-chunk-1-1.pdf)<!-- --> 
+<img src="07-SupervisedLearning_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 Si la estructura de los datos no sigue la hipótesis de linealidad, el modelo lineal es inservible en este caso
 
-![](07-SupervisedLearning_files/figure-latex/unnamed-chunk-2-1.pdf)<!-- --> 
+<img src="07-SupervisedLearning_files/figure-html/unnamed-chunk-2-1.png" width="672" />
 
 Los métodos propios del machine learning intentan ser **métodos flexibles** que permitan adaptarse a estructuras sin imponer hipótesis rígidas. 
 
@@ -28,8 +28,7 @@ Estos tres modelos utilizan los árboles de decisión como algoritmo base, así 
 
 ## Árboles de decisión
 
-
-\includegraphics[width=0.75\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/CartHastie} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/CartHastie.png" width="75%" />
 
 Los **árboles de decisión** particionan el espacio en un conjunto de rectángulos y ajustan un modelo simple (como una constante) en cada uno de ellos.
 
@@ -85,7 +84,7 @@ plot(tree.carseats)
 text(tree.carseats)
 ```
 
-![](07-SupervisedLearning_files/figure-latex/unnamed-chunk-4-1.pdf)<!-- --> 
+<img src="07-SupervisedLearning_files/figure-html/unnamed-chunk-4-1.png" width="672" />
 
 ```r
 tree.carseats
@@ -169,8 +168,7 @@ Las **desventajas** son:
  - No tienen un buen poder predictivo.
  - Poco robustos: un pequeño cambio en los datos suponen un gran cambio en el árbol estimado.
 
-
-\includegraphics[width=0.75\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/arbol2} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/arbol2.png" width="75%" />
 
 ## Bagging y Random Forest
 
@@ -218,36 +216,28 @@ FALSE black    6.737108     384.53170
 FALSE lstat   27.720132    7184.83340
 ```
 
-![](07-SupervisedLearning_files/figure-latex/unnamed-chunk-6-1.pdf)<!-- --> 
+<img src="07-SupervisedLearning_files/figure-html/unnamed-chunk-6-1.png" width="672" />
 
 
 ## Boosting
 
 Es una familia de algoritmos de *machine learning* cuya idea es la de utilizar **métodos de aprendizaje débiles** (*weak learners*) para crear un método de aprendizaje fuerte con alto poder predictivo. Es uno de los algoritmos de aprendizaje que **mayor impacto han tenido en los últimos 20 años.** Robert E. Schapire y Yoav Freund recibieron el **premio Gödel en 2003** por su trabajo sobre boosting. La mayoría de los **ganadores recientes en Kaggle**, utilizan boosting. Buscadores como *Yahoo* utilizan **versiones propias de algoritmos de boosting**.
 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_1(2).png" width="45%" />
 
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_1(2)} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_2(2).png" width="45%" />
 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_3(2).png" width="45%" />
 
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_2(2)} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_4(2).png" width="45%" />
 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_5(2).png" width="45%" />
 
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_3(2)} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_6(2).png" width="45%" />
 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_8(2).png" width="45%" />
 
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_4(2)} 
-
-
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_5(2)} 
-
-
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_6(2)} 
-
-
-\includegraphics[width=0.45\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/Intuicion_8(2)} 
-
-
-\includegraphics[width=0.85\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/LibroBoosting} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/LibroBoosting.png" width="85%" />
 
 
 El algoritmo sería 
@@ -368,13 +358,11 @@ Para solventar estos problemas surge una iniciativa relativamente novedosa conoc
 
 La idea intuitiva que hay detrás de esta técnica es que, aunque un modelo pueda ser altamente complejo y flexible, se supone que es localmente estable:
 
-
-\includegraphics[width=0.65\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/lime} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/lime.png" width="65%" />
 
 Por ejemplo, si entrenasemos una red neuronal para intenar describir los elementos de una fotografía, nos interesaría saber **qué es lo que soporta la decisión**
 
-
-\includegraphics[width=0.85\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/lime2} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/lime2.png" width="85%" />
 
 ### Un ejemplo en R
 
@@ -407,5 +395,5 @@ explanation <- explain(biopsy[test_set[1:4], ], explainer, n_labels = 1, n_featu
 plot_features(explanation, ncol = 1)
 ```
 
-![](07-SupervisedLearning_files/figure-latex/unnamed-chunk-18-1.pdf)<!-- --> 
+<img src="07-SupervisedLearning_files/figure-html/unnamed-chunk-18-1.png" width="672" />
 

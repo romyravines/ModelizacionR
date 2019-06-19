@@ -39,8 +39,7 @@ description: "Curso-taller preparado para profesionales analiticos."
 
 
 
-
-\includegraphics[width=0.75\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/sabadellcurso} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/sabadellcurso.jpg" width="75%" />
 
 **Modelización con R** es un manual práctico para la creación y utilización de modelos analíticos con el lenguaje R [@R-base]. En particular, esta versión del manual ha sido desarrollada para el equipo de _modelling_ del **Banc Sabadell** en Barcelona. 
 

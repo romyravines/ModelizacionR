@@ -30,8 +30,7 @@ Si la naturaleza de tu respuesta es un número real - como la temperatura o el t
 
 ## Técnicas de _Clustering_
 
-
-\includegraphics[width=0.8\linewidth]{imgs/unsupervisedtechniques} 
+<img src="imgs/unsupervisedtechniques.png" width="80%" />
 
 <!-- most unsupervised learning techniques are -->
 <!-- a form of cluster analysis. -->
@@ -172,8 +171,7 @@ Los algoritmos de clustering se dividen en dos grandes grupos^[Fuente: https://e
 ## Técnicas de Clasificación
 
 
-
-\includegraphics[width=0.8\linewidth]{imgs/classificationtechniques} 
+<img src="imgs/classificationtechniques.png" width="80%" />
 
 <br>
 
@@ -277,8 +275,7 @@ no lineal.
 
 
 
-
-\includegraphics[width=0.8\linewidth]{imgs/regressiontechniques} 
+<img src="imgs/regressiontechniques.png" width="80%" />
 <br>
 
 <div class="info">
@@ -419,8 +416,7 @@ el campo del análisis espacial para la interpolación en presencia de incertidu
 
 
 
-
-\includegraphics[width=0.9\linewidth]{imgs/choosealgorithm} 
+<img src="imgs/choosealgorithm.png" width="90%" />
 
 
 

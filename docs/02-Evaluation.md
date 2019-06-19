@@ -6,8 +6,7 @@
 
 
 
-
-\includegraphics[width=0.9\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/modellingcycle} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/modellingcycle.png" width="90%" />
 
 El ciclo de vida de un modelo empieza con su propia definición, pasando por la extracción y tratamiento de los datos y la evaluación, tanto antes de ponerlo en producción, como en la monitorización de su calidad predictiva.
 
@@ -38,8 +37,7 @@ Ambas pueden ser utilizadas para monitorizar la calidad de los modelos en produc
 
 ## Diagnosis de Negocio
 
-
-\includegraphics[width=0.9\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluanegocio} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluanegocio.png" width="90%" />
 
  * Los **parámetros** de los modelos estadisticos sirven para cuantificar el efecto de las palancas. Su interpretación depende de la propia especificación del modelo. Los principales tipos de parámetros son:  elasticidad, semi-elasticidad, _piecewise_, _yes/no_. Si el output es 0-1, la interpretación de los parámetros depende de la función enlace utilizada (_logit_ o _probit_).
 
@@ -54,8 +52,7 @@ Ambas pueden ser utilizadas para monitorizar la calidad de los modelos en produc
 
 
 
-
-\includegraphics[width=0.9\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluabinario} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluabinario.png" width="90%" />
 
 
 No todos los problemas son iguales, con lo que no todos los problemas pueden usar las mismas métricas de evaluación. En esta sección veremos las métricas más usuales para los tipos de problemas que nos podemos encontrar. Si nos centramos en modelos supervisados, nos encontramos básicamente dos problemas distintos: clasificación y regresión.
@@ -74,8 +71,7 @@ Para simplificar nos centraremos en la clasificación binaria, pero lo podemos t
 La confusion matrix o matriz de confusión muestra el número de predicciones correctas e incorrectas hechas por el modelo de clasificación en comparación con los resultados reales en los datos. La matriz de confusión es una matriz $n \times n$, dónde $n$ es el número de clases. La siguiente tabla muestra una matriz de confusión de $2x2$ para dos clases (positiva y negativa).
 
 
-
-\includegraphics[width=0.8\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/confusionmatrix} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/confusionmatrix.png" width="80%" />
 
 * **Accuracy**: la proporción del número total de predicciones correctas.
 
@@ -127,8 +123,7 @@ El indicador más utilizado en muchos contextos es el área bajo la curva ROC o 
 En la figura abajo se muestran tres ejemplos de curvas ROC. La gráfica de la izquierda es la curva de un modelo perfecto, la del medio es la de un caso real con una $AUC = 0.8$ y la de la derecha es la gráfico de un modelo no informativo.
 
 
-
-\includegraphics[width=0.8\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/curvasroc} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/curvasroc.png" width="80%" />
 
 #### Gráficos de ganancia y elevación (Gain and Lift Charts)
 
@@ -138,8 +133,7 @@ Para crear estos gráficos es necesario crear un ranking basado en la creabilida
 
 En la figura  tenemos un ejemplo de como obtener los puntos de las curvas de ganancia y elevación, y sus correspondientes gráficos. 
 
-
-\includegraphics[width=0.8\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/gainlift} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/gainlift.png" width="80%" />
 
 Igual que las curvas ROC, se busca el mayor AUC en las curvas de ganancia. Mientras que para los gráficos de elevación el modelo perfecto es el que la diferencia entre la línea azul y roja es nula. En otras palabras queremos una AUC mínima del gráfico de elevación.
 
@@ -175,8 +169,7 @@ donde $n$ el número de muestras y $y$ es la medida de desigualdad.
 
 ## Evaluación en Respuesta Continúa
 
-
-\includegraphics[width=0.9\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluacontinuo} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/evaluacontinuo.png" width="90%" />
 
 
 ### Modelos de Regresión
@@ -276,13 +269,11 @@ Los objetos con un coeficiente de silueta $s_i$ alto están bien integrados en s
 
 
 
-
-\includegraphics[width=0.9\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/silueta} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/silueta.jpg" width="90%" />
 
 ## Métodos de re-muestreo 
 
-
-\includegraphics[width=0.8\linewidth]{C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/traintess} 
+<img src="C:/Users/romy.rodriguez/Documents/INNOVA/Formacion/MiCurso/ModelizacionR/imgs/traintess.png" width="80%" />
 
 
 ### Training & testing
@@ -450,7 +441,7 @@ hist(LOSS, breaks=300 , probability = T)
 lines(density(LOSS), col="red",main="Loss distribution")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-20-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-20-1.png" width="672" />
 
  - Utilizamos una medida _robusta_ (depende de la mediana y del IQR^[The interquartile range of an observation variable is the difference of its upper and lower quartiles. It is a measure of how far apart the middle portion of data spreads in value]) para segmentar los datos en dos clases: 
   * `1` si las pérdidas son atípicamente altas o 
@@ -477,7 +468,7 @@ FALSE [1] 153
 ```
 
 ```
-FALSE pdf 
+FALSE png 
 FALSE   2
 ```
 
@@ -823,7 +814,7 @@ FALSE  - attr(*, "class")= chr [1:2] "randomForest.formula" "randomForest"
   varImpPlot(rf1,sort = T,main = "Variable Importance")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-37-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-37-1.png" width="672" />
 
  > Gráfico del Error vs número de árboles
 
@@ -832,7 +823,7 @@ FALSE  - attr(*, "class")= chr [1:2] "randomForest.formula" "randomForest"
   plot(rf1, main="Error de clasificación vs núero de  árboles") 
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-38-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-38-1.png" width="672" />
 
   > Gráfico de la probabilidad condicional: $P(Y=1|X_1 = ATTORNEY,\ldots,X_6=SEATBELT)$
 
@@ -904,7 +895,7 @@ FALSE  - attr(*, "class")= chr [1:2] "randomForest.formula" "randomForest"
   plot(density(dt_train$pred_rf1[!is.na(dt_train$pred_rf1)]), col="red" , xlab="Probabilidad" , main="Función de densidad estimada")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-39-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-39-1.png" width="672" />
 
  - Vemos que hay (claramente) dos concentraciones (clases) de probabilidades de pérdida, una concentración en torno a la probabilidad de pérdida no severa ($Y=0$) y otra para la pérdida severa ($Y=1$).
 
@@ -941,7 +932,7 @@ library(binaryLogic)
  plot(rf1.perf)
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-42-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-42-1.png" width="672" />
 
 
  > Elección del punto de corte: Criterio de la distancia de KS
@@ -1017,7 +1008,7 @@ abline( 0 , 0 , 1 , col="gray40"   , lty=3)
 legend( 0.4, 0.15 , c(paste0("AUC (Random Forest)=",round(rf1.auc1,4)),"AUC (clasificacion al azar)=0.50"),lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-47-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-47-1.png" width="672" />
 
  - Se realizar el mismo gráfico de la curva ROC utilizando la librería `ggplot2`. Para ello guardamos los datos en un `data.frame`
 
@@ -1054,7 +1045,7 @@ p <- p + theme(
 p
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-49-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-49-1.png" width="672" />
 
  > Métricas de evaluación del poder predictivo
 
@@ -1134,7 +1125,7 @@ abline( 0 , 0 , 1 , col="gray40"   , lty=3)
 legend( 0.4, 0.2 , c(paste0("AUC (Random Forest)=",round(rf1.test.auc,4)),"AUC (Coin toss)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-54-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-54-1.png" width="672" />
 
 
 
@@ -1407,7 +1398,7 @@ str(rf2)
 varImpPlot(rf2,sort = T,main="Variable Importance")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-59-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-59-1.png" width="672" />
 
  > Previsión en _test_
 
@@ -1480,7 +1471,7 @@ plot(density(dt_test$pred_rf2[!is.na(dt_test$pred_rf2) & dt_test$pred_rf2 < 30])
 lines(density(dt_test$LOSS[dt_test$LOSS<30]),col="blue",lty=1)
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-62-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-62-1.png" width="672" />
 
 
 ```r
@@ -1508,7 +1499,7 @@ plot(modelchecktest1, xlim=c(0,100) , ylim=c(0,100) ,  pch="." , cex=1.5)
 segments( 0, 0 , 100, 100 , col="red")
 ```
 
-![](02-Evaluation_files/figure-latex/unnamed-chunk-64-1.pdf)<!-- --> 
+<img src="02-Evaluation_files/figure-html/unnamed-chunk-64-1.png" width="672" />
 
  > Resumiendo
  

@@ -9,8 +9,7 @@
 <!-- that it can predict future outputs, and unsupervised learning, which -->
 <!-- finds hidden patterns or intrinsic structures in input data. -->
 
-
-\includegraphics[width=0.9\linewidth]{imgs/mlalgorithms01} 
+<img src="imgs/mlalgorithms01.png" width="90%" />
 
 En bastante común que los algoritmos de _Machine Learning_ en aprendizaje supervisado y aprendizaje no supervisado. Esta misma clasificación se menciona en la sección \@ref(clasemodelos), las herramientas de _statistical learning_. Este tipo de clasificación responde al tipo de problema e información que disponemos del _output_, por ello, en este Manual generalizamos esta clasificación y la denominamos **Tipo de Problema Analítico** que debemos afrontar.
 

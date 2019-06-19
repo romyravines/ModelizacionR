@@ -356,37 +356,37 @@ reg_ls</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)        lstat  
-##     34.4975      -0.9504</code></pre>
+##     34.6025      -0.9588</code></pre>
 <p>Veamos los coeficientes de la regresión</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_ls<span class="op">$</span>coefficients</code></pre>
 <pre><code>## (Intercept)       lstat 
-##  34.4975175  -0.9504457</code></pre>
+##  34.6024754  -0.9587758</code></pre>
 <p>Donde el término independiente es:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_ls<span class="op">$</span>coefficients[<span class="dv">1</span>]</code></pre>
 <pre><code>## (Intercept) 
-##    34.49752</code></pre>
+##    34.60248</code></pre>
 <p>y el coeficiente de la variable <code>lstat</code>es:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_ls<span class="op">$</span>coefficients[<span class="dv">2</span>]</code></pre>
 <pre><code>##      lstat 
-## -0.9504457</code></pre>
+## -0.9587758</code></pre>
 <p>De manera que la recta de regresión lineal, siendo <span class="math inline">\(y\)</span> la variable <code>medv</code> y <span class="math inline">\(x\)</span> la variable <code>lstat</code>, es:</p>
-<pre><code>## y =  34.49752 +  -0.9504457 x</code></pre>
+<pre><code>## y =  34.60248 +  -0.9587758 x</code></pre>
 <p>Si queremos obtener los errores residuales de las observaciones correspondientes:</p>
 <pre class="sourceCode r"><code class="sourceCode r">residuales &lt;-<span class="st"> </span>reg_ls<span class="op">$</span>residuals
 <span class="co"># Veamos los residuales de las 10 primeras observaciones</span>
 residuales[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>]</code></pre>
-<pre><code>##        363        379         89        345         76         64 
-## -4.0124757  1.1185414 -5.6700661  1.0840372 -4.6005328 -0.4682832 
-##         51        501        316        437 
-## -2.0140227 -4.0776304 -7.3673918 -7.7419724</code></pre>
+<pre><code>##          119          172          310          296          302 
+##  0.533909389 -3.968401947 -4.743480196  0.009049163 -3.494104845 
+##           97          281           64           10          138 
+## -2.329957283 14.402521782 -0.494104845  0.692591608 -3.513935773</code></pre>
 <p>Una vez obtenido el modelo de regresión lineal, para realizar la predicción sobre un nuevo conjunto de datos, utilizamos la función <code>predict</code>, de la siguiente manera:</p>
 <pre class="sourceCode r"><code class="sourceCode r">predic &lt;-<span class="st"> </span><span class="kw">predict</span>(reg_ls, <span class="dt">newdata =</span> test)
 <span class="co">#Veamos la predicción de las 10 primeras observaciones</span>
 predic[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>]</code></pre>
-<pre><code>##         2         6         8        11        14        25        34 
-## 25.810444 29.545695 16.296482 15.060903 26.646836 19.005252 17.056839 
-##        49        54        66 
-##  5.214285 26.485260 30.058936</code></pre>
+<pre><code>##        3        4        6        7       15       17       23       24 
+## 30.73861 31.78367 29.60725 22.68489 24.76544 28.29373 16.65419 15.54201 
+##       32       40 
+## 22.10004 30.46056</code></pre>
 <p>Algunas representaciones gráficas de un modelo de regresión son:</p>
 <ul>
 <li>Dispersión de los puntos y la recta de regresión lineal simple obtenida:</li>
@@ -418,25 +418,25 @@ reg_lm</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)        lstat          age  
-##    33.63205     -1.00541      0.02289</code></pre>
+##    33.01208     -1.05444      0.04043</code></pre>
 <p>Veamos los coeficientes de la regresión</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_lm<span class="op">$</span>coefficients</code></pre>
 <pre><code>## (Intercept)       lstat         age 
-##  33.6320457  -1.0054079   0.0228852</code></pre>
+## 33.01208016 -1.05443525  0.04043364</code></pre>
 <p>Donde el término independiente es:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_lm<span class="op">$</span>coefficients[<span class="dv">1</span>]</code></pre>
 <pre><code>## (Intercept) 
-##    33.63205</code></pre>
+##    33.01208</code></pre>
 <p>el coeficiente de la variable <code>lstat</code> es:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_lm<span class="op">$</span>coefficients[<span class="dv">2</span>]</code></pre>
 <pre><code>##     lstat 
-## -1.005408</code></pre>
+## -1.054435</code></pre>
 <p>y el coeficiente de la variable <code>age</code> es:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_lm<span class="op">$</span>coefficients[<span class="dv">3</span>]</code></pre>
-<pre><code>##       age 
-## 0.0228852</code></pre>
+<pre><code>##        age 
+## 0.04043364</code></pre>
 <p>De manera que la recta de regresión lineal, siendo <span class="math inline">\(y\)</span> la variable <code>medv</code>, <span class="math inline">\(x1\)</span> la variable <code>lstat</code> y <span class="math inline">\(x2\)</span> la variable <code>age</code>, será:</p>
-<pre><code>## y =  33.63205 +  -1.005408 x1 + 0.0228852 x2</code></pre>
+<pre><code>## y =  33.01208 +  -1.054435 x1 + 0.04043364 x2</code></pre>
 <p>Veamos los gráficos de dispersión 2 a 2:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pairs</span>(Boston[,<span class="kw">c</span>(<span class="st">&#39;medv&#39;</span>,<span class="st">&#39;lstat&#39;</span>, <span class="st">&#39;age&#39;</span>)],<span class="dt">panel =</span> panel.smooth)</code></pre>
 <p><img src="03-RegresionLineal_files/figure-html/]-1.png" width="672" /></p>
@@ -450,11 +450,11 @@ reg_lm2</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##   34.493133    -0.102681     0.051960     0.011247     3.618118  
+##   34.974966    -0.107018     0.048068     0.013927     3.857327  
 ##         nox           rm          age          dis          rad  
-##  -19.229433     4.029826    -0.005499    -1.530193     0.308246  
+##  -16.117031     3.453519     0.008654    -1.393086     0.280090  
 ##         tax      ptratio        black        lstat  
-##   -0.012192    -0.910011     0.010621    -0.475281</code></pre>
+##   -0.011566    -0.825490     0.009525    -0.575474</code></pre>
 <p>Por otro lado, si quisieramos usarlas todas excepto alguna, podemos escribir:</p>
 <pre class="sourceCode r"><code class="sourceCode r">reg_lm3 &lt;-<span class="st"> </span><span class="kw">lm</span>(medv<span class="op">~</span>.<span class="op">-</span>age, <span class="dt">data =</span> train)
 reg_lm3</code></pre>
@@ -464,11 +464,11 @@ reg_lm3</code></pre>
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##    34.75321     -0.10258      0.05256      0.01144      3.59839  
+##   34.831525    -0.107240     0.046749     0.014307     3.881510  
 ##         nox           rm          dis          rad          tax  
-##   -19.70045      3.99336     -1.50772      0.31033     -0.01225  
+##  -15.547730     3.507795    -1.434833     0.277867    -0.011533  
 ##     ptratio        black        lstat  
-##    -0.91672      0.01056     -0.48229</code></pre>
+##   -0.821080     0.009619    -0.564270</code></pre>
 
 </div>
 </div>
