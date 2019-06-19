@@ -5,6 +5,7 @@ output_dir: docs
 rmd_files: ["index.Rmd", 
 "01-Modelizar.Rmd","01a-Modelos.Rmd", "01b-Modelos.Rmd","02-Evaluation.Rmd", 
 "03-RegresionLineal.Rmd", "04-RegresionLogistica.Rmd","05-SeriesTemporales.Rmd",
-"07-SupervisedLearning.Rmd", "20-anexo.Rmd","12-Referencias.Rmd"]
+"06-UnsupervisedLearning.Rmd","07-SupervisedLearning.Rmd",
+"20-anexo.Rmd","12-Referencias.Rmd"]
 clean: [packages.bib, bookdown.bbl]
 new_session: yes

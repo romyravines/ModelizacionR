@@ -77,7 +77,7 @@
   font-family: Georgia, serif;
 }
 .book.font-family-1 {
-  font-family: "Century Gothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .book.color-theme-1 .book-body .page-wrapper .page-inner section.normal {
   color: #704214;
@@ -104,7 +104,8 @@
   background-color: inherit;
 }
 .book.color-theme-1 .book-body .page-wrapper .page-inner section.normal blockquote {
-  border-color: inherit;
+  border-color: #c4b29f;
+  opacity: 0.9;
 }
 .book.color-theme-1 .book-body .page-wrapper .page-inner section.normal pre,
 .book.color-theme-1 .book-body .page-wrapper .page-inner section.normal code {

@@ -13,9 +13,9 @@ imgs_path = "imgs/"
 
 <!-- ---------## Motivación---------------------------------------------- -->
 
-Los sistemas analíticos  están presentes en todas las áreas de negocio del sector bancario.  A muy alto nivel, se puede contar con modelos predictivos en la gestión de clientes, gestión del riesgo y en el soporte a las operaciones. Así mismo, dichos sistemas pueden estar desagregados por segmento, producto, región geográfica, etc. 
+Los sistemas analíticos  están presentes en todas las áreas de negocio de todos los sectores empresariales.  A muy alto nivel, se puede contar con modelos predictivos en la gestión de clientes, gestión del riesgo y en el soporte a las operaciones. Así mismo, dichos sistemas pueden estar desagregados por segmento, producto, región geográfica, etc. 
 
-Algunas de las aplicaciones de la modelización son:
+Tomando como ejemplo el sector bancario, algunas de las aplicaciones de la modelización son:
 
 
 <br>

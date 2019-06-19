@@ -277,7 +277,7 @@ reg_ls
 ## 
 ## Coefficients:
 ## (Intercept)        lstat  
-##     34.5623      -0.9507
+##      34.406       -0.948
 ```
 
 Veamos los coeficientes de la regresión
@@ -288,7 +288,7 @@ reg_ls$coefficients
 
 ```
 ## (Intercept)       lstat 
-##  34.5623206  -0.9507218
+##  34.4061181  -0.9480419
 ```
 
 Donde el término independiente es:
@@ -299,7 +299,7 @@ reg_ls$coefficients[1]
 
 ```
 ## (Intercept) 
-##    34.56232
+##    34.40612
 ```
 
 y el coeficiente de la variable `lstat`es:
@@ -310,13 +310,13 @@ reg_ls$coefficients[2]
 
 ```
 ##      lstat 
-## -0.9507218
+## -0.9480419
 ```
 
 De manera que la recta de regresión lineal, siendo $y$ la variable `medv` y $x$ la variable `lstat`,  es:
 
 ```
-## y =  34.56232 +  -0.9507218 x
+## y =  34.40612 +  -0.9480419 x
 ```
 
 
@@ -329,10 +329,10 @@ residuales[1:10]
 ```
 
 ```
-##       292       490       254       391       264       396        99 
-##  6.122249 -4.773519 11.603235 -3.195471  7.133299 -5.185964 12.631756 
-##       123        67       120 
-##  2.984121 -5.426930 -2.322997
+##         160         428         449         312         132         181 
+## -4.10008860 -9.74054994 -3.11811873 -6.63682766 -3.18312461 12.56107852 
+##          45         468         408         154 
+## -4.15231812  4.90613489  4.99362995 -0.03653674
 ```
 
 Una vez obtenido el modelo de regresión lineal, para realizar la predicción sobre un nuevo conjunto de datos, utilizamos la función `predict`, de la siguiente manera:
@@ -344,10 +344,10 @@ predic[1:10]
 ```
 
 ```
-##        1        4        5       11       13       16       26       29 
-## 29.82773 31.76720 29.49497 15.12006 19.62648 26.50971 18.86590 22.39308 
-##       36       40 
-## 25.35933 30.45520
+##         5        11        15        19        20        28        30 
+## 29.353055 15.018662 24.679208 23.323508 23.712206 18.023954 23.048576 
+##        33        36        38 
+##  8.135877 25.229073 26.091791
 ```
 
 Algunas representaciones gráficas de un modelo de regresión son:
@@ -393,7 +393,7 @@ reg_lm
 ## 
 ## Coefficients:
 ## (Intercept)        lstat          age  
-##    33.15672     -1.04496      0.03772
+##    33.14816     -1.03036      0.03329
 ```
 Veamos los coeficientes de la regresión
 
@@ -403,7 +403,7 @@ reg_lm$coefficients
 
 ```
 ## (Intercept)       lstat         age 
-## 33.15671847 -1.04495825  0.03772379
+## 33.14815946 -1.03036412  0.03328534
 ```
 
 Donde el término independiente es:
@@ -414,7 +414,7 @@ reg_lm$coefficients[1]
 
 ```
 ## (Intercept) 
-##    33.15672
+##    33.14816
 ```
 
 el coeficiente de la variable `lstat` es:
@@ -425,7 +425,7 @@ reg_lm$coefficients[2]
 
 ```
 ##     lstat 
-## -1.044958
+## -1.030364
 ```
 y el coeficiente de la variable `age` es:
 
@@ -435,13 +435,13 @@ reg_lm$coefficients[3]
 
 ```
 ##        age 
-## 0.03772379
+## 0.03328534
 ```
 
 De manera que la recta de regresión lineal, siendo $y$ la variable `medv`, $x1$ la variable `lstat` y $x2$ la variable `age`, será:
 
 ```
-## y =  33.15672 +  -1.044958 x1 + 0.03772379 x2
+## y =  33.14816 +  -1.030364 x1 + 0.03328534 x2
 ```
 
 Veamos los gráficos de dispersión 2 a 2:
@@ -468,11 +468,11 @@ reg_lm2
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##   40.685456    -0.103266     0.053443     0.053404     2.622868  
+##   34.785192    -0.118096     0.048020     0.030283     2.828830  
 ##         nox           rm          age          dis          rad  
-##  -20.762079     3.509399     0.012496    -1.420615     0.325632  
+##  -13.909169     3.644206    -0.001432    -1.436879     0.333283  
 ##         tax      ptratio        black        lstat  
-##   -0.012429    -1.012739     0.007428    -0.559932
+##   -0.013701    -0.910308     0.011107    -0.581303
 ```
 
 Por otro lado, si quisieramos usarlas todas excepto alguna, podemos escribir:
@@ -489,11 +489,11 @@ reg_lm3
 ## 
 ## Coefficients:
 ## (Intercept)         crim           zn        indus         chas  
-##   40.653754    -0.103041     0.051837     0.052493     2.651261  
+##    34.81143     -0.11822      0.04816      0.03027      2.82593  
 ##         nox           rm          dis          rad          tax  
-##  -19.989302     3.574275    -1.485743     0.322502    -0.012378  
+##   -14.01174      3.63657     -1.42979      0.33375     -0.01371  
 ##     ptratio        black        lstat  
-##   -1.007982     0.007521    -0.542632
+##    -0.91157      0.01109     -0.58302
 ```
 
 
