@@ -97,3 +97,26 @@ div.proof:after {
 .header-section-number {
   padding-right: .5em;
 }
+.rmdcomment {
+  padding: 1em 1em 1em 4.5em;
+  margin-bottom: 10px;
+  background: #f5f5f5;
+  position:relative;
+  color: #5b2659;
+}
+
+.rmdcomment:before {
+    content: "\f27b";
+    font-family: FontAwesome;
+    left:10px;
+    position:absolute;
+    top:0px;
+    font-size: 45px;
+ }
+.info {
+	color: #c70e0f;
+    padding: .5em .25em .25em .5em;
+	margin-bottom: 15px;
+    background-color: #f5f5f5;
+    border-left: 8px solid #c70e0f;
+}
