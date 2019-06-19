@@ -1,12 +1,10 @@
 
 # (PART) MODELOS ANALÍTICOS {-} 
 
-```{r setup, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results="hide"}
-if (!require(knitr)) install.packages('knitr', repos = c('https://xran.yihui.name', 'https://cran.rstudio.org'))
-#devtools::install_github("yihui/knitr", build_vignettes = TRUE)
+```{r setup, include=FALSE}
 library(knitr)    # For knitting document and include_graphics function
-if (!require(png)) install.packages('png')
 library(png)      # For grabbing the dimensions of png files
+knitr::opts_chunk$set(echo = TRUE)
 imgs_path = "imgs/"
 ```
 
@@ -79,9 +77,13 @@ include_graphics(img_path)
 
 Más generalmente, como lo expone @mar2015, en el context de _Big Data_, **apply analytics** (A), se encuentra en el corazón de la estrategia para crear  _SMART Business_ y aprovechar al máximo el valor de los datos.
 
-<img src='https://pbs.twimg.com/media/CDgmVL8VIAAlZSa.jpg' alt="SMART Model" style="float:width:60%;">
+<!-- <img src='https://pbs.twimg.com/media/CDgmVL8VIAAlZSa.jpg' alt="SMART Model" style="float:width:60%;"> -->
 
 
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"CDgmVL8VIAAlZSa.jpg",sep="")
+include_graphics(img_path) 
+```
 
 En resumen, **Modelizar** es el proceso de crear, desarrollar y validar modelos que sirvan  para convertir los datos en información de negocio significativa que ayude a ejecutar las estrategias y mejorar el rendimiento.
 

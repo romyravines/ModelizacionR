@@ -1,13 +1,11 @@
 # Tipos de Problemas
 
-```{r setup, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results="hide"}
-if (!require(knitr)) install.packages('knitr', repos = c('https://xran.yihui.name', 'https://cran.rstudio.org'))
+```{r setup, include=FALSE}
 library(knitr)    # For knitting document and include_graphics function
-if (!require(png)) install.packages('png')
 library(png)      # For grabbing the dimensions of png files
+knitr::opts_chunk$set(echo = TRUE)
 imgs_path = "imgs/"
 ```
-
 <!-- ## Problemas Supervisados vs. Problemas No Supervisados -->
 
 <!-- Machine learning uses two types of techniques: supervised -->

@@ -11,7 +11,7 @@ La variable que se analiza toma valor 1 ó 0. Para representar la relación entr
 <img src='imgs/front_page.png' alt=" " style="float:right;width:30%;">
 
 
-## Modelos Lineales Generalizados {.tabset}
+## Modelos Lineales Generalizados
 
 Los Modelos Lineales Generalizados son una extensión de los  modelos lineales
 clásicos. Un modelo lineal se basa en un vector de observaciones  $\mathbf{Y}$ con $n$ componentes,
@@ -131,6 +131,11 @@ La distribución de la variable dependiente $Y$, dado un valor de $x$ de la vari
 
 
 ## Modelo Probit
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"415059.image0.jpg",sep="")
+include_graphics(img_path) 
+```
 
 
 La relación existente entre $E(Y= 1/X=x_1)$ y $X$, que como dicho anteriormente no es linea, se asocia también con la curva de distribución normal.Este enfoque utiliza la inversa de la función de distribución normal para obtener una relación lineal entre $E(Y= 1/X=x_1)$ y $X$. Y una vez hayamos tenido los valores en forma de relación lineal del tipo $g(x) = B_0+B_1x_1$ volveremos a transformarlo en una curva que se asemeje a una distribución aleatoria de la siguiente manera:
