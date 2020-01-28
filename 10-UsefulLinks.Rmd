@@ -1,0 +1,23 @@
+
+# (PART) ANEXO {-} 
+
+```{r setup, include=FALSE}
+library(knitr)    # For knitting document and include_graphics function
+library(png)      # For grabbing the dimensions of png files
+knitr::opts_chunk$set(echo = TRUE)
+imgs_path = "imgs/"
+```
+
+
+# Links Utiles {#links}
+
+<!-- ---------## Motivación---------------------------------------------- -->
+
+
+ - [Getting AI/ML and DevOps working better together](https://azure.microsoft.com/es-es/blog/getting-ai-ml-and-devops-working-better-together/)
+ 
+
+<!-- ------------------------------------------------------- -->
+
+
+

@@ -1,0 +1,15 @@
+
+# (PART) Machine Learning {-} 
+
+```{r setup, include=FALSE}
+library(knitr)
+library(png)
+knitr::opts_chunk$set(echo = TRUE)
+imgs_path = "imgs/"
+```
+
+
+# Modelizar {#modelizacion}
+
+<!-- ---------## Motivación---------------------------------------------- -->
+

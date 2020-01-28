@@ -1,7 +1,7 @@
 --- 
-title: "Modelización en R"
+title: "Industrialización del Machine Learning"
 author: "Romy Rodríguez-Ravines"
-date: "2019"
+date: "Madrid. Enero2020"
 site: bookdown::bookdown_site
 output:
   bookdown::gitbook:
@@ -27,7 +27,7 @@ documentclass: book
 bibliography: [book.bib]
 biblio-style: apalike
 link-citations: yes
-description: "Manual básico para profesionales que utilizan analítica avanzada."
+description: "Un reto 2020."
 ---
 
 
@@ -38,18 +38,10 @@ description: "Manual básico para profesionales que utilizan analítica avanzada
 
 `
 
+Cada vez más organizaciones están invirtiendo en el desarrollo de aplicaciones modelos de Machine Learning (ML) y aplicaciones de Inteligencia Articial para su propio uso. A dia de hoy no cabe duda del valor que puede aportar - a todas las áreas de negocio - el conocimiento obtenido con la utilización de AI y ML. 
 
-**Modelización con R** es un manual práctico para la creación y utilización de modelos analíticos con el lenguaje R [@R-base]. Esta versión del manual puede  ser utilizada por equipos analíticos, _data scientists_ de cualquier organización. 
 
-El objetivo de este manual es presentar de manera resumida, los principales algoritmos del _analytics_, destacando cuándo deben ser utilizados y cómo evaluar los resultados que ofrece.
-
-Cada capítulo corresponde a un tipo de modelo o problema predictivo. Se pueden leer de manera individual. Todos los ejemplos están desarrollados con datos incluídos en las librerias de R y/o se encuentran disponibles en la web. Son de uso libre.
-
-Para realizar las prácticas sugeridas en este manual, el lector requiere un portátil donde tenga instaladas las últimas versiones de R y RStudio. Además debe contar con una conexión a internet  y la posibilidad de instalar las librerías que se citan a lo largo del documento.
-
+AI y ML extienden las capacidades que de las aplicaciones tecnológicas: 
 
 Empezamos!
 
-<img src="imgs/browsing.png" width="30%" />
-
-<!-- caption: "Icons [Freepik](https://www.freepik.com/) from [Flaticon](https://www.flaticon.com/)" -->

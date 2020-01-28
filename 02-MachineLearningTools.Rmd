@@ -1,0 +1,18 @@
+# Machine Learning en Azure
+
+```{r setup, include=FALSE}
+library(knitr)
+library(png)
+knitr::opts_chunk$set(echo = TRUE)
+imgs_path = "imgs/"
+```
+<!-- Introduccion -->
+
+
+# Azure Machine Learning Service
+
+## Design
+
+## Notebooks
+
+## AutoML
