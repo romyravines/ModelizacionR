@@ -1,0 +1,170 @@
+# Tipos de Problemas
+
+```{r setup, include=FALSE}
+library(knitr)    # For knitting document and include_graphics function
+library(png)      # For grabbing the dimensions of png files
+knitr::opts_chunk$set(echo = TRUE)
+imgs_path = "imgs/"
+```
+<!-- ## Problemas Supervisados vs. Problemas No Supervisados -->
+
+<!-- Machine learning uses two types of techniques: supervised -->
+<!-- learning, which trains a model on known input and output data so -->
+<!-- that it can predict future outputs, and unsupervised learning, which -->
+<!-- finds hidden patterns or intrinsic structures in input data. -->
+
+```{r  out.width = "90%", echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+img_path =paste(imgs_path,"mlalgorithms01.png",sep="")
+include_graphics(img_path) 
+```
+
+En bastante común que los algoritmos de _Machine Learning_ en aprendizaje supervisado y aprendizaje no supervisado. Esta misma clasificación se menciona en la sección \@ref(clasemodelos), las herramientas de _statistical learning_. Este tipo de clasificación responde al tipo de problema e información que disponemos del _output_, por ello, en este Manual generalizamos esta clasificación y la denominamos **Tipo de Problema Analítico** que debemos afrontar.
+
+
+
+<br>
+
+<div class="info">
+**Problema / Aprendizaje Supervisado**
+</div>
+
+
+
+En el **aprendizaje supervisado**, cada dato, unidad analizada u observación está etiquetada o asociada con una categoría o valor de interés. Ejemplos:
+
+ * Una imagen es etiquetada como un 'gato' o 'perro'. 
+ * Un cliente es etiquetado como 'propenso' o 'no propenso' al uso del canal digital.
+ * El precio de venta asociado a un coche usado, es una etiqueta de valor. 
+ 
+El objetivo del aprendizaje supervisado es estudiar muchos ejemplos etiquetados y, luego, poder realizar predicciones sobre los datos futuros. Por ejemplo, identificar nuevas fotografías con el animal correcto, identificar clientes a clientes facilitar el uso de la banca online o asignar precios de venta precisos a otros coches usados. 
+
+El aprendizaje supervisado usa técnicas de **clasificación** y **regresión** para desarrollar modelos predictivos.
+
+  * Las técnicas de **clasificación** predicen **respuestas discretas** —por ejemplo, saber si un correo es genuino o _spam_, o si un tumor es benigno o maligno. Los modelos de clasificación categorizan los datos de entrada. Entre las aplicaciones típicas se incluyen imágenes médicas, reconocimiento de voz o puntaje crediticio. Cuando hay sólo dos opciones, se denomina clasificación de dos clases o binaria. Cundo hay más categorías, se denomina clasificación multiclase o multinomial.
+  
+    * En algunos casos la **detección de anomalías** se considera una técnica adicional de clasificación. En la detección de fraude, por ejemplo, los patrones de gasto de tarjeta de crédito muy poco habituales son sospechosos. Las posibles variaciones son tan numerosas y los ejemplos de formación son tan pocos, que no es posible saber de qué actividad fraudulenta se trata. El enfoque que toma la detección de anomalías es simplemente
+  aprender qué puede considerarse como actividad normal (haciendo uso de las transacciones no fraudulentas del historial) e identificar todo lo que sea significativamente diferente^[Fuente:https://docs.microsoft.com/es-es/azure/machine-learning/studio/algorithm-choice].
+  
+  * Las técnicas de **reducción de dimensionalidad ** ayudan a disminuir la complejidad de los problemas debida al gran volumen de datos. Cuando mayor es el conjunto de datos, mayor la necesidad de reducir el número de variables (_features_) que se quieren analizar.
+  
+  * Las técnicas de **regresión** predicen **respuestas continuas** —por ejemplo, cambios en la temperatura o fluctuaciones en la demanda de energía. Las aplicaciones típicas pueden ser previsión del recurso eléctrico o trading algorítmico.
+  
+
+
+<br> 
+
+
+
+<div class="info">
+**Problema / Aprendizaje No Supervisado**
+</div>
+
+
+
+En el **aprendizaje no supervisado**, los datos no tienen etiquetas asociadas a ellos. En este caso, el objetivo  es organizar los datos de alguna manera o describir su estructura. Esto puede significar agrupar clientes en segmentos, o buscar diferentes maneras de examinar datos complejos para que parezcan más simples.
+
+El aprendizaje no supervisado se utiliza en análisis exploratorio de datos para encontrar características ocultas y agrupar. Las aplicaciones del clustering incluyen análisis de secuencias genéticas, investigación de mercado y reconocimiento de objetos.
+
+
+
+<!-- The aim of **supervised** machine learning is to build a model -->
+<!-- that makes predictions based on evidence in the presence of -->
+<!-- uncertainty. A supervised learning algorithm takes a known set of -->
+<!-- input data and known responses to the data (output) and trains a -->
+<!-- model to generate reasonable predictions for the response -->
+<!-- to new data. -->
+<!-- Supervised learning uses classification and regression techniques -->
+<!-- to develop predictive models. -->
+
+<!--  - Classification techniques predict discrete responses—for -->
+<!-- example, whether an email is genuine or spam, or whether -->
+<!-- a tumor is cancerous or benign. Classification models -->
+<!-- classify input data into categories. Typical applications -->
+<!-- include medical imaging, speech recognition, and -->
+<!-- credit scoring. -->
+
+<!--  - Regression techniques predict continuous responses— -->
+<!-- for example, changes in temperature or fluctuations in -->
+<!-- power demand. Typical applications include -->
+<!-- electricity load forecasting and algorithmic trading. -->
+
+
+
+<!-- El objetivo del machine learning **supervisado** es construir un modelo que haga predicciones basadas en la evidencia en un escenario de incertidumbre. Un algoritmo de aprendizaje supervisado toma un conjunto conocido de entrada y su respuesta para dicha entrada (salida) para entrenar el modelo y generar predicciones razonables de respuesta a nuevos conjuntos de entrada. -->
+
+
+<!-- **Unsupervised learning** finds hidden patterns or intrinsic structures -->
+<!-- in data. It is used to draw inferences from datasets consisting of -->
+<!-- input data without labeled responses. -->
+<!-- Clustering is the most common unsupervised learning -->
+<!-- technique. It is used for exploratory data analysis to find hidden -->
+<!-- patterns or groupings in data. -->
+<!-- Applications for clustering include gene sequence analysis, -->
+<!-- market research, and object recognition. -->
+
+
+## Enfoques de Modelización {#clasemodelos}
+
+
+<div class="info">
+_Statistical Learning_ se refiere a un conjunto de herramientas para modelar y comprender conjuntos de datos complejos.
+</div>
+
+<br>
+
+_Statistical Learning_ es un término presentado en @isl2014. Hace referencia a un área de reciente desarrollo en estadística, que se combina con desarrollos paralelos de ciencias de la computación (específicamente, _Machine Learning_). Se refiere a un ámplio conjunto de herramientas para **entender datos**. Estas herramientas pueden ser: **supervisadas** o **no supervisadas**. De manera muy genérica, en los problemas supervisados se busca estimar o prever un _output_ basado en uno o más _inputs_. En los problemas no supervisados, se cuenta con los _inputs_ pero con un _output_, por lo que se busca entender la estructura de los datos.
+
+Otra forma de clasificar los métodos para modelizar se basa en su objetivo y forma de construcción. Cuando se prioriza la **interpretación del modelo**, buscando que expliquen las relaciones entre _output_ e _inputs_, se habla de **modelos estadísticos**. Cuando se prioriza la **precisión de la previsión** se habla de algoritmos de **machine learning**.
+
+
+
+<div class="rmdcomment">
+Tipos de modelos analíticos: *Modelos Estadísticos* y *Machine Learning*^[Fuente: http://www.kdnuggets.com/2016/11/machine-learning-vs-statistics.html]. Los primeros hacen uso de la probabilidad (inferencia), son explicativos y predictivos. Los segundos suelen ser 'cajas negras', se centran en la previsión y el trabajo con grandes volúmenes de datos^[Ver  https://www.quora.com/What-is-the-difference-between-statistics-and-machine-learning].
+</div>
+
+<br>
+
+<img src='https://www.edvancer.in/wp-content/uploads/2016/01/ML-vs.-stats1.png' alt="Model" style="float:width:90%;">
+
+<br>
+
+El objetivo de los modelos o algoritmos de **Machine Learning** es enseñar a las computadoras a hacer lo que es natural para humanos y animales: **aprender de la experiencia**. Estos algoritmos utilizan métodos computacionales para "aprender" información directamente de los datos, sin depender de una ecuación predeterminada como modelo. Los algoritmos mejoran su rendimientode forma adaptativa  conforme aumenta la cantidad de muestras (datos) disponibles
+para el aprendizaje.
+
+<!-- **Machine learning** teaches computers to do what comes naturally to -->
+<!-- humans and animals: learn from experience. Machine learning algorithms -->
+<!-- use computational methods to “learn” information directly from data -->
+<!-- without relying on a predetermined equation as a model. The algorithms -->
+<!-- adaptively improve their performance as the number of samples available -->
+<!-- for learning increases. -->
+
+
+<!-- Machine learning uses two types of techniques: supervised -->
+<!-- learning, which trains a model on known input and output data so -->
+<!-- that it can predict future outputs, and unsupervised learning, which -->
+<!-- finds hidden patterns or intrinsic structures in input data. -->
+
+
+<!-- **Machine learning** requires no prior assumptions about the underlying relationships between the variables. You just have to throw in all the data you have, and the algorithm processes the data and discovers patterns, using which you can make predictions on the new data set. Machine learning treats an algorithm like a black box, as long it works. -->
+
+<br>
+
+<div class="info">
+**Machine Learning**
+</div>
+
+
+El _Machine Learning_ no requiere hipótesis previas sobre las relaciones subyacentes entre las variables (o inputs). Sólo se deben ingresar todos los datos que se diponga, y el algoritmo procesa los datos y descubre patrones, con los cuales puede hacer predicciones sobre el nuevo conjunto de datos. El aprendizaje automático trata un algoritmo como una **black box** (caja negra), siempre que funcione. En otras palabras, su principal objetivo es la previsión.
+
+<br>
+
+
+<!-- In contrast, **statisticians** must understand how the data was collected, statistical properties of the estimator, the underlying distribution of the population they are studying and the kinds of properties you would expect if you did the experiment many times. You need to know precisely what you are doing and come up with parameters that will provide the predictive power.  -->
+
+<div class="info">
+**Modelos Estadísticos**
+</div>
+
+Por el contrario, los **estadísticos** deben comprender cómo se recopilaron los datos, las propiedades estadísticas de los estimadores, la distribución subyacente de la población que están estudiando y los tipos de propiedades que esperaría si hiciera el experimento muchas veces. Necesita saber exactamente lo que está haciendo y proponer parámetros que le proporcionen el poder predictivo.
+
+

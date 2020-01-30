@@ -1,0 +1,1320 @@
+---
+title: 'AnÃ¡lisis no supervisado: clustering'
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(PATH=paste("/opt/local/bin", Sys.getenv("PATH"), sep=":") )
+
+library(ggplot2)
+library(ggthemes)
+library(grid)
+library(gridExtra)
+library(MASS)
+
+library(magrittr)
+library(tidyr)
+library(dplyr)
+library(deldir)
+library(gganimate)
+
+
+
+theme_pablo <- function(){
+  theme_foundation(base_size = 20, 
+                   base_family = 'sans') + 
+    
+    theme(line = element_line(colour = "black"), 
+          
+          rect = element_rect(fill = ggthemes_data$fivethirtyeight["ltgray"], 
+                              linetype = 0, 
+                              colour = NA), 
+          
+          text = element_text(colour = ggthemes_data$fivethirtyeight["dkgray"]), 
+          
+          # axis.title = element_blank(), 
+          # axis.text = element_text(), 
+          # axis.ticks = element_blank(), 
+          # axis.line = element_blank(), 
+          
+          legend.background = element_rect(), 
+          legend.position = "bottom", 
+          legend.direction = "horizontal", 
+          legend.box = "vertical", 
+          
+          panel.grid = element_line(colour = NULL),
+          panel.grid.major = element_line(colour = ggthemes_data$fivethirtyeight["medgray"]), 
+          panel.grid.minor = element_line(colour = ggthemes_data$fivethirtyeight["medgray"]), 
+          
+          plot.background = element_blank(),
+          panel.background = element_blank(),
+          
+          plot.title = element_text(hjust = 0, 
+                                    size = rel(1), 
+                                    face = "bold"),
+          plot.margin = unit(c(1, 1, 1, 1), "lines"),
+          
+          strip.background = element_rect())  
+}
+
+
+
+asig_cluster <- function(datos, centers){
+  
+  # distancia euclídea de cada punto al centroide
+  dist_centers <- sapply(1:nrow(centers), 
+                         function(i){apply(datos, 1,
+                                           function(datos){sum((datos - centers[i,])^2)})})
+  
+  # identificación de cluster con distancia euclídea mínima
+  return(apply(dist_centers, 1, which.min))  
+}
+
+```
+
+# Introducción
+Los modelos analíticos se dividen en dos grandes grupos: 
+
+- **modelos supervisados**
+- **modelos no supervisados**
+
+## Aprendizaje supervisado
+
+En el **aprendizaje supervisado** existen una serie de **características** *(o variables, variables independientes, variables predictoras, columnas, features)* que vamos a utilizar para decir algo de otra **variable objetivo** *(o target, variable respuesta, variable dependiente)*. Ese *decir algo* puede ser **predecir** el valor que puede tomar la variable objetivo en función de las características disponibles o intentar **explicar** porqué se comporta como se comporta.
+
+Pongamos dos ejemplos. En una empresa eléctrica quieren desarrollar un modelo que les permita **detectar el fraude en los contadores**. En este caso, tendremos disponibles una serie de características como información del contrato del cliente (fecha de alta, datos demográficos), consumos, etcétera. También tendremos disponible la información obtenida de una campaña de inspecciones que han realizado para una muestra de los clientes y lo que se busca es **extraer un patrón de fraude** de tal forma que dadas las características de un cliente  concreto, el modelo sea capaz de devolver una probabilidad de que el cliente esté cometiendo fraude. Es decir, sea $X = (X_1, X_2, \ldots, X_n)$ el vector de las características e $Y$ el valor de la variable objetivo que, en este caso, toma valores $0$ y $1$, estamos buscando 
+
+$$
+P(Y = 1|X)
+$$
+
+En este caso, lo que interesa es **detectar el fraude con la mayor precisión posible**.
+
+Otro ejemplo podría ser el de que se quiera desarrollar un modelo para **conceder o no un crédito** pero que seamos capaces de **saber porqué el modelo acepta o deniega un crédito.**
+
+En el **primer ejemplo**, buscaremos un **modelo muy preciso** aunque no seamos capaces entender porqué da las predicciones que da y sería conveniente el uso de modelos propios del **Machine Learning**. En el **segundo ejemplo**, el interés es justo al contrario, queremos **entender el comportamiento** del modelo aunque esto suponga un detrimento de la capacidad predictiva y podríamos utilizar **modelos más clásicos**.
+
+Este tipo de aprendizaje está conformado por técnicas en las que tanto las características como la variable objetivo pueden ser de diversa naturaleza (variables binarias, reales, categóricas, etcétera).
+
+### Una reflexión
+
+La crítica principal que se hace a los algoritmos de Machine Learning es que es complicado entender la naturaleza de las predicciones. En los últimos años están surgiendo iniciativas que permiten darle una capa explicativa a este tipo de modelos. La iniciativa con más repercusión es [LIME](https://shiring.github.io/machine_learning/2017/04/23/lime).
+
+Ahora bien, el éxito de los modelos de machine learning frente a otros más clásicos se basa en que son capaces de adaptarse y detectar patrones complejos. Pero en la realidad, **no siempre se tiene porqué dar un patrón complejo** y podría ser suficiente con un modelo clásico. 
+
+> Es fundamental entender la estructura de los datos y probar distintos modelos para escoger el más útil para el problema.
+
+
+## Aprendizaje no supervisado
+
+En el **aprendizaje no supervisado**, la naturaleza del problema es distinta. En estos modelos **no existe una target** y el objetivo es tratar de descubrir una estructura con las características presentes. Por ejemplo, si yo quisiese conocer qué tipología de clientes existen en mi empresa, utilizaría este tipo de técnicas para poder **segmentarlos**. 
+
+¿Cuál es la dificultad? Al no haber una variable objetivo, es difícil saber si la agrupación realizada es correcta o no, ni siquiera podemos definir en qué grado es correcta. En los modelos supervisados, al conocer la variable objetivo, somos capaces de dar una tasa error que comete un modelo y poder así elegir aquél modelo que me proporciona una mejor tasa (el que es capaz de detectar un mayor número de los fraudes realizados, en el ejemplo de la empresa eléctrica). Por este motivo, **las técnicas no supervisadas tienen un componente de subjetividad.**
+
+
+# Aprendizaje no supervisado
+ 
+Para la resolución de los problemas suelen existir un gran número de modelos disponibles que difieren entre ellos de las hipótesis utilizadas para la construcción del modelo matemático. 
+
+Para el caso del **aprendizaje no supervisado** discutiremos el comportamiento de las siguientes técnicas:
+
+- k-medias (*k-means*).
+- clustering jerárquico.
+
+## K-medias (*k-means*)
+
+El algoritmo de clustering de las **k-medias** es uno de los algoritmos más utilizados por su simplicidad teórica y por su eficiencia computacional. No obstante, tiene algunas limitaciones que es necesario tener en cuenta.
+
+###  El modelo
+
+El algoritmo trata de dividir el espacio en regiones (*clusters*) de tal forma que **toda observación pertenezca a un y solo un cluster**. Es decir, cualquier observación estará contenida en uno de los clusters que se definan y no podrá pertenecer a ningún otro.
+
+La $k$ que aparece en el nombre de la técnica hace referencia a que el algoritmo **necesita que se especifique previamente el número de clusters $k$ que se desean obtener**. La forma de proceder del algoritmo es la siguiente:
+
+1. Se definen $k$ puntos aleatorios en el espacio conocidos como **centroides** y que serán los representantes de cada cluster.
+2. Se calcula la distancia -euclídea- de cada punto a cada uno de los $k$ centroides y se asigna cada punto aquel cluster cuya distancia a su centroide sea mínima.
+3. Se recalculan los $k$ centroides como **la media de las observaciones que componen cada cluster**.
+4. Se vuelve al paso 2.
+
+El algoritmo termina cuando se satisface algún criterio de parada como, por ejemplo, que ningún punto cambie de cluster de una iteración a la siguiente.
+
+El problema que estamos tratando de resolver mediante el algoritmo se puede ver como un **problema de optimización**. Matemáticamente, dado un conjunto de $n$ observaciones, $x_1, \ldots, x_n$ queremos buscar aquellos clusters $S^* = {S_{1}, S_{2}, …, S_{k}}$ con $k \leq n$ que minimicen la expresión
+
+$$
+S^* = \underset{S}{argmin} \sum_{i=1}^{k}\sum_{x_{j}\in S_{j}} d(x_{j}, c_{i}),
+$$
+donde $c_i$ es el centroide de $S_i$.
+
+Se suele usar la distancia euclidea, pero podemos buscar otras distancias que se adecuen mejor a los datos, como por ejemplo, la norma infinita o la distancia de Manhattan.
+
+### Un ejemplo gráfico
+
+Para comprender mejor el comportamiento del algoritmo, veamos su funcionamiento en un ejemplo de juguete:
+
+```{r, eval=FALSE, include=FALSE}
+
+x <- seq(-2, 2,  by = 0.005)
+
+y <- runif(length(x), min = -1, max = 1)
+
+datos.circulo <- data.frame(X = x, Y = y)
+datos.circulo <- subset(datos.circulo,  X^2 + Y^2 < 1)
+
+y <- (sqrt((2 - x^2)) * sample(c(-1, 1),
+                               size = length(x),
+                               replace = T)) +
+  rnorm(length(x), mean = 0, sd = 0.1)
+
+datos.anillo <- data.frame(X = x, Y = y)
+datos.anillo <- na.omit(datos.anillo)
+
+datos <- rbind(datos.anillo, datos.circulo)
+
+
+a1 <- ggplot(data = datos, aes(x = X, y = Y)) + 
+  geom_point(alpha = 0.8, size = 0.5) + 
+  coord_fixed() + 
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+cl11 <- kmeans(datos, centers = 2)
+
+b1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl11$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl11$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+
+
+cl12 <- kmeans(datos, centers = 3)
+
+c1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl12$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl12$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+#grid.arrange(a, b, c, ncol = 3)
+
+grid.arrange(a1, b1, c1, ncol = 3)
+
+x <- seq(-2, 2,  by = 0.005)
+
+y.1 <- runif(length(x), min = -1, max = 0)
+
+datos.circulo <- data.frame(X = x, Y = y.1)
+datos.circulo1 <- subset(datos.circulo,  (X + 0.5)^2 + (Y + 0.5)^2 < 0.25)
+
+y.2 <- runif(length(x), min = 0, max = 1)
+datos.circulo <- data.frame(X = x, Y = y.2)
+datos.circulo2 <- subset(datos.circulo,  (X - 0.5)^2 + (Y - 0.5)^2 < 0.25)
+
+datos2 <- rbind(datos.circulo1, datos.circulo2)
+
+
+a2 <- ggplot(data = datos2, aes(x = X, y = Y)) + 
+  geom_point(alpha = 0.8, size = 0.5) + 
+  coord_fixed() + 
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+cl12 <- kmeans(datos2, centers = 2)
+
+b2 <- ggplot() + 
+  geom_point( data = datos2, aes(x = X, y = Y, color = as.factor(cl12$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl12$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+
+
+cl22 <- kmeans(datos2, centers = 3)
+
+c2 <- ggplot() + 
+  geom_point( data = datos2, aes(x = X, y = Y, color = as.factor(cl22$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl22$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) 
+
+
+#grid.arrange(a1, b1, c1, a2, b2, c2, ncol = 6)
+
+ 
+grid.arrange(a2, b2, c2, ncol = 3)
+
+set.seed(123)
+x.fila <- runif(100, min = -1.25, max = -0.75)
+y.fila <- runif(100, min = -1, max = 1)
+
+x.circulo <- runif(1000, min = 0, max = 2)
+y.circulo <- runif(1000, min = -1, max = 1)
+
+ind <- which((x.circulo - 1)^2 + y.circulo^2 < 1)
+x.circulo <- x.circulo[ind]
+y.circulo <- y.circulo[ind]
+# y.circulo <- sqrt(1-(x.circulo-1)^2)*
+#   sample(c(-1, 1), length(x.circulo), replace = T) + 
+#   rnorm(length(x.circulo), 0, 0.075)
+
+x <- c(x.fila, x.circulo)
+y <- c(y.fila, y.circulo)
+
+datos2 <- data.frame(X = x, Y = y)
+
+
+a2 <- ggplot(data = datos2, aes(x = X, y = Y)) + 
+  geom_point(alpha = 0.8, size = 0.5) + 
+  coord_fixed() + 
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + ggtitle('k-medias')
+
+
+cl12 <- kmeans(datos2, centers = 2)
+
+b2 <- ggplot() + 
+  geom_point( data = datos2, aes(x = X, y = Y, color = as.factor(cl12$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl12$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + ggtitle(' ')
+
+
+
+
+cl22 <- kmeans(datos2, centers = 3)
+
+c2 <- ggplot() + 
+  geom_point( data = datos2, aes(x = X, y = Y, color = as.factor(cl22$cluster)), #size = 4
+              alpha = 0.8, size = 0.5) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl22$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+  theme_fivethirtyeight(base_size = 12, base_family = "sans") + 
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + ggtitle(' ') 
+
+
+#grid.arrange(a1, b1, c1, a2, b2, c2, ncol = 6)
+
+
+grid.arrange(a2, b2, c2, ncol = 3)
+
+
+```
+
+```{r, echo=TRUE}
+set.seed(1234)
+
+Sigma <- matrix(c(2,0, 0, 2), 2, 2)
+
+norm_multi1 <- mvrnorm(n = 100, c(-4, -4), Sigma)
+norm_multi2 <- mvrnorm(n = 100, c(0,   4), Sigma)
+norm_multi3 <- mvrnorm(n = 100, c(4,  -4), Sigma)
+
+datos <- as.data.frame(rbind(norm_multi1, norm_multi2, norm_multi3))
+
+names(datos) <- c('X', 'Y')
+```
+
+```{r, echo=FALSE}
+
+ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y), #size = 4
+              alpha = 0.6, size = 3) + 
+  scale_color_manual(values=c("steelblue", "firebrick", '#46b493')) + 
+  coord_fixed() + 
+
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('')
+
+
+```
+
+```{r, eval=FALSE, fig.show='animate', include=FALSE}
+set.seed(1234)
+
+Sigma <- matrix(c(2, 0, 0, 2), 2, 2)
+
+norm_multi1 <- mvrnorm(n = 100, c(-4, -4), Sigma)
+norm_multi2 <- mvrnorm(n = 100, c(0,   4), Sigma)
+norm_multi3 <- mvrnorm(n = 100, c(4,  -4), Sigma)
+
+datos.orig <- as.data.frame(rbind(norm_multi1, norm_multi2, norm_multi3))
+
+names(datos.orig) <- c('X', 'Y')
+
+datos <- datos.orig
+datos$id <- 1
+pertur <- seq(0.05, 0.001, by = -0.0025)
+
+for (i in 2:length(pertur)){
+  
+  X.2 <- datos.orig$X + rnorm(nrow(datos.orig), mean = 0, sd = pertur[i])
+  Y.2 <- datos.orig$Y + rnorm(nrow(datos.orig), mean = 0, sd = pertur[i])
+  datos2 <- data.frame(X = X.2, Y = Y.2)
+  datos2$id <- i 
+
+  datos <- rbind(datos, datos2)  
+}
+
+
+
+
+p <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, frame = id),#, cumulative = TRUE), #size = 4
+              alpha = 0.6, size = 3) + 
+  scale_color_manual(values=c("steelblue", "firebrick", '#46b493')) + 
+  coord_fixed() + 
+  
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('')
+
+gganimate(p, interval = .1)
+```
+
+
+
+Los grupos están claramente diferenciados; es un ejemplo de clustering de libro.
+
+El primer paso es inicializar los $k$ centroides *aleatoriamente* y asignar cada punto a su centroide más cercano.
+
+```{r, echo=FALSE}
+set.seed(1234)
+
+filas_centroides <- sample(1:nrow(datos), 3)
+centroides <- datos[filas_centroides,]
+
+datos$cluster <- asig_cluster(datos = datos, centers = centroides)
+
+
+ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cluster)), #size = 4
+              alpha = 0.5, size = 3) + 
+  
+  geom_point(data = centroides, 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 18, size = 10) +
+  scale_color_manual(values = c("steelblue", "firebrick", '#46b493')) +
+  coord_fixed() + 
+  
+  
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('Iteración 0')
+
+```
+
+A continuación se recalculan los centroides como el punto medio de loas observaciones asignadas a un mismo cluster, es decir, 
+
+$$
+  c^{(n)}_i = \frac{1}{|g_i|} \sum_{x_j \in g_i} x_j
+$$
+
+```{r, echo=FALSE}
+centroides2 <- datos %>%  group_by(cluster) %>% summarise_all(funs(mean)) %>% ungroup() %>%  select(-cluster)
+# centroides2$shape <- 18
+# centroides2$stroke <- 1
+# centroides2$color <- as.factor(1:3)
+# 
+# centroides3 <- centroides
+# centroides3$shape <- 23
+# centroides3$stroke <- 2
+# centroides3$color <- as.factor(1:3)
+# 
+# centroides2 <- bind_rows(centroides2, centroides3)
+
+p1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cluster)), #size = 4
+              alpha = 0.5, size = 3) + 
+  
+  # geom_point(data = centroides2, 
+  #            aes(x = X, y = Y, color = color, shape = as.factor(shape), stroke = stroke),
+  #            
+  #            size = 7) +
+  
+  geom_point(data = centroides,
+             aes(x = X, y = Y, color = as.factor(1:3)),
+
+             shape = 23, size = 7, stroke = 2) +
+
+  geom_point(data = centroides2,
+             aes(x = X, y = Y, color = as.factor(1:3)),
+              shape = 18,
+              size = 10) +
+  scale_color_manual(values = c("steelblue", "firebrick", '#46b493'), guide = FALSE) +
+  coord_fixed() + 
+  scale_shape_manual(values = c(18, 23)) +
+  
+  theme_pablo() +
+  theme(#legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) +
+  ggtitle('Iteración 1')
+
+```
+
+```{r, eval=FALSE, include=FALSE}
+
+datos$cluster <- asig_cluster(datos = datos, centers = centroides2)
+
+ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cluster)), #size = 4
+              alpha = 0.5, size = 3) + 
+  
+  geom_point(data = centroides, 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 23, size = 7, stroke = 2) +
+  
+  geom_point(data = centroides2, 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 18, size = 10) +
+  scale_color_manual(values = c("steelblue", "firebrick", '#46b493')) +
+  coord_fixed() + 
+  
+  
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+```
+
+
+
+
+```{r, echo=FALSE}
+
+centroides <- centroides2
+datos$cluster <- asig_cluster(datos = datos, centers = centroides)
+centroides2 <- datos %>%  group_by(cluster) %>% summarise_all(funs(mean)) %>% ungroup() %>%  select(-cluster)
+
+
+
+
+p2 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cluster)), #size = 4
+              alpha = 0.5, size = 3) + 
+  
+  geom_point(data = centroides, 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 23, size = 7, stroke = 2) +
+  
+  geom_point(data = centroides2, 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 18, size = 10) +
+  scale_color_manual(values = c("steelblue", "firebrick", '#46b493')) +
+  coord_fixed() + 
+  
+  
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())+ 
+  ggtitle('Iteración 2')
+
+grid.arrange(p1, p2, ncol = 2)
+
+```
+
+E iteramos hasta que se satisfaga la condición de parada. Llegaremos a una solución de este estilo
+
+```{r, echo=FALSE}
+set.seed(1234)
+cl11 <- kmeans(datos, centers = 3)
+
+ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl11$cluster)), #size = 4
+              alpha = 0.5, size = 3) + 
+  scale_color_manual(values=c("steelblue", "firebrick", '#46b493')) + 
+    geom_point(data = as.data.frame(cl11$centers), 
+             aes(x = X, y = Y, color = as.factor(1:3)),
+             
+             shape = 18, size = 10) +
+  coord_fixed() + 
+  
+  
+  theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle(paste('Solución final'))
+```
+
+Cada uno de los **centroides** puede tomarse como **un representante de cada grupo** y será útil en la caracterización de la agrupación propuesta.
+
+### Limitaciones del algoritmo
+
+El ejemplo anterior es propicio para las k-medias ya que la estructura de grupos es muy simple. Sin embargo, el algoritmo se comporta peor con estructuras más complejas. Por ejemplo,
+
+```{r Círculos concéntricos, echo=FALSE,  fig.height=5}
+set.seed(666)
+x <- seq(-2, 2,  by = 0.005)
+
+y <- runif(length(x), min = -2, max = 2)
+
+datos.circulo <- data.frame(X = x, Y = y)
+datos.circulo <- subset(datos.circulo,  X^2 + Y^2 < 2)
+
+y <- (sqrt((4 - x^2)) * sample(c(-1, 1),
+                               size = length(x),
+                               replace = T))
+y <- y +
+   rnorm(length(x), mean = 0, sd = 0.15)
+
+x <- x +
+   rnorm(length(x), mean = 0, sd = 0.15)
+
+
+datos.anillo <- data.frame(X = x, Y = y)
+datos.anillo <- na.omit(datos.anillo)
+
+datos <- rbind(datos.anillo, datos.circulo)
+
+
+ggplot(data = datos, aes(x = X, y = Y)) + 
+  geom_point(alpha = 0.6, size = 3) + 
+  coord_fixed() + 
+  
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+
+```
+
+En función de la $k$ elegida, el resultado puede ser muy distinto.
+
+```{r círculos concéntricos k-medias, echo=FALSE,  fig.height=3}
+cl11 <- kmeans(datos, centers = 2)
+
+b1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl11$cluster)), #size = 4
+              alpha = 0.8, size = 1) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl11$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+ 
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('K = 2')
+
+cl12 <- kmeans(datos, centers = 3)
+
+c1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl12$cluster)), #size = 4
+              alpha = 0.8, size = 1) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl12$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('K = 3')
+
+cl12 <- kmeans(datos, centers = 3)
+
+c1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl12$cluster)), #size = 4
+              alpha = 0.8, size = 1) + 
+  scale_color_manual(values=c("steelblue", "firebrick", 'grey')) + 
+  geom_point(data = as.data.frame(cl12$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('K = 3')
+
+set.seed(1)
+cl15 <- kmeans(datos, centers = 6)
+
+d1 <- ggplot() + 
+  geom_point( data = datos, aes(x = X, y = Y, color = as.factor(cl15$cluster)), #size = 4
+              alpha = 0.8, size = 1) + 
+ scale_color_manual(values=c("steelblue", "firebrick", '#6b6b6b', '#46b493', '#660080', '#ffd700')) +
+  geom_point(data = as.data.frame(cl15$centers), aes(x = X, y = Y), shape = 15, size = 3, alpha = 0.9) +
+  coord_fixed() + 
+  
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank()) + 
+  ggtitle('K = 5')
+
+
+grid.arrange(b1, c1, d1, ncol = 3)
+
+#grid.arrange(b1, c1, ncol = 3)
+```
+
+Pero a un k-medias no podemos exigirle que ajuste bien este tipo de estructuras de datos. Pensemos un momento en qué es lo que intenta hacer. Más allá del algoritmo iterativo que se implementa para resolver el problema, en el fondo no es más que, dados unos centros, asignar las observaciones a aquél centro que esté más cerca. Esta partición del espacio también se conoce como **teselación de Voronoi**.
+
+```{r, eval=FALSE, include=FALSE}
+x <- seq(min(datos$X), max(datos$X), by = 0.05)
+y <- seq(min(datos$Y), max(datos$Y), by = 0.05)
+rejilla_datos <- expand.grid(x, y)
+
+rejilla_datos$cluster <- asig_cluster(datos = rejilla_datos, centers = cl11$centers)
+
+# Gráfica del cluster -----------------------------------------------------
+
+ggplot() + 
+  geom_point(data = as.data.frame(rejilla_datos), aes(x = Var1, y = Var2, 
+                                                      color = as.factor(cluster)),
+             alpha = 0.5, #size = 7,
+             shape = 15, size = 1) +
+  geom_point(data = datos, aes(x = X, 
+                               y = Y, 
+                               color = as.factor(cl11$cluster)), 
+             alpha = 1, size = 2) + 
+  geom_point(data = as.data.frame(cl11$centers), 
+             aes(x = X, y = Y),
+             
+             shape = 18, size = 10,
+             color = 'black')  +
+   scale_color_manual(values=c("steelblue", "firebrick", 'grey')) +
+  coord_fixed() + 
+  
+ theme_pablo() +
+  theme(legend.position="none",
+        
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+``` 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+set.seed(1234)
+cl10 <- kmeans(datos, centers = 3)
+
+
+x <- seq(min(datos$X), max(datos$X), by = 0.25)
+y <- seq(min(datos$Y), max(datos$Y), by = 0.25)
+rejilla_datos <- expand.grid(x, y)
+rejilla_datos$cluster <- asig_cluster(datos = rejilla_datos, centers = cl10$centers)
+
+
+centros <- as.data.frame(cl10$centers)
+names(centros) <- c('x', 'y')
+voronoi <- deldir(centros, rw = c(-2.25, 2.25, -2.25, 2.25))
+
+# Gráfica del cluster -----------------------------------------------------
+
+ggplot() + 
+   geom_point(data = as.data.frame(rejilla_datos), aes(x = Var1, y = Var2, 
+                                                      color = as.factor(cluster)),
+             alpha = 0.4, #size = 7,
+             #shape = 15,
+             size = 5) +
+  
+  
+  geom_point( data = datos, aes(x = X, 
+                                y = Y, 
+                                color = as.factor(cl10$cluster)), 
+              #size = 4
+              alpha = 1,
+              size = 2) +
+  
+  
+  geom_point(data = as.data.frame(cl10$centers), 
+             aes(x = X, y = Y),
+             shape = 18, size = 8,
+             color = 'black')  +
+   geom_segment(
+    aes(x = x1, y = y1, xend = x2, yend = y2),
+    size = 2,
+    data = voronoi$dirsgs,
+    linetype = 1,
+    color= "black", alpha = 0.8) +
+   scale_color_manual(values=c("steelblue", "firebrick", '#6b6b6b', '#46b493', '#660080')) +
+  coord_fixed() + 
+  theme_pablo()+
+  
+  theme(legend.position="none",
+
+        axis.title.x = element_blank(),
+        axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank(),
+        
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        
+        panel.background = element_blank()) 
+
+```
+
+### Ventajas y desventajas
+
+Las **ventajas** de la técnica de las k-medias son:
+
+- Rapidez computacional.
+- La existencia de un centroide ayuda a describir la solución.
+- Todo punto pertenece a un cluster.
+- Hay que explicitar el número de grupos a buscar.
+
+Las **desventajas**:
+
+- Depende mucho la semilla inicial (difícil de replicar)
+- Sensible a outliers.
+- Separación lineal entre clusters.
+- No existe el concepto de pertenencia a un cluster.
+- Todo punto pertence a un cluster.
+- Hay que explicitar el número de grupos a buscar.
+
+
+Los dos últimos puntos de las ventajas y desventajas son idénticos ya que se pueden ver desde los dos puntos de vista. Que todo punto pertenezca a un cluster nos asegura que vamos a ser capaces de asignarle un grupo a todos los clientes de nuestra cartera, por ejemplo. Sin embargo, pueden existir clientes cuyo comportamiento sea muy diferente al resto y podría ser que no tuviese sentido asignarlos a ningún cluster, cosa que el algoritmo de las K-medias no es capaz de hacer. 
+
+La necesidad de explicitar el número de grupos que se quieran buscar (la $k$ del nombre del algoritmo) hace que, si se tiene claro el número de grupos que se quieren obtener, sea una ventaja, pero que si no se tiene claro, hay que actuar por ensayo-error lanzando el algoritmo variando la $k$ para obtener la mejor agrupación.
+
+### Ejecución en R
+
+En esta sección vamos a ver cómo aplicar el algoritmo de las k-medias sobre un conjunto de datos en R. Para los ejemplos utilizaremos el dataset iris. (Para obtener información sobre este conjunto de datos ejecuta `?iris`).
+
+
+```{r}
+iris
+```
+
+De cara a poder entender de forma visual las ejecuciones que vayamos realizando, haremos la agrupación sobre las variables `Petal.Length` y `Petal.Width`, que podemos representarlas como 
+
+```{r}
+library(ggplot2)
+
+ggplot(iris, 
+       aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+  geom_point()
+
+```
+
+R Base tiene disponible la función `kmeans()` para ajustar este algoritmo cuyos parámetros más imporantes son:
+
+- `x`: objeto que contiene los datos. Tiene que ser una matriz numérica u otro objeto que pueda ser convertido a matriz numérica, por ejemplo, un `data.frame` cuyas variables que queramos utilizar sean numéricas.
+- `centers`: número de clusters que se quieren buscar (la $k$ del algoritmo).
+- `nstart`: número de ejecuciones del algoritmo de las k-medias con centroides iniciales distintos.
+
+Como dijimos en la sección anterior, el algoritmo es muy sensible a los centroides iniciales. Para poder tener un resultado lo más estable posible, lo que se hace es lanzar el algoritmo desde distintos centroides iniciales, que es lo que nos permite hacer el argumento `nstart`.
+
+A la vista de la representación que hemos hecho, lo más lógico es tratar de buscar $3$ clusters.
+
+```{r}
+# Fijamos la semilla para poder replicar los resultados.
+set.seed(20) 
+irisCluster <- kmeans(iris[, c("Petal.Length", "Petal.Width")],
+                      centers = 3,
+                      nstart = 20)
+irisCluster
+```
+
+
+El problema del aprendizaje no supervisado es que, precisamente, no existe una variable objetivo. Pero en el caso del ejemplo con `iris`, sí que disponemos de la variable `Species` que nos permite conocer si se ha hecho bien la agrupación o no comparándola con la asignación de los clusters que está almacenado en `irisCluster$cluster`:
+
+```{r}
+table(irisCluster$cluster, iris$Species)
+```
+
+Que podemos verlo de forma gráfica como
+
+```{r}
+ggplot() + 
+  geom_point(data = iris,
+             aes(x = Petal.Length, y = Petal.Width, 
+                 shape = iris$Species, 
+                 color = as.factor(irisCluster$cluster))) + 
+  geom_point(data = as.data.frame(irisCluster$centers), 
+             aes(x = Petal.Length, y = Petal.Width),
+             size = 3) + 
+  labs(shape = "Species",
+       color = "Cluster")
+```
+
+### Determinación del número óptimo de clústers
+
+Uno de los retos de este tipo de análisis es el de **saber el número óptimo de grupos que mejor representan la población**. 
+
+Una forma de hacerlo es la de lanzar una batería de pruebas variando la $k$ y obtener diversas métricas para evaluar cómo de buena es una agrupación con respecto a otra.
+
+Recordamos que el objetivo del algoritmo era el de minimizar la cantidad
+
+$$
+SSE(k) = \sum_{i=1}^k\sum_{x_j\in g_i}||x_{j}-c_{i}||^2
+$$
+
+
+Obviamente, esta cantidad tenderá a 0 conforme aumentemos el número de grupos. Pero podemos aplicar [la regla del codo](https://en.wikipedia.org/wiki/Determining_the_number_of_clusters_in_a_data_set) para seleccionar por dónde puede andar el número óptimo de grupos. En este caso consiste en hacer una gráfica enfrentando el número de grupos (eje $x$) con alguna cantidad de error (eje $y$), por ejemplo, la SSE (*Sum of Squared Errors*). Sabemos que el SSE no parará de disminuir hasta tender a 0, pero lo que buscaremos será un punto en el que la mejora del SSE sea ridícula. Con el ejemplo del conjunto de datos `iris`:
+
+```{r}
+clusters <- data.frame()
+
+for (k in 1:15){
+  # Extraemos el SSE de cada solución
+  clusters <- bind_rows(clusters,
+                        data.frame(k = k, 
+                                   SSE = kmeans(iris[, c("Petal.Length", "Petal.Width")],
+                                                centers = k
+                                                )$tot.withinss
+                                   )
+                        )
+}
+
+clusters
+```
+
+```{r Regla del codo, echo=FALSE}
+
+ggplot(data = clusters, aes(x = k, y = SSE)) + 
+  geom_point(size = 5, color = 'steelblue') + 
+  geom_line(size = 2, color = 'steelblue') + 
+  scale_x_continuous(breaks = 1:15) +
+  ggtitle('SSE para distintos k grupos')
+  
+```
+
+Se identifica claramente la *regla del codo*. Desde 1 hasta 3, la bajada del SSE es bastante abrupta. Sin embargo, a partir de 3 clusters, la ganancia es imperceptible, por lo que parece que la mejor idea sería quedarse con esos 3 clusters.
+
+## Clustering jerárquico
+
+### Modelo
+
+Otros de los algoritmos más usados para clustering son los **métodos jerárquicos**. Hoy dos tipos de estrategias para agrupamiento jerárquico:
+
+- **Aglomerativas**: es una aproximación **de abajo hacia arriba** (*bottom-up*); en un inicio, cada observación compone un grupo y se van fusionando progresivamente en función de lo parecidos que sean entre sí hasta formar un único grupo.
+
+- **Divisivas**: es una aproximación **de arriba hacia abajo** (*bottom-up*); todas las observaciones comienzan en un único grupo y se van desagregando hasta que un grupo está compuesto por una sola observación.
+
+Nos centraremos en los **métodos aglomerativos.**
+
+El algoritmo funciona de la siguiente manera:
+
+* Colocar cada punto en su propio clúster.
+* Identificar los dos clústers más cercanos y combinarlos en un clúster.
+* Repetir el paso anterior hasta que todos los puntos estén en un solo clúster.
+
+Hay varios criterios de enlace:
+
+* Agrupamiento de máximo o enlace completo.
+* Agrupamiento de mínimo o enlace simple.
+* Agrupamiento de enlace media o promedio (UPGMA).
+* Agrupamiento de mínima energía.
+* La suma de todas las varianzas intra-grupo.
+* El decrecimiento en la varianza para los grupos que están siendo mezclados (criterio de Ward).
+* La probabilidad de que grupos candidatos se produzcan desde la misma función de distribución (V-enlace).
+
+### Implementación en R
+
+Como en la sección anterior, usaremos el data set `iris` y así podremos comparar las soluciones aportadas por los distintos métodos.
+
+Este tipo de algoritmos se llaman jerárquicos porque se define una jerarquía entre las observaciones que, además, es útil representarla para ayudarnos decidir el número óptimo de grupos, por ejemplo. Esta representación se llama **dendrograma**.
+
+```{r}
+set.seed(44)
+hclusters <- hclust(dist(iris[, c("Petal.Length", "Petal.Width")]), 
+                    method = "complete")
+```
+
+El dendrograma de esta ejecución sería 
+
+```{r}
+plot(hclusters)
+abline(h = 3, col = "red")
+abline(h = 2, col = "red")
+```
+
+
+A la vista del dendrograma, el número óptimo de clusters es tres o cuatro. Si elegimos 3 Seleccionamos 
+
+```{r}
+clusterCut <- cutree(hclusters, 3)
+table(clusterCut, iris$Species)
+
+ggplot() + 
+  geom_point(data = iris,
+             aes(x = Petal.Length, y = Petal.Width, 
+                 shape = iris$Species, 
+                 color = as.factor(clusterCut))) + 
+  labs(shape = "Species",
+       color = "Cluster")
+```
+
+En este caso, el método ha funcionado ligeramente peor que el k-medias. No obstante, hay que recordar que tenemos varios criterios para realizar las agrupaciones.
+
+Probamos ahora usando el criterio de agrupamiento de enlace media o promedio.
+
+```{r}
+hclusters <- hclust(dist(iris[, 3:4]), method = 'average')
+plot(hclusters)
+```
+
+```{r}
+clusterCut = cutree(hclusters, 3)
+table(clusterCut, iris$Species)
+```
+
+Estos resultados nos muestran que la solución que pueda dar el algoritmo **depende mucho del criterio escogido**. 
+
+
+
+## Describiendo la solución
+
+En el *mundo real* no vamos a enfrentarnos con problemas de dos variables como en el ejemplo que hemos realizado con `iris` y, por lo tanto, no podremos dibujar la solución. Tendremos que recurrir a otros métodos que nos permitan entender y describir la solución. 
+
+A veces, para realizar el clustering no se utilizan todas las variables disponibles. Por ejemplo, en un estudio de mercado, se pueden utilizar las variables que recogan las actitudes de los consumidores para realizar la segmentación (varfaibles vasadas en sus necesidades, reacciones ante productos o servicios) y utilizar las variables de tipo demográfico para describir las agrupaciones (o segmentaciones) obtenidas.
+
+Un primer paso en la descripción de la solución es el de calcular diversos estadísticos sobre las variables según el grupo al que pertenezcan las observaciones. En el caso de las k-medias anterior:
+
+```{r}
+iris2 <- iris
+iris2$cluster <- irisCluster$cluster
+iris2 %>% 
+  group_by(cluster) %>% 
+  summarise_all(mean)
+```
+
+Otra forma muy útil son las [coordenadas paralelas](https://en.wikipedia.org/wiki/Parallel_coordinates)
+
+
+```{r}
+
+coord_paralelas <- function(x, k_mean){
+  x$cluster <- k_mean$cluster
+  x$id <- 1:nrow(x)
+  x2 <- x %>% 
+    gather(variable, valor, -cluster, -id)
+  
+  ggplot(data = x2, 
+         aes(x = variable, y = valor,
+             col = as.factor(cluster), group = as.factor(cluster))) + 
+    geom_point(alpha = 0.6) +
+    geom_line(aes(group = id), alpha = 0.6) +
+    labs(col = "Cluster",
+         y = "Valor")
+  }
+
+
+print(coord_paralelas(iris[, 1:4], irisCluster))
+```
+
+Obviamente, por este método solo se pueden representar un número bajo de variables; habrá que elegir aquellas variables más relevantes para describir la solución. Además, es fundamental probar con permutaciones del orden de las variables para poder visualizar mejor el comportamiento.
+
+<!-- Una métrica que puede servirnos para comprobar la consistencia de los clusters es el coeficiente de [**Silhouette**](https://en.wikipedia.org/wiki/Silhouette_(clustering)). Intuitivamente, este coeficiente contrasta la distancia media de los elementos en el mismo grupo con la distancia media a los elementos en otros grupos. Aquelos con un valor alto se consideran agrupados correctamente.  -->
+
+
+### Recomendaciones
+
+Es recomendable, antes de aplicar una técnica de clustering:
+
+- **estandarizar las variables**: las distintas escalas de las variables pueden afectar al comportamiento de los algoritmos (por ejemplo, si hay una variable que expresa la edad y otra el sueldo) por lo que es recomendable estandarizarlas, es decir, restarle la media y dividir entre la desviación típica. Esta transformación solamente cambiará la escala y no afectará a la estructura de los datos.
+
+- **elegir el tipo de distancia**: muchas veces se elige el tipo de distancia que trae por defecto la implementación de la técnica o, como mucho, se prueban varias para calcular las métricas. Pero puede que para el problema que se pretenda resolver sea más idónea una métrica concreta que, incluso, podemos definirnos nosotros.
+
+- **limpieza de datos**: eliminar *outliers*, inconsistencia entre variables, etcétera.
+
+
+
+## Otras técnicas de clustering
+
+Las k-medias y los algoritmos jerárquicos no son los únicos modelos para clustering. Otras técnias pueden ser:
+
+- DBSCAN: una de las técnicas de clustering que más crecimiento han tenido en los últimos años.
+
+- PAM
+
+- *fuzzy* k-means.
+
+
+### DBSCAN
+
+Uno de los algoritmos de clustering que han experimentado un mayor crecimiento en su uso es la técnica **D**ensity-**b**ased **s**patial **c**lustering of **a**pplications with **n**oise (**DBSCAN**).
+
+Se trata de un **tipo de clustering basado en densidades**.
+
+![dbscan](img/dbscan.png)
+
+El algoritmo considera los siguientes **tipos de puntos**:
+
+- Un punto es un **punto núcleo** (*core point*) si tiene al menos $minPts$ puntos en un radio $\epsilon$ (incluyéndose a sí mismo).
+
+- Un punto es **directamente alcanzable** (*directly reachable*) desde un punto núcleo si ese punto núcleo está en un radio $\epsilon$.
+
+- Un punto $q$ es **alcanzable** desde un punto núcleo $p$ si existe un camino $p_1, \ldots, p_n$ tal que $p_1 = p$, $p_n = q$ donde cada $p_{i+1}$ es directamente alcanzable desde $p_i$.
+
+- Todo punto no alzanzable por otro punto es considerado **outlier**.
+
+Así, si $p$ es un punto núcleo, forma un cluster con todos los puntos que son alcanzables desde él.
+
+Como propiedades, cada cluster contiene al menos un punto núcleo y, los puntos que no son de tipo núcleo, se considerar como el *borde* del cluster.
+
+
+Las **ventajas** de esta técnica son:
+
+- No es necesario especificar a priori el número de clusters (al contrario que en las k-medias).
+- La técnica puede encontrar clusters con formas arbitrarias. 
+- Es robusto frente a outliers
+- Los parámetros del algoritmo $minPts$ y $\epsilon$ se pueden elegir por el analista si se entiende bien el problema para el que se quiere aplicar.
+
+Las **desventajas** serían:
+
+- no es enteramente determinístico, es decir, puntos que están en el borde de varios clusters, puede depender pertencer a uno u a otro en función del orden en el que se procesen los datos.
+- la calidad de la solución depende de la medida usada para definir la vecindad de radio $epsilon$. La más usada suele ser la distancia euclídea.

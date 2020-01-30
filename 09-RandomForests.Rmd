@@ -1,0 +1,1080 @@
+# Random Forests
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE}
+
+#source("C:/Users/alicia.munoz/Documents/Curso R- RMarkdown/hechos por mi/funciones.R")
+
+
+# modelMetrics
+
+modelMetrics = function( real, pred, limits = NULL ) {
+  
+  filter_top_quantile = NULL
+  show_plots=FALSE # By the moment. Need to be revised.
+  
+  label="Model performance: real vs predicted"
+  
+  ind = !is.na(real) & !is.na(pred)
+  real = real[ind]
+  pred = pred[ind]
+  
+  indSegFull = findInterval(real, limits)
+  indPrvFull = findInterval(pred, limits)
+  
+  if (!is.null(filter_top_quantile)) {
+    limit = quantile(real, filter_top_quantile, na.rm=TRUE)
+    ind = which(real<limit)
+    real = real[ind]
+    pred = pred[ind]
+  }
+  
+  indSeg = findInterval(real, limits)
+  indPrv = findInterval(pred, limits)
+  
+  varAbsReal = abs(real)
+  varAbsPred = abs(pred)
+  varAbsError = abs(real-pred)
+  varAbsRelError = varAbsError/(1+varAbsReal)
+  varAbsRelErrorsim = varAbsError/(1+0.5*varAbsReal+0.5*varAbsPred)
+  
+  MAEref  = mean(abs(real-mean(real)))
+  MAE     = mean(varAbsError)
+  MAPE    = mean(varAbsRelError)
+  MAPEsim = mean(varAbsRelErrorsim)
+  WMAPE   = sum(varAbsError)/sum(varAbsReal)
+  RMSE    = sqrt(mean(varAbsError^2))  
+  
+  if(is.null(limits)|| missing(limits)){       
+    message("------------------------------")
+    message( " Accuracy metrics (global): " )
+    message("------------------------------")
+    message(paste0("MAE(ref) = ", round(MAEref,4)))
+    message(paste0("MAE = " , round(MAE,4)))
+    message(paste0("RMSE = ", round(RMSE,4)))  
+    message(paste0("MAPE = ", 100*round(MAPE,4)))
+    message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+    message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+    message("")
+    message("")
+    message("")
+  }
+  else{
+    message("------------------------------")
+    message( " Accuracy metrics (global): " )
+    message("------------------------------")
+    message(paste0("MAE(ref) = ", round(MAEref,4)))
+    message(paste0("MAE = " , round(MAE,4)))
+    message(paste0("RMSE = ", round(RMSE,4)))  
+    message(paste0("MAPE = ", 100*round(MAPE,4)))
+    message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+    message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+    message("")
+    message("")
+    message("---------------------------------------")
+    message(paste0(" Accuracy metrics by segments:" ))
+    message("---------------------------------------")
+    
+    # print(table(indSegFull))
+    # print(length(indSegFull))
+    # print(table(indSegFull, indPrvFull))
+    
+    for (i in sort(unique(indSeg))) {
+      
+      ind = which(indSeg==i)
+      
+      MAEref  = mean(abs(real[ind]-mean(real[ind])))
+      MAE     = mean(varAbsError[ind])
+      MAPE    = mean(varAbsRelError[ind])
+      MAPEsim = mean(varAbsRelErrorsim[ind])
+      WMAPE   = sum(varAbsError[ind])/sum(varAbsReal[ind])
+      RMSE    = sqrt(mean(varAbsError[ind]^2))  
+      
+      message("-------------------------")
+      message(paste0(" Segment: ", i)  )
+      message("-------------------------")
+      message(paste0("Segment size = ", length(ind) , " ; ", 100*round(length(ind)/length(indSegFull),4),"% of total sample"))
+      message(paste0("MAE(ref) = ", round(MAEref,4)))
+      message(paste0("MAE  = ", round(MAE,4)))
+      message(paste0("RMSE = ", round(RMSE,4)))
+      message(paste0("MAPE = ", 100*round(MAPE,4)))
+      message(paste0("MAPE(sim) = ", 100*round(MAPEsim,4)))
+      message(paste0("WMAPE = ", 100*round(WMAPE,4)))
+      
+    }
+    
+    if (show_plots) {
+      phist <- ggplot(data = data.frame(real=real[ind], pred=pred[ind])) + 
+        geom_vline(xintercept = 1, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^1, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^2, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^3, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^4, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^5, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^6, color=rgb(1,1,1,0.8)) +
+        geom_vline(xintercept = 10^7, color=rgb(1,1,1,0.8)) +
+        geom_histogram(aes(x = abs(real-pred), y = ..density..), fill = r.color(1), color = rgb(0,0,0,0.5), binwidth=0.25) + 
+        scale_x_log10() + coord_cartesian(xlim = c(1,10^7)) + labs(title = label) + xlab(NULL) + ylab(NULL)
+    } else {
+      phist <- NULL
+    }
+  }    
+  metrics=list(MAE=MAE, MAPE=MAPE, WMAPE=WMAPE)
+  invisible(metrics)
+  
+}
+
+
+# metricBinaryClass 
+
+metricBinaryClass = function( fitted.model , dataset , cutpoint=NULL , roc.graph=TRUE){
+  
+  # fitted.model : The Binary Classification model that is under evaluation. If provided, dataset contains all variables in the fitted model (target and predictors).
+  # dataset      : If fitted.model is not provided, dataset should has only two columns, predictions and labels.
+  # cuttpoint    : potimal cutoff or cutpoint to be used to split continuous predictions into two response categories of target variable
+  # roc.graph    : If true, ROC curve graph for the model is shown 
+  
+  if( missing(fitted.model) | is.null(fitted.model) ){
+    
+    tabl  <- as.data.frame(dataset)
+  } 
+  
+  else {
+    if( class(fitted.model)[1] %in% c('glm','lm','randomForest.formula','randomForest') ){
+      tabl.pred <- as.data.frame(predict( fitted.model, newdata = dataset ))
+      tabl <- as.data.frame(cbind(tabl.pred[[1]], dataset[,'Y'] )) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+    if( class(fitted.model)[1] %in% c("gbm") ){
+      tabl.pred <- as.data.frame(predict.gbm( fitted.model , newdata = dataset , n.trees = 5000 , type="response" ))
+      tabl <- as.data.frame(cbind(tabl.pred[[1]], dataset[,'Y'] )) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+    if( class(fitted.model)[1] %in% c('svm.formula','svm') ){
+      tabl.pred <- as.data.frame(predict( fitted.model, newdata = dataset ))
+      ids_NAs <- na.index(dataset)
+      tabl <- as.data.frame( cbind(tabl.pred[[1]], dataset[-ids_NAs,'Y']) ) 
+      tabl <- tabl[!is.na(tabl[[1]]),]
+    }
+  }
+  colnames(tabl) <- c('predicted','actual')
+  
+  # ROCR objects
+  require(ROCR)
+  obj.pred <- prediction(tabl$predicted,tabl$actual)
+  obj.perf <- performance(obj.pred,"tpr","fpr")
+  obj.auc  <- performance(obj.pred,"auc")@y.values[[1]]
+  # For ROC curve:
+  obj.perf@alpha.values[[1]][obj.perf@alpha.values[[1]]==Inf] <- max(obj.perf@alpha.values[[1]][obj.perf@alpha.values[[1]]!=Inf])
+  # KS criteria
+  KS.matrix= cbind(abs(obj.perf@y.values[[1]]-obj.perf@x.values[[1]]), obj.perf@alpha.values[[1]])
+  # KS cutoff
+  # colnames(KS.matrix) <- c("KS-distance","cut-point")
+  ind.ks  <- sort( KS.matrix[,1] , index.return=TRUE )$ix[nrow(KS.matrix)] 
+  
+  if( missing(cutpoint) | is.null(cutpoint) ) cutpoint <- KS.matrix[ind.ks,2]
+  
+  if( !(is.binary(tabl)) ){
+    
+    # Make predictions objs.
+    # Binary metrics 
+    tp = sum( tabl$predicted  >  cutpoint & tabl$actual >  cutpoint)
+    fp = sum( tabl$predicted  >  cutpoint & tabl$actual <= cutpoint)
+    tn = sum( tabl$predicted  <= cutpoint & tabl$actual <= cutpoint)
+    fn = sum( tabl$predicted  <= cutpoint & tabl$actual >  cutpoint) 
+    pos = tp+fn
+    neg = tn+fp
+    acc=  100*(tp+tn)/(pos+neg)
+    prec= 100*tp/(tp+fp)
+    sens= 100*tp/(tp+fn) # = tpr = recall = 1 - error alpha
+    spec= 100*tn/(tn+fp) # 1- error beta
+    fpr = 100*fp/neg  # error beta (tipo II) = 1 - spec
+    fnr = 100*fn/pos  # error alpha (tipo I) = 1- recall = 1- sens
+  }
+  
+  if( is.binary(tabl) ){
+    
+    tp = sum( tabl$predicted  == 1 & tabl$actual == 1)
+    fp = sum( tabl$predicted  == 1 & tabl$actual == 0)
+    tn = sum( tabl$predicted  == 0 & tabl$actual == 0)
+    fn = sum( tabl$predicted  == 0 & tabl$actual == 1) 
+    pos = tp+fn
+    neg = tn+fp
+    acc=  100*(tp+tn)/(pos+neg)
+    prec= 100*tp/(tp+fp)
+    sens= 100*tp/(tp+fn) # = tpr = recall = 1 - error alpha
+    spec= 100*tn/(tn+fp) # 1- error beta
+    fpr = 100*fp/neg  # error beta (tipo II) = 1 - spec
+    fnr = 100*fn/pos  # error alpha (tipo I) = 1- recall = 1- sens
+  }  
+  
+  if(roc.graph==TRUE){
+    win.graph()
+    plot( obj.perf  , col='red' , lwd=2, type="l",xlab="Tasa de falsos positivos" , ylab="Tasa de verdaderos positivos", main="Curva ROC modelo clasificaci?n")
+    abline( 0.0 , 1.0 , col="blue", lwd=2, lty=2)
+    abline( 0.0 , 0.0 , 1 , col="gray40" , lty=3)
+    legend( 0.45, 0.2 , c(paste0("AUC (Model)=",round(obj.auc,4)),"AUC (Rolling dice)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+  }
+  
+  list(ClassError.tI=round(fnr,2), ClassError.tII=round(fpr,2), Accuracy=round(acc,2),Sensitivity = round(sens,2) , Specificity= round(spec,2), auc= obj.auc , Fisher.F1=round(2*prec*sens/(prec+sens),4) )
+  
+}
+
+ 
+```
+
+
+
+
+El primer paso es crear una carpeta con nuestros modelos y resultados dentro de nuestro espacio de trabajo (proyecto).
+
+Obtenemos el directorio de trabajo
+```{r}
+myWD <- getwd() 
+```
+
+elegimos un nombre para nuestra carpeta con resultados
+```{r}
+myWorkingFolderName <- 'ModelResults' 
+```
+
+Creamos la carpeta donde guardaremos nuestros resultados y ficheros
+```{r}  
+dir.create( paste0(getwd(),"/",myWorkingFolderName))
+```
+
+Cargamos librerías de trabajo
+
+ - Funciones para entrenar modelos de ML
+```{r}  
+if (!require(caret)) install.packages('caret')
+library(caret)        
+```
+
+ - Métricas de evaluación del poder de clasificación
+```{r}  
+if (!require(ModelMetrics)) install.packages('ModelMetrics')
+library(ModelMetrics)
+```
+
+ - Para crear curvas ROC
+```{r}  
+if (!require(ROCR)) install.packages('ROCR')
+library(ROCR)
+```
+
+ - Cargamos la librería `insuranceData` que contiene los datos que utilizaremos
+```{r}  
+if (!require(insuranceData)) install.packages('insuranceData')
+library(insuranceData)
+```
+
+Para ver los contenidos de la librería ejecutamos:
+```{r}  
+data(package='insuranceData')
+```
+
+Vemos que hay 10 datasets. Trabajaremos con el primero: `AutoBi` (Automobile Bodily Injury Claims)
+Cargamos los datos de pérdidas en accidentes de coches:
+```{r}  
+data("AutoBi")
+```
+
+Descripción de las variables del fichero de datos AutoBi: 
+  
+ - `Casenum`. Identificador de la reclamación (esta variable no se utiliza ya que no es una variable predictora)
+ - `Attorney`.  Indica si el reclamante está representado por un abogado (1= Sí, 2 = No)
+ - `Clmsex`.  Indicador del 'Sexo del reclamante' (1 = Hombre, 2 = Mujer)
+ - `Marital`.  Indicador del 'Estado Civil del reclamante' (1 = Casado, 2 = Soltero, 3 = Viudo, 4 = divorciado/separado)
+ - `Clminsur`.  Indica si el conductor del vehículo del reclamante estaba o no asegurado (1 = S?, 2 = No, 3 = No aplica)
+ - `Seatbelt`.  Si el reclamante llevaba o no un cinturón de seguridad en el asiento infantil (1 = S?, 2 = No, 3 = No Aplica)
+ - `Clmage`.  Edad del reclamante
+ - `Loss (*)`.  La pérdida económica total del reclamante (en miles). Esta es la variable dependiente del conjunto de datos.
+  
+
+Revisamos el contenido de la tabla y el tipo de datos que contiene
+```{r}  
+str(AutoBi)
+```
+Estadísticas descriptivas básicas
+```{r}  
+summary(AutoBi)
+```
+Para llamar directamente a las variables por sus nombres en la tabla AutoBi utilizamos el comando `attach`
+```{r}  
+attach(AutoBi)
+```
+Para mirar la distribución de la variable target: LOSS (pérdida económica) 
+
+```{r} 
+hist(LOSS, breaks=300 , probability = T)
+lines(density(LOSS), col="red",main="Loss distribution")
+```
+
+
+es una variable altamente asimétrica (con posibles outliers a la derecha)
+
+
+
+
+Debido a la alta asimetría de la distribución de la variable target, utilizamos una medida robusta para segmentar los datos en dos clases: $1$ si las pérdidas son atípicamente altas o $0$ si no lo son.
+```{r}  
+lsup <- median(LOSS) + 1.5*IQR(LOSS) # Criterio basado en estadisticos robustos
+sum(LOSS>=lsup) # 153 datos de perdidas atipicamente altas
+```  
+  
+Guardamos el gráfico del histograma para futuros análisis y/o reportes  
+```{r}  
+  Path_to_graphics <- paste0(getwd(),"/","Graphics")
+  dir.create(Path_to_graphics)
+  png(paste0(Path_to_graphics,"/histograma.png"))
+  hist(LOSS[LOSS<lsup],breaks = 100,probability = T, xlab="loss (pérdida en miles $US)" , main="Datos de pérdida no severa")
+  lines(density(LOSS[LOSS<lsup]),col="red")
+  dev.off()
+```
+
+
+
+Creamos el dataset de trabajo.
+
+Creamos un dataset de trabajo eliminando la variable CASENUM (id) y filtrando por la variable LOSS y el valor lsup= 72.22587 (miles)
+```{r} 
+df_autobi <- AutoBi[ , -match("CASENUM", colnames(AutoBi)) ] 
+```                                                               
+
+Fijamos los predictores categóricos como factores:
+
+ * Representado por un abogado: $1$ = representado por letrado y $2$ = no representado
+```{r} 
+  df_autobi$ATTORNEY <- ordered(df_autobi$ATTORNEY, levels = 1:2) 
+```
+
+ * Sexo del reclamante: $1$ = hombre y $2$ = mujer
+```{r} 
+  df_autobi$CLMSEX   <- ordered(df_autobi$CLMSEX  , levels = 1:2)
+```
+
+ * Estado civil del reclamante: $1$ = casado, $2$ = soltero, $3$ = viudo y $4$ = divorciado / separado
+
+```{r} 
+  df_autobi$MARITAL  <- ordered(df_autobi$MARITAL , levels = 1:4)
+```
+
+ *  $1$ = vehículo estaba asegurado y $2$= no lo estaba
+```{r} 
+  df_autobi$CLMINSUR <- ordered(df_autobi$CLMINSUR, levels = 1:2) 
+```
+
+ * $1$ = llevaba cinturón abrochado y $2$ = no lo llevaba
+```{r} 
+  df_autobi$SEATBELT <- ordered(df_autobi$SEATBELT, levels = 1:2)
+``` 
+
+ * $1$= representado por letrado y $2$= no representado
+
+```{r} 
+df_autobi$Y        <- ifelse(df_autobi$LOSS>= lsup,1,0)
+```
+
+Proporción de atípicos 11.42%
+```{r} 
+summary(df_autobi)
+``` 
+
+
+(Opcional) Ahondamos un poco más en la relación de la pérdida con los factores.
+Falta utilizar aggregate para estudiar las correlaciones entre las variables.
+```{r} 
+  agg_loss_attorney <- aggregate(LOSS, by = list(ATTORNEY) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_attorney)[[1]] <- c("REPRESENTED","NOT REPRESENTED") ; dimnames(agg_loss_attorney)[[2]] <- c("ATTORNEY","LOSS")
+  
+  agg_loss_clmsex   <- aggregate(LOSS, by = list(CLMSEX)  , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_clmsex)[[1]]   <- c("MALE","FEMALE")  ; dimnames(agg_loss_clmsex)[[2]] <- c("CLMSEX","LOSS")
+  
+  agg_loss_marital  <- aggregate(LOSS, by = list(MARITAL) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_marital)[[1]]  <- c("MARRIED","SINGLE","WIDOW","DIVORCED") ; dimnames(agg_loss_marital)[[2]] <- c("MARITAL","LOSS")
+  
+  agg_loss_clminsur <- aggregate(LOSS, by = list(CLMINSUR) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_clminsur)[[1]] <- c("INSURED","NOT INSURED") ; dimnames(agg_loss_clminsur)[[2]] <- c("CLMINSUR","LOSS")
+  
+  agg_loss_seatbelt <- aggregate(LOSS, by = list(SEATBELT) , FUN= mean , na.rm=TRUE)
+  dimnames(agg_loss_seatbelt)[[1]] <- c("SEATBELT","NOT SEATBELT") ; dimnames(agg_loss_seatbelt)[[2]] <- c("SEATBELT","LOSS")
+``` 
+
+Resumen
+```{r} 
+  agg_loss_attorney
+  agg_loss_clmsex
+  agg_loss_marital 
+  agg_loss_clminsur
+  agg_loss_seatbelt
+```
+  
+
+Resumen combinando los tres mayores factores de riesgo (propensión)
+```{r} 
+agg_loss_many <- aggregate(LOSS, by = list(SEATBELT,ATTORNEY,MARITAL) , FUN= mean , na.rm=TRUE)
+dimnames(agg_loss_many)[[2]] <- c("SEATBELT","ATTORNEY","MARITAL","LOSS")
+```
+
+
+Aleatorizamos los datos y separamos el set de datos en train y test:
+```{r} 
+N=nrow(df_autobi)
+```
+
+
+Es importante fijar una semilla para los algoritmos de aleatorización internos de R
+```{r} 
+set.seed(123456)
+inTrain  <- createDataPartition(df_autobi$Y, times = 1, p = 0.7, list = TRUE)
+dt_train <- df_autobi[inTrain[[1]],]  # 938 casos
+dt_test  <- df_autobi[-inTrain[[1]],] # 402 casos
+  
+nrow(dt_train)
+summary(dt_train)
+  
+nrow(dt_test)
+summary(dt_test)
+```
+
+Comprobamos si se han colado algún dato del train en el test
+```{r} 
+  length(intersect(inTrain, setdiff(1:N,inTrain)))
+```
+O coincidencias  -> Ok
+
+
+
+
+
+## A.  Entrenamiento del modelo RF-clasificación
+
+```{r}
+if (!require(randomForest)) install.packages('randomForest')
+library(randomForest)
+```
+
+Creamos un objeto de clase 'formula' y se lo pasamos como argumento a la función `randomForest`
+```{r}
+
+set.seed(123456)
+fmla.rf1 <- as.formula(paste0("Y"," ~",paste0(colnames(df_autobi[,-c(7,8)]),collapse = "+"),collapse = ""))
+rf1 <- randomForest( fmla.rf1,
+                       data =dt_train,
+                       ntree = 5000, 
+# El procedimiento es bastante rapido con una muestra tan pequena por lo que podemos utilizar ntree > = 2500
+                       replace =TRUE,
+                       mtry=4,
+                       maxnodes =50,
+                       importance = TRUE,
+                       proximity =   TRUE,
+                       keep.forest = TRUE,
+                       na.action=na.omit)
+
+```
+
+No se ha hecho tuning en los parámetros básicos del modelo, se puede hacer con `ntree`, `mtry` y `maxnodes`
+```{r}  
+summary(rf1)
+str(rf1)
+```
+
+Gráfico de la importancia relativa de los predictores
+```{r}
+  varImpPlot(rf1,sort = T,main = "Variable Importance")
+```
+
+Gráfico del Error vs número de árboles
+```{r}
+  plot(rf1, main="Error de clasificación vs núero de  árboles") 
+```
+
+Como valor predicho se obtiene la probabilidad condicional: $P(Y=1|X_1 = ATTORNEY,\ldots,X_6=SEATBELT)$
+
+Miramos el resultado en el train:
+```{r}
+  rf1.prediction <- as.data.frame(predict(rf1, newdata = dt_train))
+  dt_train$pred_rf1 <- rf1.prediction$`predict(rf1, newdata = dt_train)` 
+  head(dt_train)
+  tail(dt_train)
+  summary(dt_train)
+
+  plot(density(dt_train$pred_rf1[!is.na(dt_train$pred_rf1)]), col="red" , xlab="Predicciones" , main="Función de densidad estimada")
+```
+
+Vemos que hay (claramente) dos concentraciones (clases) de probabilidades de pérdida, una concentranción en torno a la probabilidad de pérdida no severa ($Y=0$) y otra para la pérdida severa ($Y=1$).
+
+Esto no lleva a determinar la elección del punto de corte óptimo para obtener una regla de clasificación, es decir, un criterio para $Y_predicted=1$ (pérdida severa), o bien, para $Y_predicted=0$ (pérdida no severa). Para ello utilizaremos el criterio de la distancia de Kolmogorov-Smirnov (KS).
+
+Calculamos la medida de "performance" del mecanismo (modelo) de predicción 'rf1'
+```{r}
+  rf1.pred <- prediction(as.numeric(rf1$predicted),as.numeric(rf1$y)) 
+```
+con el train creamos un objeto de tipo 'prediction'
+```{r}
+  rf1.perf <- performance(rf1.pred,"tpr","fpr") 
+```
+
+
+### Criterio de la distancia de KS: 
+```{r}
+rf1.perf@alpha.values[[1]][rf1.perf@alpha.values[[1]]==Inf] <- round(max(rf1.perf@alpha.values[[1]][rf1.perf@alpha.values[[1]]!=Inf]),2)
+```
+
+```{r}  
+  KS.matrix= cbind(abs(rf1.perf@y.values[[1]]-rf1.perf@x.values[[1]]), rf1.perf@alpha.values[[1]])
+```
+
+La distancia KS se calcula como: KS = abs(rf1.perf@y.values[[1]]-rf1.perf@x.values[[1]])
+
+```{r}
+colnames(KS.matrix) <- c("KS-distance","cut-point")
+head(KS.matrix)
+ind.ks  <- sort( KS.matrix[,1] , index.return=TRUE )$ix[nrow(KS.matrix)] 
+```
+
+El punto de corte óptimo de KS
+```{r}
+  rf1.KScutoff <- KS.matrix[ind.ks,2] # := f(rf1.KS1)
+# 0.04 - 0.05 
+```
+
+
+### Gráfico de la Curva ROC y su métrica asociada
+
+Área bajo la curva ROC (AUC), para evaluar el poder de clasificación
+
+Tenemos dos maneras de calcular el área bajo la curva ROC:
+
+Cálculo de AUC mediante la función 'performance'
+```{r}
+rf1.auc1 <- performance(rf1.pred,"auc")@y.values[[1]]
+```
+0.737 - 0.738
+
+Finalmente calculamos la curva ROC junto con la métrica AUC 
+```{r}
+#win.graph()
+plot( rf1.perf , col='red'  , lwd=2, type="l", xlab="Tasa de falsos positivos" , ylab="Tasa de verdaderos positivos", main="Curva ROC modelo Random Forest")
+abline( 0 , 1  , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4, 0.15 , c(paste0("AUC (Random Forest)=",round(rf1.auc1,4)),"AUC (clasificaci?n al azar)=0.50"),lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```
+
+Para realizar el mismo gráfico de la curva ROC utilizando la librería `ggplot2`
+```{r}
+library("ggplot2")
+```
+
+Generamos los datos en un data.frame
+```{r}
+  df.perf <- data.frame(x=rf1.perf@x.values[[1]],y=rf1.perf@y.values[[1]])
+```
+
+Costrucción del objeto gráfico con ggplot2
+```{r}
+#win.graph()
+p <- ggplot(df.perf,aes(x=x,y=y)) + geom_path(size=1, colour="red")
+p <- p + ggtitle("Curva ROC modelo Random Forest")
+p <- p + theme_update(plot.title = element_text(hjust = 0.5))
+p <- p + geom_segment(aes(x=0,y=0,xend=1,yend=1),colour="blue",linetype= 2)
+p <- p + geom_text(aes(x=0.75 , y=0.3 , label=paste(sep ="","AUC (Random Forest) ) = ",round(rf1.auc1,4) )),colour="black",size=4)
+p <- p + geom_text(aes(x=0.75 , y=0.25 , label=paste(sep ="","AUC (Coin toss) = ",round(0.50,4) )),colour="black",size=4)
+p <- p + scale_x_continuous(name= "Tasa de falsos positivos")
+p <- p + scale_y_continuous(name= "Tasa de verdaderos positivos")
+p <- p + theme(
+  plot.title   = element_text(size = 2),
+  axis.text.x  = element_text(size = 10),
+  axis.text.y  = element_text(size = 10),
+  axis.title.x = element_text(size = 12,face = "italic"),
+  axis.title.y = element_text(size = 12,face = "italic",angle=90),
+  legend.title     = element_blank(), 
+  panel.background = element_rect(fill = "grey"),
+  panel.grid.minor = element_blank(), 
+  panel.grid.major = element_line(colour='white'),
+  plot.background  = element_blank()
+)
+```
+
+Generamos el gráfico que hemos almacenado en la variable 'p':
+```{r}
+p
+```
+
+
+Calculamos la predicción en el test y evaluamos el poder de clasificación del modelo
+```{r} 
+rf1.pred_test     <- as.data.frame(predict( rf1, newdata = dt_test))
+dt_test$pred_rf1  <- rf1.pred_test$`predict(rf1, newdata = dt_test)` 
+```
+
+```{r}
+head(dt_test)
+```
+
+```{r}
+tail(dt_test)
+```
+
+```{r}  
+summary(dt_test)
+```
+
+
+Con el test creamos un objeto de tipo 'prediction'
+```{r}
+dt_test.pred  <- prediction(as.numeric(rf1.pred_test$`predict(rf1, newdata = dt_test)`),dt_test$Y) 
+dt_test.perf  <- performance(dt_test.pred,"tpr","fpr") 
+```
+
+
+Evaluación del poder de clasificación del modelo RF1 vía curva ROC
+```{r} 
+rf1.test.auc <- performance(dt_test.pred ,"auc")@y.values[[1]]
+```
+
+Gráfico de la curva ROC para el test 
+```{r}
+#win.graph()
+plot( dt_test.perf , col='red' , lwd=2, type="l" , main="Curva ROC modelo RF - test",xlab="Tasa de falsos positivos", ylab="Tasa de verdaderos positivos")
+abline( 0 , 1  , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4, 0.2 , c(paste0("AUC (Random Forest)=",round(rf1.test.auc,4)),"AUC (Coin toss)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```
+
+
+
+### Métrica de error del clasificador RF:
+
+ - Error tipo I ($\alpha$): 22.50%, indica el error que se comete clasificando una pérdida 'severa' como 'no severa'
+ - Error tipo II ($\beta$): 43.15%, indica el error que se comete clasificando una pérdida 'no severa' como 'severa'
+ - % mala clasificación ($%mc$) : 40.66%, indica el % de veces que el modelo clasifica incorrectamente las pérdidas 
+ - Accuracy = $100 - %$: 59.34%, indica el % de veces que el modelo acierta clasificando las pérdidas
+ - Area bajo la curva ROC $AUC$: 0.6988, medida global del poder de clasificación del modelo
+ - Finalmente calculamos la curva ROC junto con la métrica AUC
+
+Una función útil para obtener rápidamente el análisis de un clasificador binario es la siguiente:
+```{r} 
+library(binaryLogic)
+metricBinaryClass( fitted.model = rf1 , dataset= dt_test , cutpoint=rf1.KScutoff , roc.graph=TRUE)
+
+metricBinaryClass(fitted.model = rf1 , dataset= dt_test , cutpoint=rf1.KScutoff , roc.graph=TRUE)
+```
+
+
+
+
+### Ejercicio propuesto:
+
+ ¿Qué suecede con los errores de clasificación si cambiamos el punto de corte (**cutpoint**)? 
+
+ 1. Tomar una serie de valores distintos para el parámetro cutpoint y graficar las distintas curvas ROC resultantes
+ 1. Graficar la superficie formada por los errores tipo I y tipo II versus el punto de corte ¿Qué valor minimiza ambos errores?   
+
+
+
+
+
+## B.  Entrenamiento del modelo RF-regresión
+
+```{r}
+fmla.rf2 <- as.formula(paste0('LOSS','~',paste0(colnames(df_autobi[,-c(7,8)]),collapse = "+"),collapse = ''))
+set.seed(112233)
+
+rf2 <- randomForest( fmla.rf2,
+                     data =dt_train,
+                     ntree = 5000,
+                     replace =TRUE,
+                     mtry=4,
+                     maxnodes =50,
+                     importance = TRUE,
+                     na.action=na.omit)
+
+summary(rf2)
+```
+
+```{r}
+str(rf2)
+```
+
+```{r}
+varImpPlot(rf2,sort = T,main="Variable Importance")
+```  
+
+```{r}  
+rf2.prediction <- as.data.frame(predict(rf2, newdata = dt_test))
+dt_test$pred_rf2 <- rf2.prediction[[1]] 
+```
+
+```{r}
+head(dt_test)
+```
+
+```{r}
+tail(dt_test)
+```
+
+```{r}
+summary(dt_test)
+```
+
+
+Graficamos la distribución de los valores estimados en el train
+```{r}
+plot(density(dt_test$pred_rf2[!is.na(dt_test$pred_rf2) & dt_test$pred_rf2 < 30]), ylim= c(0,.25) , col="red" , main="")
+lines(density(dt_test$LOSS[dt_test$LOSS<30]),col="blue",lty=1)
+```
+
+```{r}
+modelchecktest1 <- as.data.frame( cbind(real=dt_test$LOSS , predicted=dt_test$pred_rf2) )
+modelchecktest1[is.na(modelchecktest1)] <- 0
+
+summary(modelchecktest1)
+```
+
+Error de ajuste del modelo
+```{r}
+plot(modelchecktest1, xlim=c(0,100) , ylim=c(0,100) ,  pch="." , cex=1.5)
+segments( 0, 0 , 100, 100 , col="red")
+
+modelMetrics(real=modelchecktest1$real, pred=modelchecktest1$predicted )
+```  
+
+Commentario: El error de ajuste del modelo de regresión es demasiado alto: $RMSE= 54.57$ y el $MAPE=127.19%$
+Con estos errores de predicción, es preferible utilizar a un modelo de clasificación en lugar de un     modelo de regresión.
+
+
+# Gradient Boosting Models
+
+## C.  Entrenamiento del modelo GBM-clasificación
+
+```{r}
+if (!require(gbm)) install.packages('gbm')
+library(gbm)
+```
+
+Creamos un objeto de clase 'formula' y se lo pasamos como argumento a la función `gbm`
+```{r}
+xVars <- colnames(AutoBi[ , -match(c("SEATBELT","CASENUM","LOSS"), colnames(AutoBi)) ])
+targets <- c("LOSS","Y")
+
+fmla.gbm1 <- as.formula(paste0(targets[2],"~",paste0(xVars,collapse = "+"),collapse = ""))
+
+set.seed(999)
+
+gbm1 <- gbm(fmla.gbm1,
+            data = dt_train,
+            distribution="bernoulli",
+            n.trees = 5000,
+            interaction.depth = 3,
+            n.minobsinnode = 20,
+            shrinkage = 0.001 )
+
+summary(gbm1)
+```
+
+Como valor estimado se obtiene la probabilidad condicional  $ P(Y=1|X_1=ATTORNEY,\ldots,X_6=SEATBELT)$
+
+Miramos el resultado en el test:
+  
+```{r}
+gbm1.prediction <- as.data.frame(predict.gbm(gbm1, newdata = dt_train , n.trees = 5000 , type="response"))
+
+dt_train$pred_gbm1 <- gbm1.prediction[[1]]
+```
+
+
+Calculamos la medida de "performance" del mecanismo (modelo) de predicción 'gbm1'
+```{r}
+gbm1.pred <- prediction(dt_train$pred_gbm1,dt_train$Y) # con el train creamos un
+
+gbm1.perf <- performance(gbm1.pred,"tpr","fpr") 
+```  
+
+Calculamos el punto de corte
+```{r}
+gbm1.perf@alpha.values[[1]][gbm1.perf@alpha.values[[1]]==Inf] <- round(max(gbm1.perf@alpha.values[[1]][gbm1.perf@alpha.values[[1]]!=Inf]),2)
+
+KS.matrix= cbind(abs(gbm1.perf@y.values[[1]]-gbm1.perf@x.values[[1]]), gbm1.perf@alpha.values[[1]])
+
+colnames(KS.matrix) <- c("KS-distance","cut-point")
+head(KS.matrix)
+
+ind.ks  <- sort( KS.matrix[,1] , index.return=TRUE )$ix[nrow(KS.matrix)]
+```
+
+El punto de corte óptimo de KS
+```{r}
+gbm1.KScutoff <- KS.matrix[ind.ks,2]
+```
+
+(Opcional) Area bajo la curva ROC
+```{r}
+gbm1.auc <- performance(gbm1.pred ,"auc")@y.values[[1]]
+```  
+
+(opcional) Curva ROC GBM - train
+```{r}
+#win.graph()
+plot( gbm1.perf , col='red' , lwd=2, type="l" , main="Curva ROC modelo GBM",xlab="Tasa de falsos positivos", ylab="Tasa de verdaderos positivos")
+abline( 0 , 1 , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4  , 0.2 , c(paste0("AUC (Gradient Boosting)=",round(gbm1.auc,4)),"AUC (Coin toss)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```  
+
+
+Calculamos la predicción en el test y evaluamos el poder de clasificación del modelo
+```{r}  
+gbm1.pred_test    <- as.data.frame(predict.gbm( gbm1, newdata = dt_test , n.trees = 5000 , type = "response"))
+dt_test$pred_gbm1 <- gbm1.pred_test[[1]] 
+```  
+
+Con el test creamos un objeto de tipo 'prediction'
+```{r}
+dt_gbm1.pred  <- prediction(dt_test$pred_gbm1,dt_test$Y) 
+dt_gbm1.perf  <- performance(dt_gbm1.pred,"tpr","fpr") 
+```  
+
+Evaluación del poder de clasificaci?n del modelo GBM1 vía curva ROC
+```{r}  
+gbm1.auc_test <- performance( dt_gbm1.pred ,"auc")@y.values[[1]]
+``` 
+
+ - Error tipo I ($\alpha$):       10.87% indica el error que se comete clasificando una pérdida 'severa' como 'no severa'
+ - Error tipo II ($\beta$):       39.89% indica el error que se comete clasificando una pérdida 'no severa' como 'severa'
+ - % de mala clasificación:    35.81% nos da el % de veces que el modelo clasifica incorrectamente las pérdidas 
+ - Accuracy = $100 - %mc$:        63.43% nos da el % de veces que el modelo acierta clasificando las pérdidas
+ - Area bajo la curva ROC, $AUC$: 0.7583 nos da una medida global del poder de clasificación del modelo
+ - Finalmente calculamos la curva ROC junto con la métrica AUC 
+
+Evaluamos el poder de clasificación con la función `metricBinaryClass`:
+```{r}  
+metricBinaryClass( fitted.model = gbm1 , dataset= dt_test , cutpoint=gbm1.KScutoff , roc.graph=TRUE)
+```
+
+
+
+## D.  Entrenamiento del modelo GBM-regresión
+
+```{r}  
+fmla.gbm2 <- as.formula(paste0(targets[1],"~",paste0(xVars,collapse = "+"),collapse = ""))
+
+set.seed(1234)
+
+gbm2 <- gbm(fmla.gbm2,
+            data = dt_train,
+            distribution="gaussian",
+            n.trees = 5000,
+            interaction.depth = 3,
+            n.minobsinnode = 20,
+            #keep.data = TRUE,
+            #n.cores = 4,
+            shrinkage = 0.001 )
+
+summary(gbm2)
+```
+
+```{r} 
+str(gbm2)
+```
+
+Como valor estimado se obtiene la esperanza condicional de la pérdida: $E(LOSS|X_1=ATTORNEY,...,X_6=SEATBELT)$
+
+Miramos el resultado en el test:
+```{r}   
+gbm2.prediction <- as.data.frame(predict.gbm(gbm2, newdata = dt_test , n.trees = 5000 , type="response"))
+dt_test$pred_gbm2 <- gbm2.prediction[[1]]
+head(dt_test)
+``` 
+
+```{r} 
+tail(dt_test)
+```
+
+```{r} 
+summary(dt_test)
+```
+
+
+Graficamos la distribución de los valores estimados en el train
+```{r} 
+plot(density(dt_test$pred_gbm2[!is.na(dt_test$pred_gbm2) & dt_test$pred_gbm2 < 30]), ylim= c(0,.25) , xlab="Predicted", col="red" , main="")
+lines(density(dt_test$LOSS[dt_test$LOSS<30]),col="blue",lty=1)
+lines(density(dt_test$pred_rf2[!is.na(dt_test$pred_rf2) & dt_test$pred_rf2 < 30]),col="darkgreen",lty=1)
+```
+
+```{r} 
+modelchecktest2 <- as.data.frame( cbind(real=dt_test$LOSS , predicted=dt_test$pred_gbm2) )
+modelchecktest2[is.na(modelchecktest2)] <- 0
+summary(modelchecktest2)
+```
+
+Error de ajuste del modelo
+
+```{r}   
+plot(modelchecktest2, xlim=c(0,100) , ylim=c(0,100) ,  pch="." , cex=1.5)
+segments( 0, 0 , 100, 100 , col="red")
+
+modelMetrics(real=modelchecktest2$real, pred=modelchecktest2$predicted )
+```
+
+
+Comentario: Al igual que en el caso del modelo de regresión RF2, el error de ajuste del modelo GBM2 demasiado alto: $RMSE= 53.82k$ y el $MAPE=134.19%$. Con estos errores, es preferible ir a un modelo de clasificación en lugar de un modelo de regresión.
+
+
+# Support Vector Machines
+
+
+## Introducción
+
+Tienen su origen en los trabajos sobre teoría de aprendizaje estadístico realizados por Vapnik en los años 90. Son algoritmos utilizados para tanto para problemas de clasificación como de regresión.
+
+Se han utilizado con éxito en campos como: reconocimiento de imágenes, clasificación de textos, clasificación de proteínas, etc.
+Los algoritmos SVM se encuentran dentro de la familia de clasificadores lineales. Han ganando gran reconocimiento debido a sus solidos fundamentos teóricos.
+
+## Descripción
+
+Dado un conjunto separable
+
+$$S=\{ (\overrightarrow{x_1},y_1), ((\overrightarrow{x_2},y_2 ), \ldots,((\overrightarrow{x_l},y_l ) \}$$
+se define hiperplano de separación como una función lineal capaz de separar dicho conjunto sin error
+
+
+
+
+
+
+
+## SVM-clasificación: ejemplo
+
+```{r} 
+if (!require(e1071)) install.packages('e1071')
+library(e1071)
+```
+
+librería alternativa que también es muy utilizada
+```{r} 
+if (!require(kernlab)) install.packages('kernlab')
+library(kernlab) 
+```
+
+Creamos la relación (fórmula) entre las variables
+
+```{r} 
+fmla.svm <-  as.formula(paste0(targets[2],"~",paste0( c(xVars,"SEATBELT"),collapse = "+"),collapse = ""))
+```
+
+Modelo exploratorio (sin ajustar parámetros):
+  ```{r} 
+svm0 <- svm( fmla.svm , data=dt_train , type="C-classification", cost=10, na.action = na.omit)
+```
+
+Utilizamos la función `na.index` para recuperar las posiciones de todos los registros donde hay missings (NA's, NULL's, blanks)
+```{r} 
+#ids_NAs <- na.index(dt_test) 
+```
+
+Es necesario eliminar los valores missings (NA) de la variable a modelizar (target). Las posiciones están almacenadas en la variable 'ids_NAs'
+```{r} 
+#real_target <- data.frame( real = dt_test[ -ids_NAs , 'Y']) 
+#predicted_target <- data.frame(predicted = predict(svm0, dt_test))
+#pred.svm0 <- cbind( real_target , predicted_target )
+
+#metricBinaryClass( fitted.model = NULL , dataset= pred.svm0 , cutpoint= NULL , roc.graph=FALSE)
+```
+
+Este modelo ofrece un pobrísimo poder de clasificación. Hay que buscar un mejor modelo vía 'tuning' de los parámetros. A continuación vemos cómo realizar esto:
+  
+Comparamos dos funciones kernel:  'Base radial' vs 'sigmoide' (no debemos utilizar el kernel 'lineal') 
+
+```{r} 
+t.ini <- Sys.time()
+tuneSVMclass <- tune(svm, fmla.svm,  data = dt_train, ranges = list( kernel='sigmoid', gamma= seq(1,3,by=.5) ,                                              cost = seq(5,100,by=5)) ,
+                     tune.control = tune.control( random = TRUE, sampling = "bootstrap", sampling.aggregate = mean, 
+                                                  nboot = 10, boot.size = 0.90, best.model = TRUE, performances = TRUE, error.fun = 'auc'))                    
+
+t.end <- Sys.time()
+print(t.end-t.ini)
+print(tuneSVMclass)
+```
+
+
+El mejor modelo de clasificación vía SVM
+```{r} 
+tunedSVM1 <- svm( fmla.svm , data=dt_train, type="C-classification", kernel='sigmoid' , probability = TRUE , gamma= 1, cost =10 , na.action = na.omit)
+```
+
+El mejor SVM se obtiene con un **kernel de base radial**
+```{r}  
+predicted_target <- as.data.frame(predict( tunedSVM1 , dt_test))
+#pred.svm1        <- as.data.frame(cbind( real_target ,  predicted_target ))
+#colnames(pred.svm1) <- c('actual','predicted')
+
+#table( pred.svm1 )
+```
+
+Curva ROC SVM
+
+```{r} 
+#metricBinaryClass( fitted.model = NULL , dataset=  pred.svm1   , cutpoint= NULL , roc.graph=TRUE)  
+
+#metricBinaryClass( fitted.model = tunedSVM1 , dataset=  dt_test  , cutpoint= NULL , roc.graph=TRUE)  
+``` 
+
+
+Evaluamos el poder de clasificación con la función 'metricBinaryClass':
+  ```{r}   
+#metricBinaryClass( fitted.model = NULL , dataset= pred.svm.model , cutpoint= NULL , roc.graph=FALSE)
+```
+
+ - Error tipo I ($\alpha$) : 79.07% nos dice el error que se comete clasificando una pérdida 'severa' como 'no severa'
+ - Error tipo II ($\beta$) : 10.73% nos dice el error que se comete clasificando una p?rdida 'no severa' como 'severa'
+ - % de mala clasificación : 19.58% nos da el % de veces que el modelo clasifica incorrectamente las pérdidas 
+ - Accuracy = $100 -%mc$   : 80.42%
+ - Area bajo la curva ROC, $AUC$ : 0.55102
+ - Finalmente calculamos la curva ROC junto con la métrica AUC 
+
+
+
+## F.  Entrenamiento del modelo SVM-regresión
+
+
+Para entrenar el SVM - regresión vamos directamente a buscar el mojor modelo vía 'tuning' de los parámetros:
+
+  - Usando una función Kernel de base radial
+```{r}
+#t.ini <- Sys.time()
+#tuneSVMreg <- tune(svm, fmla.svm,  data = dt_train, ranges = list(epsilon = seq(0,1,by=0.1), gamma= seq(0.1,3,by=0.1) , cost = seq(5,100, by=5) ), tune.control= tune.control(random = TRUE, nrepeat = 10, repeat.aggregate = mean, sampling = "bootstrap", sampling.aggregate = mean, samling.dispersion = sd, cross = 10, fix = 2/3, nboot = 10, boot.size = 0.90, best.model = TRUE, performances = TRUE, error.fun = 'mse'))
+#t.end <- Sys.time()
+#print(t.end-t.ini)
+```
+
+El mejor modelo SVM
+
+# Incompleto...
+
+
+
+###                                    G.  comparativa de modelos de clasificaci?n
+
+Realizamos una breve comparativa de los distintos m?todos de clasificaci?n de la p?rdidas:
+  
+- Error tipo I (alpha)       : 79.07% nos dice el error que se comete clasificando una p?rdida 'severa' como 'no severa'
+- Error tipo II (beta)       : 10.73% nos dice el error que se comete clasificando una p?rdida 'no severa' como 'severa'
+- % de mala clasificaci?n    : 19.58% nos da el % de veces que el modelo clasifica incorrectamente las p?rdidas 
+- Accuracy = 100 -%mc        : 80.42%
+  - Area bajo la curva ROC auc : 0.55102
+- Finalmente calculamos la curva ROC junto con la m?trica AUC 
+
+
+### Curvas ROC
+```{r}
+#win.graph()
+plot( gbm1.perf , col='red' , lwd=2, type="l" , main="Curva ROC modelo GBM",xlab="Tasa de falsos positivos", ylab="Tasa de verdaderos positivos")
+abline( 0 , 1 , col="blue" , lwd=2, lty=2)
+abline( 0 , 0 , 1 , col="gray40"   , lty=3)
+legend( 0.4  , 0.2 , c(paste0("AUC (Gradient Boosting)=",round(gbm1.auc,4)),"AUC (Coin toss)=0.50") ,lty=c(1,2), lwd=c(2,2) ,col=c("red","blue"), bty="n")
+```
+
+### falta - Incompleto

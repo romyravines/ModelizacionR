@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>9.2 K-means | Modelización en R</title>
+  <meta name="description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="9.2 K-means | Modelización en R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="9.2 K-means | Modelización en R" />
+  
+  <meta name="twitter:description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  
+
+<meta name="author" content="Romy Rodríguez-Ravines" />
+
+
+<meta name="date" content="2019-01-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="k-medias-k-means.html">
+<link rel="next" href="hierarchical-clustering.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/htmlwidgets-1.3/htmlwidgets.js"></script>
+<script src="assets/proj4js-2.3.15/proj4.js"></script>
+<link href="assets/highcharts-7.0.1/css/motion.css" rel="stylesheet" />
+<link href="assets/highcharts-7.0.1/css/htmlwdgtgrid.css" rel="stylesheet" />
+<script src="assets/highcharts-7.0.1/highcharts.js"></script>
+<script src="assets/highcharts-7.0.1/highcharts-3d.js"></script>
+<script src="assets/highcharts-7.0.1/highcharts-more.js"></script>
+<script src="assets/highcharts-7.0.1/modules/stock.js"></script>
+<script src="assets/highcharts-7.0.1/modules/map.js"></script>
+<script src="assets/highcharts-7.0.1/modules/annotations.js"></script>
+<script src="assets/highcharts-7.0.1/modules/boost.js"></script>
+<script src="assets/highcharts-7.0.1/modules/data.js"></script>
+<script src="assets/highcharts-7.0.1/modules/drag-panes.js"></script>
+<script src="assets/highcharts-7.0.1/modules/drilldown.js"></script>
+<script src="assets/highcharts-7.0.1/modules/item-series.js"></script>
+<script src="assets/highcharts-7.0.1/modules/offline-exporting.js"></script>
+<script src="assets/highcharts-7.0.1/modules/overlapping-datalabels.js"></script>
+<script src="assets/highcharts-7.0.1/modules/exporting.js"></script>
+<script src="assets/highcharts-7.0.1/modules/export-data.js"></script>
+<script src="assets/highcharts-7.0.1/modules/funnel.js"></script>
+<script src="assets/highcharts-7.0.1/modules/heatmap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/treemap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/sankey.js"></script>
+<script src="assets/highcharts-7.0.1/modules/solid-gauge.js"></script>
+<script src="assets/highcharts-7.0.1/modules/streamgraph.js"></script>
+<script src="assets/highcharts-7.0.1/modules/sunburst.js"></script>
+<script src="assets/highcharts-7.0.1/modules/vector.js"></script>
+<script src="assets/highcharts-7.0.1/modules/wordcloud.js"></script>
+<script src="assets/highcharts-7.0.1/modules/xrange.js"></script>
+<script src="assets/highcharts-7.0.1/modules/tilemap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/venn.js"></script>
+<script src="assets/highcharts-7.0.1/modules/gantt.js"></script>
+<script src="assets/highcharts-7.0.1/modules/timeline.js"></script>
+<script src="assets/highcharts-7.0.1/modules/parallel-coordinates.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/grouped-categories.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/motion.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/multicolor_series.js"></script>
+<script src="assets/highcharts-7.0.1/custom/reset.js"></script>
+<script src="assets/highcharts-7.0.1/custom/symbols-extra.js"></script>
+<script src="assets/highcharts-7.0.1/custom/text-symbols.js"></script>
+<script src="assets/highchart-binding-0.7.0/highchart.js"></script>
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Presentación</a></li>
+<li class="part"><span><b>I MODELOS ANALÍTICOS</b></span></li>
+<li class="chapter" data-level="1" data-path="modelizacion.html"><a href="modelizacion.html"><i class="fa fa-check"></i><b>1</b> Modelizar</a><ul>
+<li class="chapter" data-level="1.1" data-path="modelizar.html"><a href="modelizar.html"><i class="fa fa-check"></i><b>1.1</b> ¿Qué es Modelizar?</a></li>
+<li class="chapter" data-level="1.2" data-path="que-es-un-modelo-analitico.html"><a href="que-es-un-modelo-analitico.html"><i class="fa fa-check"></i><b>1.2</b> ¿Qué es un modelo analítico?</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="tipos-de-problemas.html"><a href="tipos-de-problemas.html"><i class="fa fa-check"></i><b>2</b> Tipos de Problemas</a><ul>
+<li class="chapter" data-level="2.1" data-path="clasemodelos.html"><a href="clasemodelos.html"><i class="fa fa-check"></i><b>2.1</b> Enfoques de Modelización</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="catalogo-de-tecnicas.html"><a href="catalogo-de-tecnicas.html"><i class="fa fa-check"></i><b>3</b> Catálogo de Técnicas</a><ul>
+<li class="chapter" data-level="3.1" data-path="tecnicas-de-clustering.html"><a href="tecnicas-de-clustering.html"><i class="fa fa-check"></i><b>3.1</b> Técnicas de <em>Clustering</em></a></li>
+<li class="chapter" data-level="3.2" data-path="tecnicas-de-clasificacion.html"><a href="tecnicas-de-clasificacion.html"><i class="fa fa-check"></i><b>3.2</b> Técnicas de Clasificación</a></li>
+<li class="chapter" data-level="3.3" data-path="tecnicas-de-regresion.html"><a href="tecnicas-de-regresion.html"><i class="fa fa-check"></i><b>3.3</b> Técnicas de Regresión</a></li>
+<li class="chapter" data-level="3.4" data-path="tecnicas-de-reduccion-de-dimension.html"><a href="tecnicas-de-reduccion-de-dimension.html"><i class="fa fa-check"></i><b>3.4</b> Técnicas de Reducción de Dimensión</a></li>
+<li class="chapter" data-level="3.5" data-path="otras-tecnicas.html"><a href="otras-tecnicas.html"><i class="fa fa-check"></i><b>3.5</b> Otras ‘Técnicas’</a></li>
+<li class="chapter" data-level="3.6" data-path="que-tecnica-utilizar.html"><a href="que-tecnica-utilizar.html"><i class="fa fa-check"></i><b>3.6</b> ¿Qué técnica utilizar?</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="evaluacion-de-modelos.html"><a href="evaluacion-de-modelos.html"><i class="fa fa-check"></i><b>4</b> Evaluación de modelos</a><ul>
+<li class="chapter" data-level="4.1" data-path="diagnosis-de-negocio.html"><a href="diagnosis-de-negocio.html"><i class="fa fa-check"></i><b>4.1</b> Diagnosis de Negocio</a></li>
+<li class="chapter" data-level="4.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html"><i class="fa fa-check"></i><b>4.2</b> Evaluación en Respuesta Binaria</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#clasificacion"><i class="fa fa-check"></i><b>4.2.1</b> Clasificación</a></li>
+<li class="chapter" data-level="4.2.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#medidas-de-desigualdad"><i class="fa fa-check"></i><b>4.2.2</b> Medidas de desigualdad</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html"><i class="fa fa-check"></i><b>4.3</b> Evaluación en Respuesta Continúa</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-regresion"><i class="fa fa-check"></i><b>4.3.1</b> Modelos de Regresión</a></li>
+<li class="chapter" data-level="4.3.2" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-series-temporales"><i class="fa fa-check"></i><b>4.3.2</b> Modelos de Series temporales</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html"><i class="fa fa-check"></i><b>4.4</b> Evaluación en <em>Clustering</em></a><ul>
+<li class="chapter" data-level="4.4.1" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html#silueta"><i class="fa fa-check"></i><b>4.4.1</b> Silueta</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html"><i class="fa fa-check"></i><b>4.5</b> Métodos de re-muestreo</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#training-testing"><i class="fa fa-check"></i><b>4.5.1</b> Training &amp; testing</a></li>
+<li class="chapter" data-level="4.5.2" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#cross-validation"><i class="fa fa-check"></i><b>4.5.2</b> Cross validation</a></li>
+</ul></li>
+<li class="chapter" data-level="4.6" data-path="practica-en-r.html"><a href="practica-en-r.html"><i class="fa fa-check"></i><b>4.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="practica-en-r.html"><a href="practica-en-r.html#preparacion-de-los-datos"><i class="fa fa-check"></i><b>4.6.1</b> Preparación de los datos</a></li>
+<li class="chapter" data-level="4.6.2" data-path="practica-en-r.html"><a href="practica-en-r.html#clasificacion-1"><i class="fa fa-check"></i><b>4.6.2</b> Clasificación</a></li>
+<li class="chapter" data-level="4.6.3" data-path="practica-en-r.html"><a href="practica-en-r.html#regresion"><i class="fa fa-check"></i><b>4.6.3</b> Regresión</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II Modelos Estadísticos</b></span></li>
+<li class="chapter" data-level="5" data-path="regresion-lineal.html"><a href="regresion-lineal.html"><i class="fa fa-check"></i><b>5</b> Regresión Lineal</a><ul>
+<li class="chapter" data-level="5.1" data-path="que-es-un-modelo-de-regresion.html"><a href="que-es-un-modelo-de-regresion.html"><i class="fa fa-check"></i><b>5.1</b> ¿Qué es un Modelo de Regresión?</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="que-es-un-modelo-de-regresion.html"><a href="que-es-un-modelo-de-regresion.html#ver-tambien"><i class="fa fa-check"></i><b>5.1.1</b> Ver también:</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html"><i class="fa fa-check"></i><b>5.2</b> Práctica en R</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html#regresion-lineal-simple"><i class="fa fa-check"></i><b>5.2.1</b> Regresión lineal simple</a></li>
+<li class="chapter" data-level="5.2.2" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html#regresion-lineal-multiple"><i class="fa fa-check"></i><b>5.2.2</b> Regresión lineal múltiple</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="regresion-logistica.html"><a href="regresion-logistica.html"><i class="fa fa-check"></i><b>6</b> Regresión Logística</a><ul>
+<li class="chapter" data-level="6.1" data-path="modelos-lineales-generalizados.html"><a href="modelos-lineales-generalizados.html"><i class="fa fa-check"></i><b>6.1</b> Modelos Lineales Generalizados</a></li>
+<li class="chapter" data-level="6.2" data-path="modelo-logit.html"><a href="modelo-logit.html"><i class="fa fa-check"></i><b>6.2</b> Modelo Logit</a></li>
+<li class="chapter" data-level="6.3" data-path="modelo-probit.html"><a href="modelo-probit.html"><i class="fa fa-check"></i><b>6.3</b> Modelo Probit</a></li>
+<li class="chapter" data-level="6.4" data-path="practica-en-r-2.html"><a href="practica-en-r-2.html"><i class="fa fa-check"></i><b>6.4</b> Práctica en R</a><ul>
+<li class="chapter" data-level="6.4.1" data-path="practica-en-r-2.html"><a href="practica-en-r-2.html#otros-ejemplos"><i class="fa fa-check"></i><b>6.4.1</b> Otros ejemplos</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="series-temporales.html"><a href="series-temporales.html"><i class="fa fa-check"></i><b>7</b> Series Temporales</a><ul>
+<li class="chapter" data-level="7.1" data-path="que-es-una-serie-temporal.html"><a href="que-es-una-serie-temporal.html"><i class="fa fa-check"></i><b>7.1</b> ¿Qué es una Serie Temporal?</a></li>
+<li class="chapter" data-level="7.2" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html"><i class="fa fa-check"></i><b>7.2</b> Herramientas de Análisis</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html#autocorrelacion-acf-y-pacf"><i class="fa fa-check"></i><b>7.2.1</b> Autocorrelación (acf y pacf)</a></li>
+<li class="chapter" data-level="7.2.2" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html#operadores-del-tiempo"><i class="fa fa-check"></i><b>7.2.2</b> Operadores (del Tiempo)</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html"><i class="fa fa-check"></i><b>7.3</b> Alisado Exponencial</a></li>
+<li class="chapter" data-level="7.4" data-path="arima.html"><a href="arima.html"><i class="fa fa-check"></i><b>7.4</b> ARIMA</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="arima.html"><a href="arima.html#parte-ar-autorregresiva"><i class="fa fa-check"></i><b>7.4.1</b> Parte AR (Autorregresiva)</a></li>
+<li class="chapter" data-level="7.4.2" data-path="arima.html"><a href="arima.html#parte-ma-medias-moviles"><i class="fa fa-check"></i><b>7.4.2</b> Parte MA (Medias Móviles)</a></li>
+</ul></li>
+<li class="chapter" data-level="7.5" data-path="funciones-de-transferencia.html"><a href="funciones-de-transferencia.html"><i class="fa fa-check"></i><b>7.5</b> Funciones de Transferencia</a></li>
+<li class="chapter" data-level="7.6" data-path="practica-en-r-3.html"><a href="practica-en-r-3.html"><i class="fa fa-check"></i><b>7.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="practica-en-r-3.html"><a href="practica-en-r-3.html#ver-tambien-1"><i class="fa fa-check"></i><b>7.6.1</b> Ver también</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="a-manera-de-nota-final.html"><a href="a-manera-de-nota-final.html"><i class="fa fa-check"></i><b>7.7</b> A manera de nota final</a></li>
+</ul></li>
+<li class="part"><span><b>III Machine Learning</b></span></li>
+<li class="chapter" data-level="8" data-path="introduccion.html"><a href="introduccion.html"><i class="fa fa-check"></i><b>8</b> Introducción</a><ul>
+<li class="chapter" data-level="8.1" data-path="aprendizaje-supervisado.html"><a href="aprendizaje-supervisado.html"><i class="fa fa-check"></i><b>8.1</b> Aprendizaje supervisado</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="aprendizaje-supervisado.html"><a href="aprendizaje-supervisado.html#una-reflexion"><i class="fa fa-check"></i><b>8.1.1</b> Una reflexión</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="aprendizaje-no-supervisado.html"><a href="aprendizaje-no-supervisado.html"><i class="fa fa-check"></i><b>8.2</b> Aprendizaje no supervisado</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aprendizaje-no-supervisado-1.html"><a href="aprendizaje-no-supervisado-1.html"><i class="fa fa-check"></i><b>9</b> Aprendizaje no supervisado</a><ul>
+<li class="chapter" data-level="9.1" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html"><i class="fa fa-check"></i><b>9.1</b> K-medias (<em>k-means</em>)</a><ul>
+<li class="chapter" data-level="9.1.1" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#el-modelo"><i class="fa fa-check"></i><b>9.1.1</b> El modelo</a></li>
+<li class="chapter" data-level="9.1.2" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#un-ejemplo-grafico"><i class="fa fa-check"></i><b>9.1.2</b> Un ejemplo gráfico</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="k-means.html"><a href="k-means.html"><i class="fa fa-check"></i><b>9.2</b> K-means</a><ul>
+<li class="chapter" data-level="9.2.1" data-path="k-means.html"><a href="k-means.html#modelo"><i class="fa fa-check"></i><b>9.2.1</b> Modelo</a></li>
+<li class="chapter" data-level="9.2.2" data-path="k-means.html"><a href="k-means.html#implementacion-en-r"><i class="fa fa-check"></i><b>9.2.2</b> Implementación en R</a></li>
+<li class="chapter" data-level="9.2.3" data-path="k-means.html"><a href="k-means.html#evaluacion"><i class="fa fa-check"></i><b>9.2.3</b> Evaluación</a></li>
+<li class="chapter" data-level="9.2.4" data-path="k-means.html"><a href="k-means.html#determinar-el-numero-de-clusters-optimo"><i class="fa fa-check"></i><b>9.2.4</b> Determinar el número de clústers óptimo</a></li>
+</ul></li>
+<li class="chapter" data-level="9.3" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html"><i class="fa fa-check"></i><b>9.3</b> Hierarchical clustering</a><ul>
+<li class="chapter" data-level="9.3.1" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#modelo-1"><i class="fa fa-check"></i><b>9.3.1</b> Modelo</a></li>
+<li class="chapter" data-level="9.3.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#implementacion-en-r-1"><i class="fa fa-check"></i><b>9.3.2</b> Implementación en R</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="aprendizaje-supervisado-1.html"><a href="aprendizaje-supervisado-1.html"><i class="fa fa-check"></i><b>10</b> Aprendizaje Supervisado</a><ul>
+<li class="chapter" data-level="10.1" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html"><i class="fa fa-check"></i><b>10.1</b> Árboles de decisión</a><ul>
+<li class="chapter" data-level="10.1.1" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html#en-r"><i class="fa fa-check"></i><b>10.1.1</b> En R</a></li>
+<li class="chapter" data-level="10.1.2" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html#ventajas-y-desventajas"><i class="fa fa-check"></i><b>10.1.2</b> Ventajas y desventajas</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="bagging-y-random-forest.html"><a href="bagging-y-random-forest.html"><i class="fa fa-check"></i><b>10.2</b> Bagging y Random Forest</a><ul>
+<li class="chapter" data-level="10.2.1" data-path="bagging-y-random-forest.html"><a href="bagging-y-random-forest.html#en-r-1"><i class="fa fa-check"></i><b>10.2.1</b> En R</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="boosting.html"><a href="boosting.html"><i class="fa fa-check"></i><b>10.3</b> Boosting</a><ul>
+<li class="chapter" data-level="10.3.1" data-path="boosting.html"><a href="boosting.html#optimizacion-de-parametros"><i class="fa fa-check"></i><b>10.3.1</b> Optimización de parámetros</a></li>
+<li class="chapter" data-level="10.3.2" data-path="boosting.html"><a href="boosting.html#en-r-2"><i class="fa fa-check"></i><b>10.3.2</b> En R</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="explicacion-de-prediccion.html"><a href="explicacion-de-prediccion.html"><i class="fa fa-check"></i><b>10.4</b> Explicación de predicción</a><ul>
+<li class="chapter" data-level="10.4.1" data-path="explicacion-de-prediccion.html"><a href="explicacion-de-prediccion.html#un-ejemplo-en-r"><i class="fa fa-check"></i><b>10.4.1</b> Un ejemplo en R</a></li>
+</ul></li>
+</ul></li>
+<li class="appendix"><span><b>ANEXO</b></span></li>
+<li class="chapter" data-level="A" data-path="sobre-in-training.html"><a href="sobre-in-training.html"><i class="fa fa-check"></i><b>A</b> Sobre in-training</a></li>
+<li class="chapter" data-level="B" data-path="colaboradores.html"><a href="colaboradores.html"><i class="fa fa-check"></i><b>B</b> Colaboradores</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Modelización en R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="k-means" class="section level2">
+<h2><span class="header-section-number">9.2</span> K-means</h2>
+<div id="modelo" class="section level3">
+<h3><span class="header-section-number">9.2.1</span> Modelo</h3>
+<p><strong>K-means Clustering</strong> es un algoritmo no supervisado que trata de agrupar los datos. Es decir, agrupa <span class="math inline">\(n\)</span> observaciones en <span class="math inline">\(k\)</span> grupos. Es importante remarcar que <span class="math inline">\(k\)</span> debe ser fijado por el usuario.</p>
+<p>El algoritmo asigna aleatoriamente cada observación a un clúster y encuentra el centroide de cada clúster. Entonces, el algoritmo itera a través de dos pasos:</p>
+<ul>
+<li>Reasigna los puntos al centroide cuya distancia es menor.</li>
+<li>Calcula el nuevo centroide de cada grupo.</li>
+</ul>
+<p>Estos dos pasos se repiten hasta que la variación dentro del clúster no se puede reducir más. La variación dentro del clúster se calcula como la suma de las distancias entre los puntos y sus respectivos centroides.</p>
+<p>Es decir, Dado un conjunto de <span class="math inline">\(n\)</span> observaciones, <span class="math inline">\(x_1, ..., x_n\)</span>. K-means construye una partición de las observaciones en <span class="math inline">\(k\)</span> conjuntos (<span class="math inline">\(k ≤ n\)</span>) a fin de minimizar la suma de las distancias dentro de cada grupo, <span class="math inline">\(S = {S_{1}, S_{2}, …, S_{k}}\)</span>.</p>
+<p><span class="math display">\[\min \sum_{i=1}^{k}\sum_{x_{j}\in S_{j}} d(x_{j}, \mu_{i}),\]</span>
+donde <span class="math inline">\(\mu_i\)</span> es el centroide de <span class="math inline">\(S_i\)</span>.</p>
+<p>Se suele usar la distancia euclidea, pero podemos buscar otras distancias que se adecuen mejor a los datos, como por ejemplo, la norma infinita o la distancia de Manhattan.</p>
+</div>
+<div id="implementacion-en-r" class="section level3">
+<h3><span class="header-section-number">9.2.2</span> Implementación en R</h3>
+<p>Para esta sección usaremos el data set de iris, donde tenemos datos sobre las dimensiones de pétalos y sépalos de distintas especies de flores.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(iris)
+<span class="kw">head</span>(iris)</code></pre>
+<pre><code>##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+## 1          5.1         3.5          1.4         0.2  setosa
+## 2          4.9         3.0          1.4         0.2  setosa
+## 3          4.7         3.2          1.3         0.2  setosa
+## 4          4.6         3.1          1.5         0.2  setosa
+## 5          5.0         3.6          1.4         0.2  setosa
+## 6          5.4         3.9          1.7         0.4  setosa</code></pre>
+<p>Nos centraremos en las dimensiones de los pétalos.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+p =<span class="st"> </span><span class="kw">ggplot</span>(iris, <span class="kw">aes</span>(Petal.Length, Petal.Width, <span class="dt">color =</span> Species)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
+p</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Ahora aplicamos K-means con <span class="math inline">\(k=3\)</span> y <span class="math inline">\(nstart=20\)</span>. Esto significa que agrupará los datos en tres grupos y el algoritmo probará 20 distintas formas de empezar y se quedará con la mejor, es decir, seleccionará aquella con menor variación de los clústers.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">20</span>)
+irisCluster =<span class="st"> </span><span class="kw">kmeans</span>(iris[, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>], <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)
+irisCluster</code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 50, 52, 48
+## 
+## Cluster means:
+##   Petal.Length Petal.Width
+## 1     1.462000    0.246000
+## 2     4.269231    1.342308
+## 3     5.595833    2.037500
+## 
+## Clustering vector:
+##   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [36] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [71] 2 2 2 2 2 2 2 3 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
+## [106] 3 2 3 3 3 3 3 3 3 3 3 3 3 3 2 3 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 3 2 3
+## [141] 3 3 3 3 3 3 3 3 3 3
+## 
+## Within cluster sum of squares by cluster:
+## [1]  2.02200 13.05769 16.29167
+##  (between_SS / total_SS =  94.3 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;    
+## [5] &quot;tot.withinss&quot; &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;        
+## [9] &quot;ifault&quot;</code></pre>
+<p>A continuación, hacemos una comprobación de si el algoritmo funciona correctamente.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(irisCluster<span class="op">$</span>cluster, iris<span class="op">$</span>Species)</code></pre>
+<pre><code>##    
+##     setosa versicolor virginica
+##   1     50          0         0
+##   2      0         48         4
+##   3      0          2        46</code></pre>
+<p>Normalmente, esta comprobación no la podemos hacer, ya que al tratarse de aprendizaje no supervisado no tenemos las clases.</p>
+<pre class="sourceCode r"><code class="sourceCode r">p =<span class="st"> </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data =</span> iris, <span class="kw">aes</span>(<span class="dt">x =</span> Petal.Length, <span class="dt">y =</span> Petal.Width, <span class="dt">shape =</span> iris<span class="op">$</span>Species, <span class="dt">color =</span> <span class="kw">as.factor</span>(irisCluster<span class="op">$</span>cluster))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data =</span> <span class="kw">as.data.frame</span>(irisCluster<span class="op">$</span>centers), <span class="kw">aes</span>(<span class="dt">x =</span> Petal.Length, <span class="dt">y =</span> Petal.Width), <span class="dt">size =</span> <span class="dv">3</span>)
+p</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="evaluacion" class="section level3">
+<h3><span class="header-section-number">9.2.3</span> Evaluación</h3>
+<p>Como hemos visto se puede hacer una evaluación visual del funcionamiento del algoritmo. En el caso anterior se puede plotear bien, ya que sólo usamos dos componentes. En caso de tener más componentes podemos usar un PCA y usar las dos componentes principales.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cluster)
+x =<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">cbind</span>(<span class="kw">rnorm</span>(<span class="dv">10</span>,<span class="dv">0</span>,<span class="fl">0.5</span>), <span class="kw">rnorm</span>(<span class="dv">10</span>,<span class="dv">0</span>,<span class="fl">0.5</span>)), <span class="kw">cbind</span>(<span class="kw">rnorm</span>(<span class="dv">15</span>,<span class="dv">5</span>,<span class="fl">0.5</span>), <span class="kw">rnorm</span>(<span class="dv">15</span>,<span class="dv">5</span>,<span class="fl">0.5</span>)))
+<span class="kw">clusplot</span>(<span class="kw">clara</span>(x, <span class="dv">2</span>))</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="sourceCode r"><code class="sourceCode r">x4 =<span class="st"> </span><span class="kw">cbind</span>(x, <span class="kw">rnorm</span>(<span class="dv">25</span>), <span class="kw">rnorm</span>(<span class="dv">25</span>))
+<span class="kw">clusplot</span>(<span class="kw">pam</span>(x4, <span class="dv">2</span>))</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p>Hay que tener cuidado con estas visualizaciones, ya que reducir grandes dimensiones a dos componentes se pierde mucha información. Aunque visualmente parezca que no agrupa bien es posible que sí lo haga en una tercera componente.</p>
+<p>Otro método más numérico es usar el coeficiente de <strong>Silhouette</strong>. El coeficiente de Silhouette contrasta la distancia media con los elementos en el mismo grupo con la distancia media a los elementos en otros grupos. Los objetos con un valor alto se consideran agrupados.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cluster)
+irisCluster =<span class="st"> </span><span class="kw">clara</span>(iris[, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>], <span class="dt">k =</span> <span class="dv">3</span>, <span class="dt">metric =</span> <span class="st">&quot;euclidean&quot;</span>)
+si =<span class="st"> </span><span class="kw">silhouette</span>(irisCluster)
+<span class="kw">cat</span>(<span class="kw">paste</span>(<span class="st">&quot;Cluster 1:&quot;</span>, <span class="kw">mean</span>(si[, <span class="dv">3</span>][si[, <span class="dv">1</span>]<span class="op">==</span><span class="dv">1</span>]), 
+          <span class="st">&quot;</span><span class="ch">\n</span><span class="st">Cluster 2:&quot;</span>, <span class="kw">mean</span>(si[, <span class="dv">3</span>][si[, <span class="dv">1</span>]<span class="op">==</span><span class="dv">2</span>]), 
+          <span class="st">&quot;</span><span class="ch">\n</span><span class="st">Cluster 3:&quot;</span>, <span class="kw">mean</span>(si[, <span class="dv">3</span>][si[, <span class="dv">1</span>]<span class="op">==</span><span class="dv">3</span>])))</code></pre>
+<pre><code>## Cluster 1: 0.932477754552061 
+## Cluster 2: 0.647244785444017 
+## Cluster 3: 0.549691563362595</code></pre>
+<p>Nota: <strong>clara</strong> es una variante de K-means que se suele usar cuando tienes una gran cantidad de datos. Véase también <strong>pam</strong>.</p>
+</div>
+<div id="determinar-el-numero-de-clusters-optimo" class="section level3">
+<h3><span class="header-section-number">9.2.4</span> Determinar el número de clústers óptimo</h3>
+<p>Hay varios criterios para determinar el número óptimo de clústers, como por ejemplo, el coeficiente de Silhouette entre otros.</p>
+<p>El siguiente método usa 26 criterios distintos para determinar el número óptimo de clústers.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(NbClust)
+<span class="kw">set.seed</span>(<span class="dv">4</span>)
+nc =<span class="st"> </span><span class="kw">NbClust</span>(iris[, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>], <span class="dt">min.nc=</span><span class="dv">2</span>, <span class="dt">max.nc=</span><span class="dv">15</span>, <span class="dt">method=</span><span class="st">&quot;kmeans&quot;</span>)</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre><code>## *** : The Hubert index is a graphical method of determining the number of clusters.
+##                 In the plot of Hubert index, we seek a significant knee that corresponds to a 
+##                 significant increase of the value of the measure i.e the significant peak in Hubert
+##                 index second differences plot. 
+## </code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
+<pre><code>## *** : The D index is a graphical method of determining the number of clusters. 
+##                 In the plot of D index, we seek a significant knee (the significant peak in Dindex
+##                 second differences plot) that corresponds to a significant increase of the value of
+##                 the measure. 
+##  
+## ******************************************************************* 
+## * Among all indices:                                                
+## * 10 proposed 2 as the best number of clusters 
+## * 7 proposed 3 as the best number of clusters 
+## * 1 proposed 4 as the best number of clusters 
+## * 1 proposed 9 as the best number of clusters 
+## * 2 proposed 11 as the best number of clusters 
+## * 3 proposed 12 as the best number of clusters 
+## 
+##                    ***** Conclusion *****                            
+##  
+## * According to the majority rule, the best number of clusters is  2 
+##  
+##  
+## *******************************************************************</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">barplot</span>(<span class="kw">table</span>(nc<span class="op">$</span>Best.n[<span class="dv">1</span>,]), 
+          <span class="dt">xlab=</span><span class="st">&quot;Numer of Clusters&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Number of Criteria&quot;</span>,
+          <span class="dt">main=</span><span class="st">&quot;Number of Clusters Chosen by 26 Criteria&quot;</span>)</code></pre>
+<p><img src="06-UnsupervisedLearning_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Como podemos observar el número optimo de clúster es dos, aunque hay siete criterios que dicen que el número óptimo es tres. Esta conclusión tiene sentido observando los datos.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="k-medias-k-means.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="hierarchical-clustering.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": null,
+"history": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section",
+"scroll_highlight": true
+},
+"toolbar": {
+"position": "fixed"
+},
+"search": true
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

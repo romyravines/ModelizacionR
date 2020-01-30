@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Capítulo 7 Series Temporales | Modelización en R</title>
+  <meta name="description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  <meta name="generator" content="bookdown 0.11 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Capítulo 7 Series Temporales | Modelización en R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Capítulo 7 Series Temporales | Modelización en R" />
+  
+  <meta name="twitter:description" content="Manual básico para profesionales que utilizan analítica avanzada." />
+  
+
+<meta name="author" content="Romy Rodríguez-Ravines" />
+
+
+<meta name="date" content="2019-01-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="practica-en-r-2.html">
+<link rel="next" href="que-es-una-serie-temporal.html">
+<script src="assets/jquery-2.2.3/jquery.min.js"></script>
+<link href="assets/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="assets/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script src="assets/htmlwidgets-1.3/htmlwidgets.js"></script>
+<script src="assets/proj4js-2.3.15/proj4.js"></script>
+<link href="assets/highcharts-7.0.1/css/motion.css" rel="stylesheet" />
+<link href="assets/highcharts-7.0.1/css/htmlwdgtgrid.css" rel="stylesheet" />
+<script src="assets/highcharts-7.0.1/highcharts.js"></script>
+<script src="assets/highcharts-7.0.1/highcharts-3d.js"></script>
+<script src="assets/highcharts-7.0.1/highcharts-more.js"></script>
+<script src="assets/highcharts-7.0.1/modules/stock.js"></script>
+<script src="assets/highcharts-7.0.1/modules/map.js"></script>
+<script src="assets/highcharts-7.0.1/modules/annotations.js"></script>
+<script src="assets/highcharts-7.0.1/modules/boost.js"></script>
+<script src="assets/highcharts-7.0.1/modules/data.js"></script>
+<script src="assets/highcharts-7.0.1/modules/drag-panes.js"></script>
+<script src="assets/highcharts-7.0.1/modules/drilldown.js"></script>
+<script src="assets/highcharts-7.0.1/modules/item-series.js"></script>
+<script src="assets/highcharts-7.0.1/modules/offline-exporting.js"></script>
+<script src="assets/highcharts-7.0.1/modules/overlapping-datalabels.js"></script>
+<script src="assets/highcharts-7.0.1/modules/exporting.js"></script>
+<script src="assets/highcharts-7.0.1/modules/export-data.js"></script>
+<script src="assets/highcharts-7.0.1/modules/funnel.js"></script>
+<script src="assets/highcharts-7.0.1/modules/heatmap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/treemap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/sankey.js"></script>
+<script src="assets/highcharts-7.0.1/modules/solid-gauge.js"></script>
+<script src="assets/highcharts-7.0.1/modules/streamgraph.js"></script>
+<script src="assets/highcharts-7.0.1/modules/sunburst.js"></script>
+<script src="assets/highcharts-7.0.1/modules/vector.js"></script>
+<script src="assets/highcharts-7.0.1/modules/wordcloud.js"></script>
+<script src="assets/highcharts-7.0.1/modules/xrange.js"></script>
+<script src="assets/highcharts-7.0.1/modules/tilemap.js"></script>
+<script src="assets/highcharts-7.0.1/modules/venn.js"></script>
+<script src="assets/highcharts-7.0.1/modules/gantt.js"></script>
+<script src="assets/highcharts-7.0.1/modules/timeline.js"></script>
+<script src="assets/highcharts-7.0.1/modules/parallel-coordinates.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/grouped-categories.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/motion.js"></script>
+<script src="assets/highcharts-7.0.1/plugins/multicolor_series.js"></script>
+<script src="assets/highcharts-7.0.1/custom/reset.js"></script>
+<script src="assets/highcharts-7.0.1/custom/symbols-extra.js"></script>
+<script src="assets/highcharts-7.0.1/custom/text-symbols.js"></script>
+<script src="assets/highchart-binding-0.7.0/highchart.js"></script>
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Presentación</a></li>
+<li class="part"><span><b>I MODELOS ANALÍTICOS</b></span></li>
+<li class="chapter" data-level="1" data-path="modelizacion.html"><a href="modelizacion.html"><i class="fa fa-check"></i><b>1</b> Modelizar</a><ul>
+<li class="chapter" data-level="1.1" data-path="modelizar.html"><a href="modelizar.html"><i class="fa fa-check"></i><b>1.1</b> ¿Qué es Modelizar?</a></li>
+<li class="chapter" data-level="1.2" data-path="que-es-un-modelo-analitico.html"><a href="que-es-un-modelo-analitico.html"><i class="fa fa-check"></i><b>1.2</b> ¿Qué es un modelo analítico?</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="tipos-de-problemas.html"><a href="tipos-de-problemas.html"><i class="fa fa-check"></i><b>2</b> Tipos de Problemas</a><ul>
+<li class="chapter" data-level="2.1" data-path="clasemodelos.html"><a href="clasemodelos.html"><i class="fa fa-check"></i><b>2.1</b> Enfoques de Modelización</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="catalogo-de-tecnicas.html"><a href="catalogo-de-tecnicas.html"><i class="fa fa-check"></i><b>3</b> Catálogo de Técnicas</a><ul>
+<li class="chapter" data-level="3.1" data-path="tecnicas-de-clustering.html"><a href="tecnicas-de-clustering.html"><i class="fa fa-check"></i><b>3.1</b> Técnicas de <em>Clustering</em></a></li>
+<li class="chapter" data-level="3.2" data-path="tecnicas-de-clasificacion.html"><a href="tecnicas-de-clasificacion.html"><i class="fa fa-check"></i><b>3.2</b> Técnicas de Clasificación</a></li>
+<li class="chapter" data-level="3.3" data-path="tecnicas-de-regresion.html"><a href="tecnicas-de-regresion.html"><i class="fa fa-check"></i><b>3.3</b> Técnicas de Regresión</a></li>
+<li class="chapter" data-level="3.4" data-path="tecnicas-de-reduccion-de-dimension.html"><a href="tecnicas-de-reduccion-de-dimension.html"><i class="fa fa-check"></i><b>3.4</b> Técnicas de Reducción de Dimensión</a></li>
+<li class="chapter" data-level="3.5" data-path="otras-tecnicas.html"><a href="otras-tecnicas.html"><i class="fa fa-check"></i><b>3.5</b> Otras ‘Técnicas’</a></li>
+<li class="chapter" data-level="3.6" data-path="que-tecnica-utilizar.html"><a href="que-tecnica-utilizar.html"><i class="fa fa-check"></i><b>3.6</b> ¿Qué técnica utilizar?</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="evaluacion-de-modelos.html"><a href="evaluacion-de-modelos.html"><i class="fa fa-check"></i><b>4</b> Evaluación de modelos</a><ul>
+<li class="chapter" data-level="4.1" data-path="diagnosis-de-negocio.html"><a href="diagnosis-de-negocio.html"><i class="fa fa-check"></i><b>4.1</b> Diagnosis de Negocio</a></li>
+<li class="chapter" data-level="4.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html"><i class="fa fa-check"></i><b>4.2</b> Evaluación en Respuesta Binaria</a><ul>
+<li class="chapter" data-level="4.2.1" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#clasificacion"><i class="fa fa-check"></i><b>4.2.1</b> Clasificación</a></li>
+<li class="chapter" data-level="4.2.2" data-path="evaluacion-en-respuesta-binaria.html"><a href="evaluacion-en-respuesta-binaria.html#medidas-de-desigualdad"><i class="fa fa-check"></i><b>4.2.2</b> Medidas de desigualdad</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html"><i class="fa fa-check"></i><b>4.3</b> Evaluación en Respuesta Continúa</a><ul>
+<li class="chapter" data-level="4.3.1" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-regresion"><i class="fa fa-check"></i><b>4.3.1</b> Modelos de Regresión</a></li>
+<li class="chapter" data-level="4.3.2" data-path="evaluacion-en-respuesta-continua.html"><a href="evaluacion-en-respuesta-continua.html#modelos-de-series-temporales"><i class="fa fa-check"></i><b>4.3.2</b> Modelos de Series temporales</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html"><i class="fa fa-check"></i><b>4.4</b> Evaluación en <em>Clustering</em></a><ul>
+<li class="chapter" data-level="4.4.1" data-path="evaluacion-en-clustering.html"><a href="evaluacion-en-clustering.html#silueta"><i class="fa fa-check"></i><b>4.4.1</b> Silueta</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html"><i class="fa fa-check"></i><b>4.5</b> Métodos de re-muestreo</a><ul>
+<li class="chapter" data-level="4.5.1" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#training-testing"><i class="fa fa-check"></i><b>4.5.1</b> Training &amp; testing</a></li>
+<li class="chapter" data-level="4.5.2" data-path="metodos-de-re-muestreo.html"><a href="metodos-de-re-muestreo.html#cross-validation"><i class="fa fa-check"></i><b>4.5.2</b> Cross validation</a></li>
+</ul></li>
+<li class="chapter" data-level="4.6" data-path="practica-en-r.html"><a href="practica-en-r.html"><i class="fa fa-check"></i><b>4.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="practica-en-r.html"><a href="practica-en-r.html#preparacion-de-los-datos"><i class="fa fa-check"></i><b>4.6.1</b> Preparación de los datos</a></li>
+<li class="chapter" data-level="4.6.2" data-path="practica-en-r.html"><a href="practica-en-r.html#clasificacion-1"><i class="fa fa-check"></i><b>4.6.2</b> Clasificación</a></li>
+<li class="chapter" data-level="4.6.3" data-path="practica-en-r.html"><a href="practica-en-r.html#regresion"><i class="fa fa-check"></i><b>4.6.3</b> Regresión</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II Modelos Estadísticos</b></span></li>
+<li class="chapter" data-level="5" data-path="regresion-lineal.html"><a href="regresion-lineal.html"><i class="fa fa-check"></i><b>5</b> Regresión Lineal</a><ul>
+<li class="chapter" data-level="5.1" data-path="que-es-un-modelo-de-regresion.html"><a href="que-es-un-modelo-de-regresion.html"><i class="fa fa-check"></i><b>5.1</b> ¿Qué es un Modelo de Regresión?</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="que-es-un-modelo-de-regresion.html"><a href="que-es-un-modelo-de-regresion.html#ver-tambien"><i class="fa fa-check"></i><b>5.1.1</b> Ver también:</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html"><i class="fa fa-check"></i><b>5.2</b> Práctica en R</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html#regresion-lineal-simple"><i class="fa fa-check"></i><b>5.2.1</b> Regresión lineal simple</a></li>
+<li class="chapter" data-level="5.2.2" data-path="practica-en-r-1.html"><a href="practica-en-r-1.html#regresion-lineal-multiple"><i class="fa fa-check"></i><b>5.2.2</b> Regresión lineal múltiple</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="regresion-logistica.html"><a href="regresion-logistica.html"><i class="fa fa-check"></i><b>6</b> Regresión Logística</a><ul>
+<li class="chapter" data-level="6.1" data-path="modelos-lineales-generalizados.html"><a href="modelos-lineales-generalizados.html"><i class="fa fa-check"></i><b>6.1</b> Modelos Lineales Generalizados</a></li>
+<li class="chapter" data-level="6.2" data-path="modelo-logit.html"><a href="modelo-logit.html"><i class="fa fa-check"></i><b>6.2</b> Modelo Logit</a></li>
+<li class="chapter" data-level="6.3" data-path="modelo-probit.html"><a href="modelo-probit.html"><i class="fa fa-check"></i><b>6.3</b> Modelo Probit</a></li>
+<li class="chapter" data-level="6.4" data-path="practica-en-r-2.html"><a href="practica-en-r-2.html"><i class="fa fa-check"></i><b>6.4</b> Práctica en R</a><ul>
+<li class="chapter" data-level="6.4.1" data-path="practica-en-r-2.html"><a href="practica-en-r-2.html#otros-ejemplos"><i class="fa fa-check"></i><b>6.4.1</b> Otros ejemplos</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="series-temporales.html"><a href="series-temporales.html"><i class="fa fa-check"></i><b>7</b> Series Temporales</a><ul>
+<li class="chapter" data-level="7.1" data-path="que-es-una-serie-temporal.html"><a href="que-es-una-serie-temporal.html"><i class="fa fa-check"></i><b>7.1</b> ¿Qué es una Serie Temporal?</a></li>
+<li class="chapter" data-level="7.2" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html"><i class="fa fa-check"></i><b>7.2</b> Herramientas de Análisis</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html#autocorrelacion-acf-y-pacf"><i class="fa fa-check"></i><b>7.2.1</b> Autocorrelación (acf y pacf)</a></li>
+<li class="chapter" data-level="7.2.2" data-path="herramientas-de-analisis.html"><a href="herramientas-de-analisis.html#operadores-del-tiempo"><i class="fa fa-check"></i><b>7.2.2</b> Operadores (del Tiempo)</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="alisado-exponencial.html"><a href="alisado-exponencial.html"><i class="fa fa-check"></i><b>7.3</b> Alisado Exponencial</a></li>
+<li class="chapter" data-level="7.4" data-path="arima.html"><a href="arima.html"><i class="fa fa-check"></i><b>7.4</b> ARIMA</a><ul>
+<li class="chapter" data-level="7.4.1" data-path="arima.html"><a href="arima.html#parte-ar-autorregresiva"><i class="fa fa-check"></i><b>7.4.1</b> Parte AR (Autorregresiva)</a></li>
+<li class="chapter" data-level="7.4.2" data-path="arima.html"><a href="arima.html#parte-ma-medias-moviles"><i class="fa fa-check"></i><b>7.4.2</b> Parte MA (Medias Móviles)</a></li>
+</ul></li>
+<li class="chapter" data-level="7.5" data-path="funciones-de-transferencia.html"><a href="funciones-de-transferencia.html"><i class="fa fa-check"></i><b>7.5</b> Funciones de Transferencia</a></li>
+<li class="chapter" data-level="7.6" data-path="practica-en-r-3.html"><a href="practica-en-r-3.html"><i class="fa fa-check"></i><b>7.6</b> Práctica en R</a><ul>
+<li class="chapter" data-level="7.6.1" data-path="practica-en-r-3.html"><a href="practica-en-r-3.html#ver-tambien-1"><i class="fa fa-check"></i><b>7.6.1</b> Ver también</a></li>
+</ul></li>
+<li class="chapter" data-level="7.7" data-path="a-manera-de-nota-final.html"><a href="a-manera-de-nota-final.html"><i class="fa fa-check"></i><b>7.7</b> A manera de nota final</a></li>
+</ul></li>
+<li class="part"><span><b>III Machine Learning</b></span></li>
+<li class="chapter" data-level="8" data-path="introduccion.html"><a href="introduccion.html"><i class="fa fa-check"></i><b>8</b> Introducción</a><ul>
+<li class="chapter" data-level="8.1" data-path="aprendizaje-supervisado.html"><a href="aprendizaje-supervisado.html"><i class="fa fa-check"></i><b>8.1</b> Aprendizaje supervisado</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="aprendizaje-supervisado.html"><a href="aprendizaje-supervisado.html#una-reflexion"><i class="fa fa-check"></i><b>8.1.1</b> Una reflexión</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="aprendizaje-no-supervisado.html"><a href="aprendizaje-no-supervisado.html"><i class="fa fa-check"></i><b>8.2</b> Aprendizaje no supervisado</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="aprendizaje-no-supervisado-1.html"><a href="aprendizaje-no-supervisado-1.html"><i class="fa fa-check"></i><b>9</b> Aprendizaje no supervisado</a><ul>
+<li class="chapter" data-level="9.1" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html"><i class="fa fa-check"></i><b>9.1</b> K-medias (<em>k-means</em>)</a><ul>
+<li class="chapter" data-level="9.1.1" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#el-modelo"><i class="fa fa-check"></i><b>9.1.1</b> El modelo</a></li>
+<li class="chapter" data-level="9.1.2" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#un-ejemplo-grafico"><i class="fa fa-check"></i><b>9.1.2</b> Un ejemplo gráfico</a></li>
+<li class="chapter" data-level="9.1.3" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#limitaciones-del-algoritmo"><i class="fa fa-check"></i><b>9.1.3</b> Limitaciones del algoritmo</a></li>
+<li class="chapter" data-level="9.1.4" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#ventajas-y-desventajas"><i class="fa fa-check"></i><b>9.1.4</b> Ventajas y desventajas</a></li>
+<li class="chapter" data-level="9.1.5" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#implementacion-en-r"><i class="fa fa-check"></i><b>9.1.5</b> Implementación en R</a></li>
+<li class="chapter" data-level="9.1.6" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#evaluacion"><i class="fa fa-check"></i><b>9.1.6</b> Evaluación</a></li>
+<li class="chapter" data-level="9.1.7" data-path="k-medias-k-means.html"><a href="k-medias-k-means.html#determinar-el-numero-de-clusters-optimo"><i class="fa fa-check"></i><b>9.1.7</b> Determinar el número de clústers óptimo</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html"><i class="fa fa-check"></i><b>9.2</b> Hierarchical clustering</a><ul>
+<li class="chapter" data-level="9.2.1" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#modelo"><i class="fa fa-check"></i><b>9.2.1</b> Modelo</a></li>
+<li class="chapter" data-level="9.2.2" data-path="hierarchical-clustering.html"><a href="hierarchical-clustering.html#implementacion-en-r-1"><i class="fa fa-check"></i><b>9.2.2</b> Implementación en R</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="aprendizaje-supervisado-1.html"><a href="aprendizaje-supervisado-1.html"><i class="fa fa-check"></i><b>10</b> Aprendizaje Supervisado</a><ul>
+<li class="chapter" data-level="10.1" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html"><i class="fa fa-check"></i><b>10.1</b> Árboles de decisión</a><ul>
+<li class="chapter" data-level="10.1.1" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html#en-r"><i class="fa fa-check"></i><b>10.1.1</b> En R</a></li>
+<li class="chapter" data-level="10.1.2" data-path="arboles-de-decision.html"><a href="arboles-de-decision.html#ventajas-y-desventajas-1"><i class="fa fa-check"></i><b>10.1.2</b> Ventajas y desventajas</a></li>
+</ul></li>
+<li class="chapter" data-level="10.2" data-path="bagging-y-random-forest.html"><a href="bagging-y-random-forest.html"><i class="fa fa-check"></i><b>10.2</b> Bagging y Random Forest</a><ul>
+<li class="chapter" data-level="10.2.1" data-path="bagging-y-random-forest.html"><a href="bagging-y-random-forest.html#en-r-1"><i class="fa fa-check"></i><b>10.2.1</b> En R</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="boosting.html"><a href="boosting.html"><i class="fa fa-check"></i><b>10.3</b> Boosting</a><ul>
+<li class="chapter" data-level="10.3.1" data-path="boosting.html"><a href="boosting.html#optimizacion-de-parametros"><i class="fa fa-check"></i><b>10.3.1</b> Optimización de parámetros</a></li>
+<li class="chapter" data-level="10.3.2" data-path="boosting.html"><a href="boosting.html#en-r-2"><i class="fa fa-check"></i><b>10.3.2</b> En R</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="explicacion-de-prediccion.html"><a href="explicacion-de-prediccion.html"><i class="fa fa-check"></i><b>10.4</b> Explicación de predicción</a><ul>
+<li class="chapter" data-level="10.4.1" data-path="explicacion-de-prediccion.html"><a href="explicacion-de-prediccion.html#un-ejemplo-en-r"><i class="fa fa-check"></i><b>10.4.1</b> Un ejemplo en R</a></li>
+</ul></li>
+</ul></li>
+<li class="appendix"><span><b>ANEXO</b></span></li>
+<li class="chapter" data-level="A" data-path="sobre-in-training.html"><a href="sobre-in-training.html"><i class="fa fa-check"></i><b>A</b> Sobre in-training</a></li>
+<li class="chapter" data-level="B" data-path="colaboradores.html"><a href="colaboradores.html"><i class="fa fa-check"></i><b>B</b> Colaboradores</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Modelización en R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="series-temporales" class="section level1">
+<h1><span class="header-section-number">Capítulo 7</span> Series Temporales</h1>
+<p>`</p>
+<p><br></p>
+<blockquote>
+<p>Ejemplo A:</p>
+</blockquote>
+<div id="htmlwidget-adb19e9af7521802e009" style="width:100%;height:500px;" class="highchart html-widget"></div>
+<script type="application/json" data-for="htmlwidget-adb19e9af7521802e009">{"x":{"hc_opts":{"title":{"text":"Monthly Airline Passenger Numbers 1949-1960","style":{"fontSize":"14px"}},"yAxis":{"title":{"text":null}},"credits":{"enabled":true,"text":"Elaborado por Innova-tsn","href":"http://www.innova-tsn.com"},"exporting":{"enabled":true},"plotOptions":{"series":{"label":{"enabled":false},"turboThreshold":0},"treemap":{"layoutAlgorithm":"squarified"}},"chart":{"type":"line","zoomType":"x"},"legend":{"enabled":true},"tooltip":{"valueDecimals":2,"shared":true,"crosshairs":true},"xAxis":{"type":"datetime","tickInterval":100,"labels":{"format":"{value:%Y-%m-%d}","rotation":-90}},"series":[{"data":[[-662688000000,112],[-660009600000,118],[-657590400000,132],[-654912000000,129],[-652320000000,121],[-649641600000,135],[-647049600000,148],[-644371200000,148],[-641692800000,136],[-639100800000,119],[-636422400000,104],[-633830400000,118],[-631152000000,115],[-628473600000,126],[-626054400000,141],[-623376000000,135],[-620784000000,125],[-618105600000,149],[-615513600000,170],[-612835200000,170],[-610156800000,158],[-607564800000,133],[-604886400000,114],[-602294400000,140],[-599616000000,145],[-596937600000,150],[-594518400000,178],[-591840000000,163],[-589248000000,172],[-586569600000,178],[-583977600000,199],[-581299200000,199],[-578620800000,184],[-576028800000,162],[-573350400000,146],[-570758400000,166],[-568080000000,171],[-565401600000,180],[-562896000000,193],[-560217600000,181],[-557625600000,183],[-554947200000,218],[-552355200000,230],[-549676800000,242],[-546998400000,209],[-544406400000,191],[-541728000000,172],[-539136000000,194],[-536457600000,196],[-533779200000,196],[-531360000000,236],[-528681600000,235],[-526089600000,229],[-523411200000,243],[-520819200000,264],[-518140800000,272],[-515462400000,237],[-512870400000,211],[-510192000000,180],[-507600000000,201],[-504921600000,204],[-502243200000,188],[-499824000000,235],[-497145600000,227],[-494553600000,234],[-491875200000,264],[-489283200000,302],[-486604800000,293],[-483926400000,259],[-481334400000,229],[-478656000000,203],[-476064000000,229],[-473385600000,242],[-470707200000,233],[-468288000000,267],[-465609600000,269],[-463017600000,270],[-460339200000,315],[-457747200000,364],[-455068800000,347],[-452390400000,312],[-449798400000,274],[-447120000000,237],[-444528000000,278],[-441849600000,284],[-439171200000,277],[-436665600000,317],[-433987200000,313],[-431395200000,318],[-428716800000,374],[-426124800000,413],[-423446400000,405],[-420768000000,355],[-418176000000,306],[-415497600000,271],[-412905600000,306],[-410227200000,315],[-407548800000,301],[-405129600000,356],[-402451200000,348],[-399859200000,355],[-397180800000,422],[-394588800000,465],[-391910400000,467],[-389232000000,404],[-386640000000,347],[-383961600000,305],[-381369600000,336],[-378691200000,340],[-376012800000,318],[-373593600000,362],[-370915200000,348],[-368323200000,363],[-365644800000,435],[-363052800000,491],[-360374400000,505],[-357696000000,404],[-355104000000,359],[-352425600000,310],[-349833600000,337],[-347155200000,360],[-344476800000,342],[-342057600000,406],[-339379200000,396],[-336787200000,420],[-334108800000,472],[-331516800000,548],[-328838400000,559],[-326160000000,463],[-323568000000,407],[-320889600000,362],[-318297600000,405],[-315619200000,417],[-312940800000,391],[-310435200000,419],[-307756800000,461],[-305164800000,472],[-302486400000,535],[-299894400000,622],[-297216000000,606],[-294537600000,508],[-291945600000,461],[-289267200000,390],[-286675200000,432]],"name":"Passengers","color":"#004379","lineWidth":1}]},"theme":{"chart":{"backgroundColor":"transparent"}},"conf_opts":{"global":{"Date":null,"VMLRadialGradientURL":"http =//code.highcharts.com/list(version)/gfx/vml-radial-gradient.png","canvasToolsURL":"http =//code.highcharts.com/list(version)/modules/canvas-tools.js","getTimezoneOffset":null,"timezoneOffset":0,"useUTC":true},"lang":{"contextButtonTitle":"Chart context menu","decimalPoint":".","downloadJPEG":"Download JPEG image","downloadPDF":"Download PDF document","downloadPNG":"Download PNG image","downloadSVG":"Download SVG vector image","drillUpText":"Back to {series.name}","invalidDate":null,"loading":"Loading...","months":["January","February","March","April","May","June","July","August","September","October","November","December"],"noData":"No data to display","numericSymbols":["k","M","G","T","P","E"],"printChart":"Print chart","resetZoom":"Reset zoom","resetZoomTitle":"Reset zoom level 1:1","shortMonths":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"thousandsSep":" ","weekdays":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]}},"type":"chart","fonts":[],"debug":false},"evals":[],"jsHooks":[]}</script>
+<p><br></p>
+<blockquote>
+<p>Ejemplo B:</p>
+</blockquote>
+<div id="htmlwidget-6df3a4a38726a602e2aa" style="width:100%;height:500px;" class="highchart html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6df3a4a38726a602e2aa">{"x":{"hc_opts":{"title":{"text":"Number of births per month in New York city, from Jan 1946 to Dec 1959","style":{"fontSize":"14px"}},"yAxis":{"title":{"text":null}},"credits":{"enabled":true,"text":"Elaborado por Innova-tsn","href":"http://www.innova-tsn.com"},"exporting":{"enabled":true},"plotOptions":{"series":{"label":{"enabled":false},"turboThreshold":0},"treemap":{"layoutAlgorithm":"squarified"}},"chart":{"type":"line","zoomType":"x"},"legend":{"enabled":true},"tooltip":{"valueDecimals":2,"shared":true,"crosshairs":true},"xAxis":{"type":"datetime","tickInterval":100,"labels":{"format":"{value:%Y-%m-%d}","rotation":-90}},"series":[{"data":[[-757382400000,26.663],[-754704000000,23.598],[-752284800000,26.931],[-749606400000,24.74],[-747014400000,25.806],[-744336000000,24.364],[-741744000000,24.477],[-739065600000,23.901],[-736387200000,23.175],[-733795200000,23.227],[-731116800000,21.672],[-728524800000,21.87],[-725846400000,21.439],[-723168000000,21.089],[-720748800000,23.709],[-718070400000,21.669],[-715478400000,21.752],[-712800000000,20.761],[-710208000000,23.479],[-707529600000,23.824],[-704851200000,23.105],[-702259200000,23.11],[-699580800000,21.759],[-696988800000,22.073],[-694310400000,21.937],[-691632000000,20.035],[-689126400000,23.59],[-686448000000,21.672],[-683856000000,22.222],[-681177600000,22.123],[-678585600000,23.95],[-675907200000,23.504],[-673228800000,22.238],[-670636800000,23.142],[-667958400000,21.059],[-665366400000,21.573],[-662688000000,21.548],[-660009600000,20],[-657590400000,22.424],[-654912000000,20.615],[-652320000000,21.761],[-649641600000,22.874],[-647049600000,24.104],[-644371200000,23.748],[-641692800000,23.262],[-639100800000,22.907],[-636422400000,21.519],[-633830400000,22.025],[-631152000000,22.604],[-628473600000,20.894],[-626054400000,24.677],[-623376000000,23.673],[-620784000000,25.32],[-618105600000,23.583],[-615513600000,24.671],[-612835200000,24.454],[-610156800000,24.122],[-607564800000,24.252],[-604886400000,22.084],[-602294400000,22.991],[-599616000000,23.287],[-596937600000,23.049],[-594518400000,25.076],[-591840000000,24.037],[-589248000000,24.43],[-586569600000,24.667],[-583977600000,26.451],[-581299200000,25.618],[-578620800000,25.014],[-576028800000,25.11],[-573350400000,22.964],[-570758400000,23.981],[-568080000000,23.798],[-565401600000,22.27],[-562896000000,24.775],[-560217600000,22.646],[-557625600000,23.988],[-554947200000,24.737],[-552355200000,26.276],[-549676800000,25.816],[-546998400000,25.21],[-544406400000,25.199],[-541728000000,23.162],[-539136000000,24.707],[-536457600000,24.364],[-533779200000,22.644],[-531360000000,25.565],[-528681600000,24.062],[-526089600000,25.431],[-523411200000,24.635],[-520819200000,27.009],[-518140800000,26.606],[-515462400000,26.268],[-512870400000,26.462],[-510192000000,25.246],[-507600000000,25.18],[-504921600000,24.657],[-502243200000,23.304],[-499824000000,26.982],[-497145600000,26.199],[-494553600000,27.21],[-491875200000,26.122],[-489283200000,26.706],[-486604800000,26.878],[-483926400000,26.152],[-481334400000,26.379],[-478656000000,24.712],[-476064000000,25.688],[-473385600000,24.99],[-470707200000,24.239],[-468288000000,26.721],[-465609600000,23.475],[-463017600000,24.767],[-460339200000,26.219],[-457747200000,28.361],[-455068800000,28.599],[-452390400000,27.914],[-449798400000,27.784],[-447120000000,25.693],[-444528000000,26.881],[-441849600000,26.217],[-439171200000,24.218],[-436665600000,27.914],[-433987200000,26.975],[-431395200000,28.527],[-428716800000,27.139],[-426124800000,28.982],[-423446400000,28.169],[-420768000000,28.056],[-418176000000,29.136],[-415497600000,26.291],[-412905600000,26.987],[-410227200000,26.589],[-407548800000,24.848],[-405129600000,27.543],[-402451200000,26.896],[-399859200000,28.878],[-397180800000,27.39],[-394588800000,28.065],[-391910400000,28.141],[-389232000000,29.048],[-386640000000,28.484],[-383961600000,26.634],[-381369600000,27.735],[-378691200000,27.132],[-376012800000,24.924],[-373593600000,28.963],[-370915200000,26.589],[-368323200000,27.931],[-365644800000,28.009],[-363052800000,29.229],[-360374400000,28.759],[-357696000000,28.405],[-355104000000,27.945],[-352425600000,25.912],[-349833600000,26.619],[-347155200000,26.076],[-344476800000,25.286],[-342057600000,27.66],[-339379200000,25.951],[-336787200000,26.398],[-334108800000,25.565],[-331516800000,28.865],[-328838400000,30],[-326160000000,29.261],[-323568000000,29.012],[-320889600000,26.992],[-318297600000,27.897]],"name":"Births","color":"##34a4e7ff","lineWidth":1}]},"theme":{"chart":{"backgroundColor":"transparent"}},"conf_opts":{"global":{"Date":null,"VMLRadialGradientURL":"http =//code.highcharts.com/list(version)/gfx/vml-radial-gradient.png","canvasToolsURL":"http =//code.highcharts.com/list(version)/modules/canvas-tools.js","getTimezoneOffset":null,"timezoneOffset":0,"useUTC":true},"lang":{"contextButtonTitle":"Chart context menu","decimalPoint":".","downloadJPEG":"Download JPEG image","downloadPDF":"Download PDF document","downloadPNG":"Download PNG image","downloadSVG":"Download SVG vector image","drillUpText":"Back to {series.name}","invalidDate":null,"loading":"Loading...","months":["January","February","March","April","May","June","July","August","September","October","November","December"],"noData":"No data to display","numericSymbols":["k","M","G","T","P","E"],"printChart":"Print chart","resetZoom":"Reset zoom","resetZoomTitle":"Reset zoom level 1:1","shortMonths":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"thousandsSep":" ","weekdays":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]}},"type":"chart","fonts":[],"debug":false},"evals":[],"jsHooks":[]}</script>
+<p><br>
+<br></p>
+<div class="info">
+<p>Una <strong>serie temporal</strong> es una secuencia de datos, medidos a intervalos de tiempo sucesivos regularmente espaciados.</p>
+</div>
+<p><strong>Ejemplos</strong> de series temporales son:</p>
+<ul>
+<li>tasa de cambio diario,</li>
+<li>tasa de desempleo mensual,</li>
+<li>PIB trimestral,</li>
+<li>volumen de lluvia diario,</li>
+<li>etc.</li>
+</ul>
+<p><br></p>
+<div class="rmdcomment">
+<p>Una de las características más importantes de una serie temporal es que las observaciones vecinas son generalmente dependientes. Así, mientras que en los modelos de regresión, por ejemplo, el orden de las observaciones es irrelevante para el análisis, en las series temporales <strong>el orden de los datos es crucial</strong>.</p>
+</div> 
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="practica-en-r-2.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="que-es-una-serie-temporal.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="assets/gitbook-2.6.7/js/app.min.js"></script>
+<script src="assets/gitbook-2.6.7/js/lunr.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="assets/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="assets/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": null,
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": null,
+"history": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section",
+"scroll_highlight": true
+},
+"toolbar": {
+"position": "fixed"
+},
+"search": true
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

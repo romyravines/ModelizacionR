@@ -1,0 +1,425 @@
+# Text Mining
+
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, comment=FALSE, results="hide"}
+if (!require(tm)) install.packages('tm')
+if (!require(wordcloud)) install.packages('wordcloud')
+if (!require(ldatuning)) install.packages('ldatuning')
+if (!require(sentiment)) install.packages('sentiment')
+if (!require(stringr)) install.packages('stringr')
+if (!require(qdapRegex)) install.packages('qdapRegex')
+if (!require(cld3)) install.packages('cld3')
+if (!require(highcharter)) install.packages('highcharter')
+```
+
+En esta sección veremos como procesar texto y alguna de sus aplicaciones. La minería de textos es un campo de las ciencias de la computación, inteligencia artificial y lingüística que estudia las interacciones entre las computadoras y el lenguaje humano.
+
+## Aplicaciones
+
+* **Extracción de información (*feature extraction*) **: Se centra en obtener nombres propios, organizaciones o eventos, así como fechas y encontrar la relación entre ellas.
+ 
+* **Análisis de sentimientos (*sentiment analysis*) **: Analiza el vocabulario de un texto con el fin de determinar sus cargas emocionales. Para ello se pueden utilizar los llamados *diccionarios de polaridad*, listas de palabras asociadas a mensajes con connotaciones positivas o negativas.
+ 
+* **Clasificación de documentos **: Se encarga de agrupar documentos según la similitud que exista entre ellos.  
+ 
+* **Propagación de contenidos**: Análisis del impacto que causa alguna acción puntual. El problema pasa por identificar qué nodos de la red mencionan la temática en cuestión y estudiar cómo se espera que se propaguen.
+
+## Preprocesamiento del texto
+
+Es necesario un preproceso de los textos para facilitar la creación de unos datos limpios para poder aplicar varios algoritmos de text mining o machine learnig.
+
+* Proceso de **Normalización**: Identificación y corrección de errores ortográficos, pasar todo el texto a minúsculas y borrar signos de puntuación y números o caracteres sin semántica. 
+
+* Proceso de **Tokenización**: Identificación de los términos que componen una frase.
+
+* Proceso de **eliminación de stopwords**: Eliminación de términos carentes de significado de cara a la clasificación, tales como preposiciones, artículos, conjunciones, etc.
+
+* Proceso de **lematización/stemming**: Agrupación de las palabras según su familia léxica, se reduce cada término a su raíz. Este proceso resulta interesante a la hora de ver el número de veces que aparecen y determinar las palabras idóneas que representan el contenido del texto.
+
+* Análisis **Part Of Speech (POS)**: Asignación de una categoría lingüística a cada token o palabra en función de su papel dentro de las sentencias: adjetivo, nombre, preposición, verbo, etc. 
+
+## Document Term Matrix (DTM) 
+
+Una vez realizado el preprocesamiento de los textos estamos listos para crear una matriz donde las filas se corresponden a los textos o documentos y las columnas a los tokens o términos. Esta matriz se suele llamar Document Term Matrix (DTM). 
+
+Hay varias formas de 
+
+* *Term frequency (tf)*: Número de veces que aparece un término *t* en un documento *d*, *f(t,d)*. Usualmente se usa la fórmula normalizada.
+
+$$tf(t,d) = \frac{f(t,d)}{max(f(w,d) : w \in d)}$$
+
+* *Inverse document frequency*: La frecuencia inversa de documento es una medida de si el término es común o no, en la colección de documentos, *D*. Se obtiene dividiendo el número total de documentos por el número de documentos que contienen el término, y se toma el logaritmo de ese cociente.
+
+$$idf(t,D) = \log \frac{\big| D \big|}{\Big| \big\{ d \in D : t \in d \big\} \Big|}$$
+
+* *Term frequency – Inverse document frequency (tf-idf)*: La frecuencia de ocurrencia del término en la colección de documentos.
+
+$$tfidf(t,d,D) = tf(t,d) \times idf(t,D)$$
+
+La DTM será la matriz con la que alimentaremos a los algoritmos de Text Mining. Hay que tener en cuenta que estas matrices pueden ser muy grandes, ya que tienen tantas columnas como palabras en el corpus y para gran cantidad de documentos estas matrices son muy sparse. Se suelen suprimir los términos que con menos frecuencia o los que aparecen en menor cantidad de textos. 
+
+Por otra parte, también se puede complementar la DTM con los n-gramas más frecuentes. Un n-grama es una subsecuencia de n elementos en el texto. 
+
+## Aplicación en R
+
+Veamos ahora como aplicar todo lo visto anteriormente en R.
+
+### Ejemplo 01: Algunas frases
+
+
+```{r}
+library(tm)
+textos = c("Un pequeño paso para el hombre, un gran salto para la humanidad.", 
+           "Pueblo que ignora su historia, pueblo que está condenado a repetirla.",
+           "Todos somos genios. Pero si juzgas a un pez por su capacidad de trepar árboles, vivirá toda su vida pensando que es un inútil",
+           "Más vale morir de pie que vivir de rodillas.", 
+           "Nunca te olvides de sonreír, porque el día que no sonrías será un día perdido.")
+
+docs_ini = VCorpus(VectorSource(textos))
+
+writeLines(as.character(docs_ini[[1]]))
+writeLines(as.character(docs_ini[[2]]))
+
+# Cleaning docs
+docs = tm_map(docs_ini, removePunctuation)
+docs = tm_map(docs, removeNumbers)
+docs = tm_map(docs, content_transformer(tolower))
+docs = tm_map(docs, removeWords, stopwords("spanish"))
+docs = tm_map(docs, stripWhitespace)
+
+# Stemming
+docs = tm_map(docs, stemDocument, "spanish")
+
+writeLines(as.character(docs[[1]]))
+writeLines(as.character(docs[[2]]))
+
+
+# Create document-term matrix
+dtm = DocumentTermMatrix(docs)
+inspect(dtm)
+# Create document-term matrix tf-idf
+dtm = DocumentTermMatrix(docs, control=list(weighting=weightTfIdf))
+inspect(dtm)
+```
+
+### Ejemplo 02: Opiniones en una encuesta
+
+Veamos ahora un ejemplo con opiniones recopiladas en una encuesta sobre un servicio de Correos.
+
+```{r}
+CityPaq = read.csv(file="TextMining/TODO_PARAMINER_V2.csv", header=T, stringsAsFactors = FALSE)
+
+# Remove eampy texts
+CityPaq = CityPaq[which(CityPaq$TEXTO != ""),]
+txt = CityPaq$TEXTO
+
+docs_ini = VCorpus(VectorSource(txt))
+
+# Cleaning docs
+docs = tm_map(docs_ini, removePunctuation)
+docs = tm_map(docs, removeNumbers)
+docs = tm_map(docs, content_transformer(tolower))
+docs = tm_map(docs, removeWords, stopwords("spanish"))
+docs = tm_map(docs, stripWhitespace)
+
+# Stemming
+docs = tm_map(docs, stemDocument, "spanish")
+
+# Create document-term matrix
+dtm = DocumentTermMatrix(docs)
+
+# Remove empty docs of the dtm
+ui = unique(dtm$i)
+CityPaq = CityPaq[ui,]
+dtm = dtm[ui,]
+
+# Words frequency 
+freq = colSums(as.matrix(dtm))
+freq = sort(freq, decreasing = TRUE)
+
+#Plot
+barplot(freq[1:20], las = 2, col = "darkblue", cex.names = 0.7)
+```
+
+
+Otra forma de representar las palabras más frecuentes son los wordclouds o nubes de palabras. 
+
+```{r, echo=FALSE}
+library(wordcloud)
+wordcloud(names(freq), freq, min.freq = 1, max.words=100, random.order=FALSE, rot.per=0.35, colors=brewer.pal(8, "Dark2"))
+```
+
+Otra cosa interesante a analizar es la concurrencia entre palabras, es decir, la frecuencia en la que dos términos aparecen en un mismo texto.
+
+Por ejemplo, el 34% de las veces que aparece "precio" en un documento, también aparece la palabra "elevado". Con lo que podemos interpretar que hay un alto porcentaje de opiniones que el precio del servicio es elevado.
+
+```{r}
+findAssocs(dtm, "precio", 0.1)[[1]][1:10]
+```
+
+Otro ejemplo, es que el 17% de las veces que aparece "bueno", también aparece "sería". Por lo tanto, los usuarios han dado sugerencias para mejorar el servicio.
+
+```{r}
+findAssocs(dtm, "bueno", 0.1)[[1]][1:10]
+```
+
+## Análisis de Tópicos 
+
+Un topic model es un tipo de modelo para descubrir los "temas" que ocurren en una colección de documentos. Topic modelling es una herramienta de minería de textos utilizada con frecuencia para descubrir estructuras semánticas ocultas en un cuerpo de texto. 
+
+Intuitivamente, dado que un documento trata sobre un tema en particular, uno esperaría que palabras particulares aparecieran en el documento más o menos frecuentemente: "perro" y "hueso" aparecerán más a menudo en documentos sobre perros, "gato" y "miau" aparecerá en los documentos sobre gatos, y "el" y "es" aparecerán por igual en ambos. 
+
+Los "temas" producidos por las técnicas de topic modelling son grupos de palabras similares. Un modelo de tema captura esta intuición en un marco matemático, que permite examinar un conjunto de documentos y descubrir, en función de las estadísticas de las palabras en cada uno, cuáles podrían ser los temas y cuál es el balance de temas de cada documento.
+
+A continuación, aplicaremos Latent Dirichlet Allocation (LDA) para determinar los tópicos de los textos. Se trata de un modelo estadístico Bayesiano donde la prior es una distribución de Dirichlet. LDA representa los textos como una mezcla de temáticas que divide las palabras en ciertas probabilidades. LDA es un método no supervisado en el que le debes decir en cuantos tópicos deseas separar los documentos del corpus. Para determinar el número óptimo de tópicos nos fijaremos en cuatro métricas distintas propuestas en cuatro papers.
+
+```{r, echo=FALSE}
+library(topicmodels)
+library(ldatuning)
+
+# Parameters
+#burnin = 500
+iter = 4000
+thin = 500
+seed =list(2003,5,63,100001,765)
+nstart = 5
+
+# Tune
+n_topics = FindTopicsNumber(dtm, topics = c(2,4,6,8,10), 
+                            metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"), 
+                            method = "Gibbs", control=list(seed = seed, nstart = nstart, 
+                                                           iter = iter, thin = thin), 
+                            mc.cores = 4, verbose = TRUE)
+
+# Plot
+FindTopicsNumber_plot(n_topics)
+```
+
+Como podemos observar el número óptimo es 4.
+
+```{r}
+# Number of topics
+k = 4
+
+# Run LDA using Gibbs sampling
+ldaOut =LDA(dtm, k, method="Gibbs", 
+            control=list(nstart=nstart, seed = seed, iter = iter, thin=thin, verbose = 0))
+
+ldaOut.topics = as.matrix(topics(ldaOut))
+
+# Add topic in data frame
+CityPaq$topic = ldaOut.topics
+
+# Plot 
+count = table(ldaOut.topics)
+barplot(count, main = "Número de Documentos por tópico", col = "darkblue")
+```
+
+En el gráfico anterior podemos observar el número de documentos de cada topic. 
+
+LDA devuelve la probabilidad de cada palabra en pertenecer en cada tópico. Para determinar el tópico del texto se realiza utilizando un bag of words. Por lo tanto, el orden de las palabras no importa. 
+
+Veamos ahora si podemos determinar la temático de los tópicos según sus palabras más frecuentes.
+
+```{r}
+terms(ldaOut, 10)
+```
+
+También podemos representar los tópicos con wordclouds. Sacamos las dos palabras más frecuentes, correo y servicio,  para ayudar a identificar los tópicos.
+
+```{r}
+# Wordcloud
+for(i in 1:k)
+{
+  topic = i
+  df = data.frame(term = ldaOut@terms, p = exp(ldaOut@beta[topic,]))
+  ind = which(df$term != "correo" & df$term != "servicio")
+  layout(matrix(c(1, 2), nrow=2), heights=c(1, 4))
+  par(mar=rep(0, 4))
+  plot.new()
+  text(x=0.5, y=0.5, paste("Topic", i), cex = 1.5)
+  
+  wordcloud(words = df$term[ind], freq = df$p[ind], max.words = 50, random.order = FALSE, rot.per = 0.35, 
+            colors=brewer.pal(8, "Dark2"), scale = c(3,.5))
+  par(mfrow=c(1,1))
+}
+```
+
+Sin un análisis muy profundo podríamos decir que el tópico 1 agrupa sugerencias sobre los envíos, el tópico 2 sugerencias sobre las recogidas, el tópico 3 al servicio de oficinas y el número 4 a al servicio a domicilio.
+
+LDA es uno de los algoritmos más usados para topic modelling. Otros algoritmos para topic modelling son:
+
+* Singular value descomposition
+* Explicit semantic analysis
+* Latent semantic analysis
+* Hierarchical Dirichlet process
+* Non-negative matrix factorization
+
+## Análisis de Sentimientos
+
+El análisis de sentimientos (_Sentiment Analysis_) sirve para sacar la polaridad de un texto. Es decir, si el texto tiene una connotación positiva, negativa o neutra. Los algoritmos para determinar la polaridad de los textos no es más que un clasificador. Para ello necesitamos un base de datos con textos etiquetados. 
+
+A continuación usaremos un modelo pre-entrenado para determinar la polaridad de los tweets que hacen referencia `@BancoSabadell` en Twitter.
+
+Los tweets necesitan una limpieza especial, ya que suelen aparecer hashtags, referencias, urls, imágenes, etc. Nos ayudaremos de regular expresions para esta tarea. También filtraremos los tweets en español, ya que el modelo pre-entrenado es en español.
+
+Nos hemos descargado todos los tweets haciendo una búsqueda de `@BancoSabadell` haciendo scrapping a la web de Twitter.
+
+Nota:Si es la primera vez que la ejecutas la librería sentiment, descomenta "install_github('sentiment140', 'okugami79')".
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,error=FALSE}
+#library(devtools)
+#install_github('sentiment140', 'okugami79')
+library(sentiment)
+```
+
+Carga y limpieza de los tweets obtenidos haciendo scrapping.
+
+```{r}
+library(stringr)
+library(qdapRegex)
+library(cld3)
+# Reading all tweets
+all_tweets = read.csv("TextMining/Tweets2017/BancoSabadell_2017-01-01_2017-12-31.csv", encoding = "UTF-8", header = TRUE, stringsAsFactors = FALSE)
+
+all_tweets$account = "BancoSabadell"
+# Remove empty time row
+all_tweets = all_tweets[which(all_tweets$time != ""),]
+
+all_tweets$date = do.call(rbind, strsplit(all_tweets$time, split = ' ')) [, 1]
+
+all_tweets$date = as.Date(all_tweets$date)
+
+# Take tweets from 2017
+all_tweets = all_tweets[which(all_tweets$date >= as.Date("2017-01-01")), ]
+all_tweets = all_tweets[which(all_tweets$date < as.Date("2018-01-01")), ]
+
+result = aggregate(date ~ account, data = all_tweets, min)
+
+# Determine if retweet
+all_tweets$isretweet = str_detect(all_tweets$text,"RT @[a-z,A-Z,0-9]*: ")
+
+# Drop retweets
+ind = which(all_tweets$isretweet == FALSE)
+all_tweets = all_tweets[ind, ]
+
+# Drop tweets from accounts
+accounts = unique(all_tweets$account)
+ind = which(!(all_tweets$user %in% accounts))
+all_tweets = all_tweets[ind, ]
+
+# Remove empty text
+ind = which(all_tweets$text == "")
+all_tweets = all_tweets[-ind, ]
+
+unclean_tweet=all_tweets$text
+
+#unclean_tweet[1:5]
+
+# Take out URLs
+clean_tweet = rm_url(unclean_tweet)
+
+# Take out references and hashtag
+clean_tweet = str_replace_all(clean_tweet,"@[a-z,A-Z,0-9]*(_?)[a-z,A-Z,0-9]*","")
+clean_tweet = str_replace_all(clean_tweet,"#[a-z,A-Z,0-9]*(_?)[a-z,A-Z,0-9]*","")
+#clean_tweet[1:5]
+
+# Detect language
+idioma = detect_language(clean_tweet)
+#plot(as.factor(idioma))
+
+# Select language
+ind=which(idioma=='es')
+
+clean_tweet = clean_tweet[ind]
+all_tweets = all_tweets[ind, ]
+```
+
+Veamos un ejemplo de la limpieza que hemos realizado a los tweets.
+
+```{r}
+all_tweets$text[19]
+clean_tweet[19]
+```
+
+
+Predecimos la polaridad y vemos su distribución.
+
+```{r, echo=FALSE}
+sentiments = sentiment(clean_tweet)
+
+sentiments$score = 0
+sentiments$score[sentiments$polarity == "positive"] = 1
+sentiments$score[sentiments$polarity == "negative"] = -1
+sentiments$date = all_tweets$date
+
+polarity = sentiments$polarity
+score = sentiments$score
+data = cbind(all_tweets, polarity, score)
+data = data[which(data$date >= as.Date("2017-01-01")), ]
+
+library(highcharter)
+ind = table(sentiments$polarity)
+
+hc <- highchart() %>% 
+  hc_title(text = "Polaridad") %>% 
+  hc_add_series(as.vector(ind[1]), type="column", name=names(ind)[1], color="red") %>%
+  hc_add_series(as.vector(ind[2]), type="column", name=names(ind)[2]) %>%
+  hc_add_series(as.vector(ind[3]), type="column", name=names(ind)[3], color="green") 
+
+hc
+```
+
+En el gráfico anterior vemos que en general los tweets son neutros y que tiene más o menos la misma cantidad de positivos y negativos.
+
+Viendo algunos ejemplos vemos que el por lo general los positivos y los negativos los clasifica bastante bien, pero hay muchos neutros que son positivos o negativos. Podríamos tener el control de esto si entrenamos el modelo nosotros mismos.
+
+```{r}
+# Postive examples
+data$text[which(data$polarity=="positive")][1:10]
+# Negative examples
+data$text[which(data$polarity=="negative")][1:10]
+# Neutral examples
+data$text[which(data$polarity=="neutral")][1:10]
+```
+
+Veamos ahora una serie temporal del número de tweets por día.
+
+```{r}
+data$ones = 1
+data$pos = 0
+data$neg = 0
+data$pos[which(data$score == 1)] = 1
+data$neg[which(data$score == -1)] = -1
+
+result_ones = aggregate(ones ~ date, data = data, sum)
+result_pos = aggregate(pos ~ date, data = data, sum)
+result_neg = aggregate(neg ~ date, data = data, sum)
+
+result = merge(result_ones, result_pos, by="date")
+result = merge(result, result_neg, by="date")
+
+hc = highchart() %>% 
+  hc_chart(type = "line", zoomType = "xy") %>%
+  hc_title(text = "Número de tweets por día") %>% 
+  hc_xAxis(categories=result$date, tickPositions = c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334), labels = list(rotation=-90)) %>% 
+  hc_add_series(result$ones, name="Número de tweets", color="#004379") %>%
+  hc_add_series(result$pos, name="Positivos", color="green") %>%
+  hc_add_series(result$neg, name="Negativos", color="red")
+
+hc
+```
+
+Podemos observar que hay una gran actividad alrededor del 5 de octubre debido al cambio de ubicación de la sede social del banco.
+
+
+
+
+
+
+
+
+
+
+
+
